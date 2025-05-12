@@ -1,10 +1,11 @@
-import type {
-	IDataObject,
-	IExecuteFunctions,
-	IHookFunctions,
-	IHttpRequestMethods,
-	ILoadOptionsFunctions,
-	IRequestOptions,
+import {
+	NodeApiError,
+	type IDataObject,
+	type IExecuteFunctions,
+	type IHookFunctions,
+	type IHttpRequestMethods,
+	type ILoadOptionsFunctions,
+	type IRequestOptions,
 } from 'n8n-workflow';
 
 /**
@@ -32,7 +33,20 @@ export async function apiRequest(
 		delete options.body;
 	}
 
-	return await this.helpers.requestWithAuthentication.call(this, 'apifyApi', options);
+	try {
+		const result = await this.helpers.requestWithAuthentication.call(this, 'apifyApi', options);
+
+		return result;
+	} catch (error) {
+		if (error.response && error.response.body) {
+			throw new NodeApiError(this.getNode(), error, {
+				message: error.response.body,
+				description: error.message,
+			});
+		}
+
+		throw new NodeApiError(this.getNode(), error);
+	}
 }
 
 export async function apiRequestAllItems(

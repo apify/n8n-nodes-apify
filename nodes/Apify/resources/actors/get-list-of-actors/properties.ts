@@ -39,7 +39,7 @@ export const properties: INodeProperties[] = [
 		name: 'my',
 		description:
 			'If `true` or `1` then the returned list only contains Actors owned by the user. The default value is `false`.',
-		default: true,
+		default: false,
 		type: 'boolean',
 		routing: {
 			request: {

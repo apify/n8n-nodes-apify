@@ -52,7 +52,7 @@ export type PostReceiveAction =
 /* eslint-enable indent */
 /* tslint:enable:indent */
 
-function getresponseContentType(response: IN8nHttpFullResponse): string {
+function getResponseContentType(response: IN8nHttpFullResponse): string {
 	return response.headers['content-type'] as string;
 }
 
@@ -100,7 +100,7 @@ export const postReceiveActionBinaryData: PostReceiveAction =
 		items: INodeExecutionData[],
 		response: IN8nHttpFullResponse,
 	): Promise<INodeExecutionData[]> {
-		const contentType = getresponseContentType(response);
+		const contentType = getResponseContentType(response);
 		const isBinary = isBinaryResponse(contentType);
 
 		const { binary } = items[0];

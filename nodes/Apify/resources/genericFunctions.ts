@@ -1,10 +1,11 @@
-import type {
-	IDataObject,
-	IExecuteFunctions,
-	IHookFunctions,
-	IHttpRequestMethods,
-	ILoadOptionsFunctions,
-	IRequestOptions,
+import {
+	NodeApiError,
+	type IDataObject,
+	type IExecuteFunctions,
+	type IHookFunctions,
+	type IHttpRequestMethods,
+	type ILoadOptionsFunctions,
+	type IRequestOptions,
 } from 'n8n-workflow';
 
 /**
@@ -32,7 +33,28 @@ export async function apiRequest(
 		delete options.body;
 	}
 
-	return await this.helpers.requestWithAuthentication.call(this, 'apifyApi', options);
+	try {
+		const result = await this.helpers.requestWithAuthentication.call(this, 'apifyApi', options);
+
+		return result;
+	} catch (error) {
+		/**
+		 * using `error instanceof NodeApiError` results in `false`
+		 * because it's thrown by a different instance of n8n-workflow
+		 */
+		if (error.constructor?.name === 'NodeApiError') {
+			throw error;
+		}
+
+		if (error.response && error.response.body) {
+			throw new NodeApiError(this.getNode(), error, {
+				message: error.response.body,
+				description: error.message,
+			});
+		}
+
+		throw new NodeApiError(this.getNode(), error);
+	}
 }
 
 export async function apiRequestAllItems(
@@ -44,9 +66,6 @@ export async function apiRequestAllItems(
 ): Promise<any> {
 	const returnData: IDataObject[] = [];
 	query.limit = query.limit || 999;
-
-	// @ts-ignore
-	console.log('endpoint', endpoint);
 
 	let responseData;
 
