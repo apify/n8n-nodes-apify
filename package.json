@@ -36,7 +36,8 @@
 		"prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json",
 		"merge:api": "npx openapi-merge-cli --config ./openapi.config.json",
 		"p2o": "p2o ./collection.json -f ./openapi.yml",
-		"codegen": "create-n8n-nodes generate -o . -c nodes.config.js -a ./openapi.yml -t ../../templates/n8n-nodes"
+		"codegen": "create-n8n-nodes generate -o . -c nodes.config.js -a ./openapi.yml -t ../../templates/n8n-nodes",
+		"test": "jest"
 	},
 	"files": [
 		"dist"
@@ -52,12 +53,15 @@
 	},
 	"devDependencies": {
 		"@stylistic/eslint-plugin": "^4.2.0",
+		"@types/jest": "^29.5.14",
 		"@typescript-eslint/parser": "^7.15.0",
 		"eslint": "^8.56.0",
 		"eslint-plugin-n8n-nodes-base": "^1.16.1",
 		"gulp": "^4.0.2",
+		"jest": "^29.7.0",
 		"n8n-workflow": "*",
 		"prettier": "^3.3.2",
+		"ts-jest": "^29.3.2",
 		"typescript": "^5.5.3"
 	},
 	"peerDependencies": {
