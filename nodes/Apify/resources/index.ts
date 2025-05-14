@@ -191,6 +191,31 @@ const extraProperties: INodeProperties[] = [
 		name: 'customBody',
 		type: 'json',
 		default:
+			'{\n  "startUrls": [\n    {\n      "url": "https://docs.apify.com/academy/web-scraping-for-beginners"\n    }\n  ],\n  "crawlerType": "cheerio",\n  "maxCrawlDepth": 0,\n  "maxCrawlPages": 1,\n  "maxResults": 1,\n  "proxyConfiguration": {\n    "useApifyProxy": true\n  },\n  "removeCookieWarnings": true,\n  "saveHtml": true,\n  "saveMarkdown": true\n}',
+		description: 'Custom body to send',
+		routing: {
+			request: {
+				body: {
+					customBody: '={{JSON.parse($value)}}',
+				},
+			},
+			send: {
+				preSend: [helpers.hooks.preSendActionCustonBody],
+			},
+		},
+		displayOptions: {
+			show: {
+				useCustomBody: [true],
+				resource: ['Actors'],
+				operation: ['Scrape single URL'],
+			},
+		},
+	},
+	{
+		displayName: 'Custom Body',
+		name: 'customBody',
+		type: 'json',
+		default:
 			'{\n  "actId": "asADASadYvn4mBZmm",\n  "name": "my-task",\n  "options": {\n    "build": "latest",\n    "timeoutSecs": 300,\n    "memoryMbytes": 128\n  },\n  "input": {\n    "hello": "world"\n  }\n}',
 		description: 'Custom body to send',
 		routing: {
