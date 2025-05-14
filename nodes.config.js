@@ -16,7 +16,7 @@ module.exports = {
 			name: 'Apify',
 			description: 'Apify API',
 			api: path.resolve(__dirname, 'openapi.yaml'),
-			icon: './icons/apify.png',
+			icon: './icons/apify.svg',
 			tags: [
 				'Actors/Actor collection',
 				'Actors/Actor object',
@@ -37,8 +37,8 @@ module.exports = {
 				'Actor tasks/Run task synchronously and get dataset items',
 				'Actor tasks/Last run object and its storages',
 
-				"Actor runs/Run collection",
-				"Actor runs/Run object and its storages",
+				'Actor runs/Run collection',
+				'Actor runs/Run object and its storages',
 				// "Actor runs/Delete run",
 				// "Actor runs/Abort run",
 				// "Actor runs/Metamorph run",
@@ -85,8 +85,8 @@ module.exports = {
 				},
 				set: {
 					default: 0,
-				}
-			}
+				},
+			},
 		],
 	},
 	operationNameFn: (name) => {
@@ -103,6 +103,6 @@ module.exports = {
 	actionNameFn: (name, opName) => {
 		// split by /
 		// const parts = name.split('/');
-		return opName
+		return opName;
 	},
 };
