@@ -129,7 +129,7 @@ export async function listRuns(
 			name: `${b.finishedAt} (${b.status})`,
 			value: b.id,
 			// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/input
-			url: `https://console.apify.com/actors/${b.docs_token}/input`,
+			url: `https://console.apify.com/actors/${b.id}/input`,
 			description: b.status,
 		})),
 	};
