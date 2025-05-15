@@ -106,7 +106,7 @@ export async function listActorTasks(
 			name: b.name,
 			value: b.id,
 			// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/input
-			url: `https://console.apify.com/actors/${b.docs_token}/input`,
+			url: `https://console.apify.com/actors/${b.id}/input`,
 			description: b.name,
 		})),
 	};
