@@ -30,7 +30,7 @@ const resourceLocatorProperty: INodeProperties = {
 					properties: {
 						// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/input
 						regex: 'https://console.apify.com/actors/([a-zA-Z0-9]+)',
-						errorMessage: 'Not a valid LarkSuite App URL',
+						errorMessage: 'Not a valid Actor URL',
 					},
 				},
 			],
@@ -49,7 +49,7 @@ const resourceLocatorProperty: INodeProperties = {
 					type: 'regex',
 					properties: {
 						regex: '[a-zA-Z0-9]+',
-						errorMessage: 'Not a valid LarkSuite App ID',
+						errorMessage: 'Not a valid Actor ID',
 					},
 				},
 			],
