@@ -9,8 +9,8 @@ export class ApifyOAuth2Api implements ICredentialType {
 
 	displayName = 'Apify OAuth2 API';
 
-  // TODO: documentation URL for Apify OAuth2 API missing
-  documentationUrl = 'https://docs.apify.com/api/v2';
+	// TODO: documentation URL for Apify OAuth2 API missing
+	documentationUrl = 'https://docs.apify.com/api/v2';
 
 	properties: INodeProperties[] = [
 		{
