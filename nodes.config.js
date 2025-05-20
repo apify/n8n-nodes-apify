@@ -9,6 +9,12 @@ module.exports = {
 			className: 'ApifyApi',
 			scheme: 'apiKey',
 		},
+		ApifyOAuth2Api: {
+			displayName: 'Apify OAuth2 API',
+			name: 'apifyOAuth2Api',
+			className: 'ApifyOAuth2Api',
+			scheme: 'oauth2',
+		},
 	},
 	nodes: {
 		Apify: {
@@ -58,7 +64,18 @@ module.exports = {
 				{
 					displayName: 'Apify API',
 					name: 'apifyApi',
-					required: true,
+					required: false,
+					show: {
+						authentication: ['apiKey'],
+					},
+				},
+				{
+					displayName: 'Apify OAuth2 API',
+					name: 'apifyOAuth2Api',
+					required: false,
+					show: {
+						authentication: ['oauth2'],
+					},
 				},
 			],
 		},

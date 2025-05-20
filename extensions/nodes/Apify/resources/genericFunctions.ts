@@ -1,5 +1,6 @@
 import {
 	NodeApiError,
+	NodeOperationError,
 	type IDataObject,
 	type IExecuteFunctions,
 	type IHookFunctions,
@@ -9,7 +10,7 @@ import {
 } from 'n8n-workflow';
 
 /**
- * Make an API request to Trello
+ * Make an API request to Apify
  *
  */
 export async function apiRequest(
@@ -34,9 +35,14 @@ export async function apiRequest(
 	}
 
 	try {
-		const result = await this.helpers.requestWithAuthentication.call(this, 'apifyApi', options);
+		const authenticationMethod = this.getNodeParameter('authentication', 0) as string;
+		try {
+			await this.getCredentials(authenticationMethod);
+		} catch {
+			throw new NodeOperationError(this.getNode(), `No valid credentials found for ${authenticationMethod}. Please configure them first.`);
+		}
 
-		return result;
+		return await this.helpers.requestWithAuthentication.call(this, authenticationMethod, options);
 	} catch (error) {
 		if (error.response && error.response.body) {
 			throw new NodeApiError(this.getNode(), error, {

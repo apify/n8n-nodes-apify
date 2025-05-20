@@ -21,7 +21,22 @@ export class Apify implements INodeType {
 			{
 				displayName: 'Apify connection',
 				name: 'apifyApi',
-				required: true,
+				required: false,
+				displayOptions: {
+					show: {
+						authentication: ['apifyApi'],
+					},
+				},
+			},
+			{
+				displayName: 'Apify OAuth2 API',
+				name: 'apifyOAuth2Api',
+				required: false,
+				displayOptions: {
+					show: {
+						authentication: ['apifyOAuth2Api'],
+					},
+				},
 			},
 		],
 
@@ -29,6 +44,7 @@ export class Apify implements INodeType {
 			headers: {
 				Accept: 'application/json',
 				'Content-Type': 'application/json',
+				'x-apify-integration-platform': 'n8n',
 			},
 			baseURL: 'https://api.apify.com',
 		},

@@ -44,7 +44,8 @@
 	"n8n": {
 		"n8nNodesApiVersion": 1,
 		"credentials": [
-			"dist/credentials/ApifyApi.credentials.js"
+			"dist/credentials/ApifyApi.credentials.js",
+			"dist/credentials/ApifyOAuth2Api.credentials.js"
 		],
 		"nodes": [
 			"dist/nodes/Apify/Apify.node.js"
