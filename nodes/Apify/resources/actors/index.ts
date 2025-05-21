@@ -27,6 +27,7 @@ import * as withInput from './with-input';
 import * as withoutInput from './without-input';
 import * as runActorSynchronouslyWithInputAndGetDatasetItems from './run-actor-synchronously-with-input-and-get-dataset-items';
 import * as runActorSynchronouslyWithoutInputAndGetDatasetItems from './run-actor-synchronously-without-input-and-get-dataset-items';
+import * as scrapeSingleUrl from './scrape-single-url';
 import * as getLastRun from './get-last-run';
 
 const operations: INodePropertyOptions[] = [
@@ -41,6 +42,7 @@ const operations: INodePropertyOptions[] = [
 	withoutInput.option,
 	runActorSynchronouslyWithInputAndGetDatasetItems.option,
 	runActorSynchronouslyWithoutInputAndGetDatasetItems.option,
+	scrapeSingleUrl.option,
 	getLastRun.option,
 ];
 
@@ -78,6 +80,7 @@ export const rawProperties: INodeProperties[] = [
 	...withoutInput.properties,
 	...runActorSynchronouslyWithInputAndGetDatasetItems.properties,
 	...runActorSynchronouslyWithoutInputAndGetDatasetItems.properties,
+	...scrapeSingleUrl.properties,
 	...getLastRun.properties,
 ];
 
