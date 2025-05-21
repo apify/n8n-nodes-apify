@@ -6,14 +6,14 @@ export const properties: INodeProperties[] = [
 	{
 		displayName: 'URL',
 		name: 'url',
-		description: 'URL to be scraped.',
+		description: 'URL to be scraped',
 		default: 'https://docs.apify.com/academy/web-scraping-for-beginners',
 		type: 'string',
 		routing: {
 			request: {
 				body: {
 					customBody: {
-						startUrls: [{ url: 'https://docs.apify.com/academy/web-scraping-for-beginners' }],
+						startUrls: [{ url: '={{ $value }}' }],
 					},
 				},
 			},
@@ -23,6 +23,7 @@ export const properties: INodeProperties[] = [
 		},
 		displayOptions: {
 			show: {
+				useCustomBody: [false],
 				resource: ['Actors'],
 				operation: ['Scrape single URL'],
 			},
@@ -65,6 +66,7 @@ export const properties: INodeProperties[] = [
 		},
 		displayOptions: {
 			show: {
+				useCustomBody: [false],
 				resource: ['Actors'],
 				operation: ['Scrape single URL'],
 			},
