@@ -14,22 +14,22 @@ export const properties: INodeProperties[] = [
 		default: '',
 		displayOptions: {
 			show: {
-				resource: ['Key-value Stores'],
-				operation: ['Get Key-value Store Record'],
+				resource: ['Key-Value Stores'],
+				operation: ['Get Key-Value Store Record'],
 			},
 		},
 	},
 	{
-		displayName: 'Key-value Store ID',
+		displayName: 'Key-Value Store ID',
 		name: 'storeId',
 		required: true,
-		description: 'The ID of the Key-value Store.',
+		description: 'The ID of the Key-Value Store',
 		default: 'dmXls2mjfQVdzfrC6',
 		type: 'string',
 		displayOptions: {
 			show: {
-				resource: ['Key-value Stores'],
-				operation: ['Get Key-value Store Record'],
+				resource: ['Key-Value Stores'],
+				operation: ['Get Key-Value Store Record'],
 			},
 		},
 	},
@@ -37,7 +37,7 @@ export const properties: INodeProperties[] = [
 		displayName: 'Record Key',
 		name: 'recordKey',
 		required: true,
-		description: 'The key of the record to be retrieved.',
+		description: 'The key of the record to be retrieved',
 		default: 'RECORD_KEY',
 		type: 'string',
 		displayOptions: {
@@ -45,8 +45,8 @@ export const properties: INodeProperties[] = [
 				storeId: [''], // Hide if storeId is not set
 			},
 			show: {
-				resource: ['Key-value Stores'],
-				operation: ['Get Key-value Store Record'],
+				resource: ['Key-Value Stores'],
+				operation: ['Get Key-Value Store Record'],
 			},
 		},
 	},

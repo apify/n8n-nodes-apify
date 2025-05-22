@@ -2,7 +2,7 @@ import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n
 import { apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
-	displayName: 'Key-value Store ID',
+	displayName: 'Key-Value Store ID',
 	name: 'storeId',
 	type: 'resourceLocator',
 	default: { mode: 'list', value: '' },
@@ -27,7 +27,7 @@ const resourceLocatorProperty: INodeProperties = {
 					type: 'regex',
 					properties: {
 						regex: '[a-zA-Z0-9]+',
-						errorMessage: 'Not a valid Key-value Store ID',
+						errorMessage: 'Not a valid Key-Value Store ID',
 					},
 				},
 			],

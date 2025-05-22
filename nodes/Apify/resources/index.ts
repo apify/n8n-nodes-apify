@@ -53,8 +53,8 @@ const resourceSelect: INodeProperties[] = [
 				value: 'Datasets',
 			},
 			{
-				name: 'Key-value Store',
-				value: 'Key-value Stores',
+				name: 'Key-Value Store',
+				value: 'Key-Value Stores',
 			},
 		],
 		default: 'Actors',
