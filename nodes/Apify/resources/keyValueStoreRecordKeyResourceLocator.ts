@@ -2,7 +2,7 @@ import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n
 import { apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
-	displayName: 'Key-value Store Record Keys',
+	displayName: 'Key-Value Store Record Keys',
 	name: 'recordKey',
 	type: 'resourceLocator',
 	default: { mode: 'list', value: '' },
