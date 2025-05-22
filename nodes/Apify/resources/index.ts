@@ -25,6 +25,7 @@ import * as actors from './actors';
 import * as actorTasks from './actor-tasks';
 import * as actorRuns from './actor-runs';
 import * as datasets from './datasets';
+import * as keyValueStores from './key-value-stores';
 
 const authenticationProperties: INodeProperties[] = [];
 
@@ -50,6 +51,10 @@ const resourceSelect: INodeProperties[] = [
 			{
 				name: 'Dataset',
 				value: 'Datasets',
+			},
+			{
+				name: 'Key-Value Store',
+				value: 'Key-Value Stores',
 			},
 		],
 		default: 'Actors',
@@ -415,6 +420,7 @@ const rawProperties: INodeProperties[] = [
 	...actorTasks.properties,
 	...actorRuns.properties,
 	...datasets.properties,
+	...keyValueStores.properties,
 	...extraProperties,
 ];
 
@@ -426,6 +432,7 @@ const methods = aggregateNodeMethods([
 	actorTasks.methods,
 	actorRuns.methods,
 	datasets.methods,
+	keyValueStores.methods,
 ]);
 
 export { properties, methods };

@@ -1,5 +1,5 @@
 {
-	"node": "n8n-nodes-<name>",
+	"node": "n8n-nodes-apify",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Development", "Developer Tools"],
