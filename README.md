@@ -17,7 +17,60 @@ This is an n8n community node that integrates [Apify](https://apify.com) with yo
 
 ## Installation
 
-To install this community node, please follow the official [n8n community node installation guide](https://docs.n8n.io/integrations/community-nodes/installation/).
+### ⚙️ Prerequisites
+
+- Node.js (recommended: v18.10+)
+- pnpm installed globally
+
+---
+
+### 1. Initialize n8n locally
+
+Begin by installing and running n8n to create the necessary configuration directory (`~/.n8n`):
+
+```bash
+npm install -g n8n # Skip this step if you already have n8n installed globally
+n8n start # This will generate the ~/.n8n directory
+```
+
+### 2. Clone & Build the Node Package
+
+Install dependencies and build the node:
+
+```bash
+pnpm install
+pnpm run build
+```
+
+### 3. Link the Custom Node to n8n
+
+Create the `custom` directory inside `~/.n8n` (if it doesn't exist), then symlink your local node package:
+
+```bash
+mkdir -p ~/.n8n/custom
+ln -s /full/path/to/n8n-nodes-apify ~/.n8n/custom/n8n-nodes-apify # replace full/path/to with the path to your n8n-nodes-apify directory
+```
+
+> **Note:** Use the absolute path in the symlink for compatibility.
+
+### 4. Restart n8n
+
+Now that your custom node is linked, start n8n again:
+
+```bash
+n8n start
+```
+
+---
+
+### 🔁 Making Changes
+
+If you make any changes to your custom node locally, remember to rebuild and restart:
+
+```bash
+pnpm run build
+n8n start
+```
 
 ## Operations
 
@@ -35,6 +88,7 @@ This node supports a wide range of Apify operations, including:
 - **Datasets**: Work with Apify datasets.
   - Retrieve dataset collections and specific datasets
   - Fetch dataset items
+- **Key-value Store**: Retrieve a key-value store record by a given record key.
 
 ## Credentials
 
