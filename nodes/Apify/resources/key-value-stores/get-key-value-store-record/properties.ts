@@ -34,10 +34,10 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Record Key',
+		displayName: 'Key-Value Store Record Key',
 		name: 'recordKey',
 		required: true,
-		description: 'The key of the record to be retrieved',
+		description: 'The key of the Record to be retrieved',
 		default: 'RECORD_KEY',
 		type: 'string',
 		displayOptions: {

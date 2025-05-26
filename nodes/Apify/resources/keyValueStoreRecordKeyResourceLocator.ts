@@ -2,7 +2,7 @@ import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n
 import { apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
-	displayName: 'Key-Value Store Record Keys',
+	displayName: 'Key-Value Store Record Key',
 	name: 'recordKey',
 	type: 'resourceLocator',
 	default: { mode: 'list', value: '' },
@@ -32,7 +32,7 @@ const resourceLocatorProperty: INodeProperties = {
 					},
 				},
 			],
-			placeholder: 'dmXls2mjfQVdzfrC6',
+			placeholder: 'RECORD_KEY',
 			url: '=https://api.apify.com/v2/key-value-stores/{{ $value }}/records/{{ $value }}',
 		},
 	],
