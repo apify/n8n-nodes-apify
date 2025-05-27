@@ -13,6 +13,12 @@ const rawOption: INodePropertyOptions = {
 	value: name,
 	action: name,
 	description: 'Gets a value stored in the key-value store under a specific key',
+	routing: {
+		request: {
+			method: 'GET',
+			url: '=/v2/key-value-stores/{{$parameter["storeId"]}}/records/{{$parameter["recordKey"]}}',
+		},
+	},
 };
 
 const { properties, option } = runHooks(rawOption, rawProperties);
