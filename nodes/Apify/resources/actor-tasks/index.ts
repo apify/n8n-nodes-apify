@@ -26,9 +26,7 @@ import * as updateTaskInput from './update-task-input';
 import * as getListOfTaskRuns from './get-list-of-task-runs';
 import * as runTask from './run-task';
 import * as runTaskSynchronouslyPost from './run-task-synchronously-post';
-import * as runTaskSynchronouslyGet from './run-task-synchronously-get';
 import * as runTaskSynchronouslyAndGetDatasetItemsPost from './run-task-synchronously-and-get-dataset-items-post';
-import * as runTaskSynchronouslyAndGetDatasetItemsGet from './run-task-synchronously-and-get-dataset-items-get';
 
 const operations: INodePropertyOptions[] = [
 	getListOfTasks.option,
@@ -41,9 +39,7 @@ const operations: INodePropertyOptions[] = [
 	getListOfTaskRuns.option,
 	runTask.option,
 	runTaskSynchronouslyPost.option,
-	runTaskSynchronouslyGet.option,
 	runTaskSynchronouslyAndGetDatasetItemsPost.option,
-	runTaskSynchronouslyAndGetDatasetItemsGet.option,
 ];
 
 export const name = 'Actor tasks';
@@ -79,9 +75,7 @@ export const rawProperties: INodeProperties[] = [
 	...getListOfTaskRuns.properties,
 	...runTask.properties,
 	...runTaskSynchronouslyPost.properties,
-	...runTaskSynchronouslyGet.properties,
 	...runTaskSynchronouslyAndGetDatasetItemsPost.properties,
-	...runTaskSynchronouslyAndGetDatasetItemsGet.properties,
 ];
 
 const { properties, methods } = runHooks(rawProperties);
