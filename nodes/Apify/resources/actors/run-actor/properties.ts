@@ -121,7 +121,7 @@ maximum number of items in your Actor by using the
 		description: `Specifies the Actor build to run. It can be either a build tag or build
 number. By default, the run uses the build specified in the default run
 configuration for the Actor (typically \`latest\`).`,
-		default: '0.1.234',
+		default: '',
 		type: 'string',
 		routing: {
 			request: {
@@ -168,7 +168,7 @@ otherwise it will have a transitional status (e.g. \`RUNNING\`).`,
 used to receive a notification e.g. when the Actor finished or failed. The value is a Base64-encoded
 JSON array of objects defining the webhooks. For more information, see
 [Webhooks documentation](https://docs.apify.com/platform/integrations/webhooks).`,
-		default: 'dGhpcyBpcyBqdXN0IGV4YW1wbGUK...',
+		default: '',
 		type: 'string',
 		routing: {
 			request: {
