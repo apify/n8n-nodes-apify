@@ -13,12 +13,17 @@ describe('Apify Node', () => {
 			expect(apifyNode.description.name).toEqual('apify');
 		});
 
-		it('should have properties defined', () => {
-			expect(apifyNode.description.properties).toBeDefined();
+		it('should have a version property', () => {
+			expect(apifyNode.nodeVersions).toBeDefined();
 		});
 
-		it('should have credential properties defined', () => {
-			expect(apifyNode.description.credentials).toBeDefined();
+		it('should have a base description', () => {
+			expect(apifyNode.description.displayName).toBeDefined();
+			expect(apifyNode.description.name).toBeDefined();
+			expect(apifyNode.description.icon).toBeDefined();
+			expect(apifyNode.description.group).toBeDefined();
+			expect(apifyNode.description.description).toBeDefined();
+			expect(apifyNode.description.defaultVersion).toBeDefined();
 		});
 	});
 });
