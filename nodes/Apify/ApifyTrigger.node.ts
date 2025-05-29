@@ -189,7 +189,6 @@ export class ApifyTrigger implements INodeType {
 				this.getWorkflowStaticData('node').webhookId = id;
 				return true;
 			},
-
 			async delete(this: IHookFunctions): Promise<boolean> {
 				const webhookId = this.getWorkflowStaticData('node').webhookId;
 				if (!webhookId) return false;
