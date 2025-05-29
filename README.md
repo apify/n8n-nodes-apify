@@ -89,6 +89,8 @@ This node supports a wide range of Apify operations, including:
   - Retrieve dataset collections and specific datasets
   - Fetch dataset items
 - **Key-value Store**: Retrieve a key-value store record by a given record key.
+- **Triggers**: Trigger a workflow when Actor or run finishes.
+  - Automatically start an n8n workflow whenever an Actor or task finishes execution
 
 ## Credentials
 
