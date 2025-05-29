@@ -23,7 +23,6 @@ export const properties: INodeProperties[] = [
 		},
 		displayOptions: {
 			show: {
-				useCustomBody: [false],
 				resource: ['Actors'],
 				operation: ['Scrape single URL'],
 			},
@@ -66,7 +65,6 @@ export const properties: INodeProperties[] = [
 		},
 		displayOptions: {
 			show: {
-				useCustomBody: [false],
 				resource: ['Actors'],
 				operation: ['Scrape single URL'],
 			},
