@@ -35,7 +35,7 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Actor Id',
+		displayName: 'Actor',
 		name: 'actorId',
 		required: true,
 		description: "Actor ID or a tilde-separated owner's username and Actor name",

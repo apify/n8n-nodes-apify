@@ -68,6 +68,12 @@ const extraProperties: INodeProperties[] = [
 		type: 'boolean',
 		description: 'Whether to use a custom body',
 		default: false,
+		displayOptions: {
+			hide: {
+				resource: ['Actors'],
+				operation: ['Run actor'],
+			},
+		},
 	},
 	{
 		displayName: 'Custom Body',
@@ -120,7 +126,7 @@ const extraProperties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Custom Body',
+		displayName: 'Input (JSON)',
 		name: 'customBody',
 		type: 'json',
 		default: '{}',
@@ -137,7 +143,6 @@ const extraProperties: INodeProperties[] = [
 		},
 		displayOptions: {
 			show: {
-				useCustomBody: [true],
 				resource: ['Actors'],
 				operation: ['Run actor'],
 			},

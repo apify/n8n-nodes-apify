@@ -16,30 +16,10 @@
 import { INodeProperties, INodePropertyOptions } from 'n8n-workflow';
 import { runHooks } from './hooks';
 
-import * as getListOfTasks from './get-list-of-tasks';
-import * as createTask from './create-task';
-import * as getTask from './get-task';
-import * as updateTask from './update-task';
-import * as deleteTask from './delete-task';
-import * as getTaskInput from './get-task-input';
-import * as updateTaskInput from './update-task-input';
-import * as getListOfTaskRuns from './get-list-of-task-runs';
 import * as runTask from './run-task';
-import * as runTaskSynchronouslyPost from './run-task-synchronously-post';
-import * as runTaskSynchronouslyAndGetDatasetItemsPost from './run-task-synchronously-and-get-dataset-items-post';
 
 const operations: INodePropertyOptions[] = [
-	getListOfTasks.option,
-	createTask.option,
-	getTask.option,
-	updateTask.option,
-	deleteTask.option,
-	getTaskInput.option,
-	updateTaskInput.option,
-	getListOfTaskRuns.option,
 	runTask.option,
-	runTaskSynchronouslyPost.option,
-	runTaskSynchronouslyAndGetDatasetItemsPost.option,
 ];
 
 export const name = 'Actor tasks';
@@ -65,17 +45,7 @@ operationSelect.default = operations.length > 0 ? operations[0].value : '';
 
 export const rawProperties: INodeProperties[] = [
 	operationSelect,
-	...getListOfTasks.properties,
-	...createTask.properties,
-	...getTask.properties,
-	...updateTask.properties,
-	...deleteTask.properties,
-	...getTaskInput.properties,
-	...updateTaskInput.properties,
-	...getListOfTaskRuns.properties,
 	...runTask.properties,
-	...runTaskSynchronouslyPost.properties,
-	...runTaskSynchronouslyAndGetDatasetItemsPost.properties,
 ];
 
 const { properties, methods } = runHooks(rawProperties);

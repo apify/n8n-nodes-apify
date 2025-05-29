@@ -35,7 +35,7 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Actor Task Id',
+		displayName: 'Actor Task',
 		name: 'actorTaskId',
 		required: true,
 		description: "Task ID or a tilde-separated owner's username and task's name",
@@ -49,16 +49,40 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
+		displayName: 'Wait For Finish',
+		name: 'waitForFinish',
+		description: 'The maximum number of seconds the server waits for the run to finish. By default the server do not wait for the run to finish and returns immediately. The maximum value is 60 seconds.',
+		default: null,
+		type: 'number',
+		typeOptions: {
+			maxValue: 60,
+		},
+		routing: {
+			request: {
+				qs: {
+					waitForFinish: '={{ $value || $value === 0 ? $value : undefined }}',
+				},
+			},
+		},
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Run actor'],
+			},
+		},
+	},
+	{
 		displayName: 'Timeout',
 		name: 'timeout',
 		description: `Optional timeout for the run, in seconds. By default, the run uses a
 timeout specified in the task settings.`,
-		default: 60,
+		default: null,
 		type: 'number',
 		routing: {
 			request: {
 				qs: {
-					timeout: '={{ $value }}',
+					timeout: '={{ $value || $value === 0 ? $value : undefined }}',
+
 				},
 			},
 		},
@@ -75,36 +99,12 @@ timeout specified in the task settings.`,
 		description: `Memory limit for the run, in megabytes. The amount of memory can be set
 to a power of 2 with a minimum of 128. By default, the run uses a memory
 limit specified in the task settings.`,
-		default: 256,
+		default: null,
 		type: 'number',
 		routing: {
 			request: {
 				qs: {
 					memory: '={{ $value }}',
-				},
-			},
-		},
-		displayOptions: {
-			show: {
-				resource: ['Actor tasks'],
-				operation: ['Run task'],
-			},
-		},
-	},
-	{
-		displayName: 'Max Items',
-		name: 'maxItems',
-		description: `The maximum number of items that the actor run should return. This is
-useful for pay-per-result actors, as it allows you to limit the number
-of results that will be charged to your subscription. You can access the
-maximum number of items in your actor by using the
-\`ACTOR_MAX_PAID_DATASET_ITEMS\` environment variable.`,
-		default: 1000,
-		type: 'number',
-		routing: {
-			request: {
-				qs: {
-					maxItems: '={{ $value }}',
 				},
 			},
 		},
@@ -127,56 +127,6 @@ settings (typically \`latest\`).`,
 			request: {
 				qs: {
 					build: '={{ $value }}',
-				},
-			},
-		},
-		displayOptions: {
-			show: {
-				resource: ['Actor tasks'],
-				operation: ['Run task'],
-			},
-		},
-	},
-	{
-		displayName: 'Wait For Finish',
-		name: 'waitForFinish',
-		description: `The maximum number of seconds the server waits for the run to finish. By
-default, it is \`0\`, the maximum value is \`60\`. <!--
-MAX_ACTOR_JOB_ASYNC_WAIT_SECS -->
-
-If the build finishes in time then the returned run object will have a
-terminal status (e.g. \`SUCCEEDED\`),
-
-otherwise it will have a transitional status (e.g. \`RUNNING\`).`,
-		default: 60,
-		type: 'number',
-		routing: {
-			request: {
-				qs: {
-					waitForFinish: '={{ $value }}',
-				},
-			},
-		},
-		displayOptions: {
-			show: {
-				resource: ['Actor tasks'],
-				operation: ['Run task'],
-			},
-		},
-	},
-	{
-		displayName: 'Webhooks',
-		name: 'webhooks',
-		description: `Specifies optional webhooks associated with the actor run, which can be
-used to receive a notification e.g. when the actor finished or failed. The value is a Base64-encoded
-JSON array of objects defining the webhooks. **Note**: if you already have a webhook set up for the actor or task,
-you do not have to add it again here. For more information, see [Webhooks documentation](https://docs.apify.com/platform/integrations/webhooks).`,
-		default: '',
-		type: 'string',
-		routing: {
-			request: {
-				qs: {
-					webhooks: '={{ $value }}',
 				},
 			},
 		},
