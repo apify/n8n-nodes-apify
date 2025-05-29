@@ -47,28 +47,4 @@ export const properties: INodeProperties[] = [
 			},
 		},
 	},
-	{
-		displayName: 'Wait For Finish',
-		name: 'waitForFinish',
-		description: `The maximum number of seconds the server waits for the run to finish. By
-default it is \`0\`, the maximum value is \`60\`. <!--
-MAX_ACTOR_JOB_ASYNC_WAIT_SECS -->
-If the build finishes in time then the returned run object will have a terminal status (e.g. \`SUCCEEDED\`),
-otherwise it will have a transitional status (e.g. \`RUNNING\`).`,
-		default: 60,
-		type: 'number',
-		routing: {
-			request: {
-				qs: {
-					waitForFinish: '={{ $value }}',
-				},
-			},
-		},
-		displayOptions: {
-			show: {
-				resource: ['Actor runs'],
-				operation: ['Get run'],
-			},
-		},
-	},
 ];

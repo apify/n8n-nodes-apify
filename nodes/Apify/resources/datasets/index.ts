@@ -16,22 +16,10 @@
 import { INodeProperties, INodePropertyOptions } from 'n8n-workflow';
 import { runHooks } from './hooks';
 
-import * as getListOfDatasets from './get-list-of-datasets';
-import * as createDataset from './create-dataset';
-import * as getDataset from './get-dataset';
-import * as updateDataset from './update-dataset';
-import * as deleteDataset from './delete-dataset';
 import * as getItems from './get-items';
-import * as putItems from './put-items';
 
 const operations: INodePropertyOptions[] = [
-	getListOfDatasets.option,
-	createDataset.option,
-	getDataset.option,
-	updateDataset.option,
-	deleteDataset.option,
 	getItems.option,
-	putItems.option,
 ];
 
 export const name = 'Datasets';
@@ -57,13 +45,7 @@ operationSelect.default = operations.length > 0 ? operations[0].value : '';
 
 export const rawProperties: INodeProperties[] = [
 	operationSelect,
-	...getListOfDatasets.properties,
-	...createDataset.properties,
-	...getDataset.properties,
-	...updateDataset.properties,
-	...deleteDataset.properties,
 	...getItems.properties,
-	...putItems.properties,
 ];
 
 const { properties, methods } = runHooks(rawProperties);

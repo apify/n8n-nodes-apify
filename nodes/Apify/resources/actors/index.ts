@@ -16,26 +16,12 @@
 import { INodeProperties, INodePropertyOptions } from 'n8n-workflow';
 import { runHooks } from './hooks';
 
-import * as getListOfActors from './get-list-of-actors';
-import * as createActor from './create-actor';
-import * as getActor from './get-actor';
-import * as updateActor from './update-actor';
-import * as deleteActor from './delete-actor';
-import * as getListOfRuns from './get-list-of-runs';
 import * as runActor from './run-actor';
-import * as runActorSynchronouslyWithInputAndGetDatasetItems from './run-actor-synchronously-with-input-and-get-dataset-items';
 import * as scrapeSingleUrl from './scrape-single-url';
 import * as getLastRun from './get-last-run';
 
 const operations: INodePropertyOptions[] = [
-	getListOfActors.option,
-	createActor.option,
-	getActor.option,
-	updateActor.option,
-	deleteActor.option,
-	getListOfRuns.option,
 	runActor.option,
-	runActorSynchronouslyWithInputAndGetDatasetItems.option,
 	scrapeSingleUrl.option,
 	getLastRun.option,
 ];
@@ -63,14 +49,7 @@ operationSelect.default = operations.length > 0 ? operations[0].value : '';
 
 export const rawProperties: INodeProperties[] = [
 	operationSelect,
-	...getListOfActors.properties,
-	...createActor.properties,
-	...getActor.properties,
-	...updateActor.properties,
-	...deleteActor.properties,
-	...getListOfRuns.properties,
 	...runActor.properties,
-	...runActorSynchronouslyWithInputAndGetDatasetItems.properties,
 	...scrapeSingleUrl.properties,
 	...getLastRun.properties,
 ];
