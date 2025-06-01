@@ -1,8 +1,5 @@
 import { INodeProperties } from 'n8n-workflow';
 
-// @ts-ignore
-import * as helpers from '../../../helpers';
-
 export const properties: INodeProperties[] = [
 	{
 		displayName: 'GET /v2/key-value-stores/{storeId}/records/{recordKey}',
@@ -42,7 +39,7 @@ export const properties: INodeProperties[] = [
 		type: 'string',
 		displayOptions: {
 			hide: {
-				storeId: [''], // Hide if storeId is not set
+				storeId: [''], // Hide while storeId is not set
 			},
 			show: {
 				resource: ['Key-Value Stores'],
