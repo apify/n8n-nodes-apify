@@ -1,22 +1,4 @@
-/* eslint-disable n8n-nodes-base/node-param-option-description-identical-to-name */
-/* eslint-disable n8n-nodes-base/node-param-display-name-miscased-id */
-/* eslint-disable n8n-nodes-base/node-param-display-name-miscased-id */
-/* eslint-disable n8n-nodes-base/node-param-description-boolean-without-whether */
-/* eslint-disable n8n-nodes-base/node-param-options-type-unsorted-items */
-
-/**
- * The following code was generated create-n8n-nodes tool.
- *
- * This file was automatically generated and should not be edited.
- *
- * If changes are required, please refer to the templates and scripts in the repository.
- * Repository: https://github.com/oneflow-vn/create-n8n-nodes
- */
-
 import { INodeProperties } from 'n8n-workflow';
-
-// @ts-ignore
-import * as helpers from '../../../helpers';
 
 export const properties: INodeProperties[] = [
 	{
@@ -55,13 +37,6 @@ export const properties: INodeProperties[] = [
 timeout specified in the default run configuration for the Actor.`,
 		default: null,
 		type: 'number',
-		routing: {
-			request: {
-				qs: {
-					timeout: '={{ $value || $value === 0 ? $value : undefined }}',
-				},
-			},
-		},
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
@@ -77,13 +52,6 @@ to a power of 2 with a minimum of 128. By default, the run uses a memory
 limit specified in the default run configuration for the Actor.`,
 		default: null,
 		type: 'number',
-		routing: {
-			request: {
-				qs: {
-					memory: '={{ $value }}',
-				},
-			},
-		},
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
@@ -99,13 +67,6 @@ number. By default, the run uses the build specified in the default run
 configuration for the Actor (typically \`latest\`).`,
 		default: '',
 		type: 'string',
-		routing: {
-			request: {
-				qs: {
-					build: '={{ $value }}',
-				},
-			},
-		},
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
@@ -121,14 +82,8 @@ configuration for the Actor (typically \`latest\`).`,
 		default: null,
 		type: 'number',
 		typeOptions: {
+			minValue: 0,
 			maxValue: 60,
-		},
-		routing: {
-			request: {
-				qs: {
-					waitForFinish: '={{ $value || $value === 0 ? $value : undefined }}',
-				},
-			},
 		},
 		displayOptions: {
 			show: {

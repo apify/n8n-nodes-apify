@@ -1,1 +1,1 @@
-export const WCC_ACTOR_ID = 'aYG0l9s7dbB7j3gbS';
+export const WEB_CONTENT_SCRAPER_ACTOR_ID = 'aYG0l9s7dbB7j3gbS';

@@ -1,7 +1,5 @@
 import { INodeProperties } from 'n8n-workflow';
 
-import * as helpers from '../../../helpers';
-
 export const properties: INodeProperties[] = [
 	{
 		displayName: 'URL',
@@ -9,18 +7,6 @@ export const properties: INodeProperties[] = [
 		description: 'URL to be scraped',
 		default: 'https://docs.apify.com/academy/web-scraping-for-beginners',
 		type: 'string',
-		routing: {
-			request: {
-				body: {
-					customBody: {
-						startUrls: [{ url: '={{ $value }}' }],
-					},
-				},
-			},
-			send: {
-				preSend: [helpers.hooks.preSendActionCustonBody],
-			},
-		},
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
@@ -51,18 +37,6 @@ export const properties: INodeProperties[] = [
 				value: 'playwright:firefox',
 			},
 		],
-		routing: {
-			request: {
-				body: {
-					customBody: {
-						crawlerType: '={{ $value }}',
-					},
-				},
-			},
-			send: {
-				preSend: [helpers.hooks.preSendActionCustonBody],
-			},
-		},
 		displayOptions: {
 			show: {
 				resource: ['Actors'],

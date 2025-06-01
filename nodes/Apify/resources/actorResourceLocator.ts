@@ -1,8 +1,8 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
-import { apiRequestAllItems } from './genericFunctions';
+import { getAuthedApifyClient } from '../helpers/apify-client';
 
 const resourceLocatorProperty: INodeProperties = {
-	displayName: 'Actor ID',
+	displayName: 'Actor',
 	name: 'actorId',
 	type: 'resourceLocator',
 	default: { mode: 'list', value: '' },
@@ -18,6 +18,17 @@ const resourceLocatorProperty: INodeProperties = {
 				searchable: false,
 			},
 		},
+		// {
+		// 	displayName: 'From Store',
+		// 	name: 'store',
+		// 	type: 'list',
+		// 	placeholder: 'Choose from Apify Store...',
+		// 	typeOptions: {
+		// 		searchListMethod: 'listStoreActors',
+		// 		searchFilterRequired: false,
+		// 		searchable: false,
+		// 	},
+		// },
 		{
 			displayName: 'By URL',
 			name: 'url',
@@ -74,39 +85,32 @@ export function overrideActorProperties(properties: INodeProperties[]) {
 	});
 }
 
-export async function listActors(
-	this: ILoadOptionsFunctions,
-	query?: string,
-): Promise<INodeListSearchResult> {
-	const searchResults = await apiRequestAllItems.call(
-		this,
-		'GET',
-		'/v2/acts',
-		{},
-		{
-			qs: {
-				limit: 100,
-				offset: 0,
-			},
-		},
-	);
-
-	// data:
-	// - id
-	// - createdAt
-	// - modifiedAt
-	// - name
-	// - username
-	const { data } = searchResults;
-	const { items } = data;
+export async function listActors(this: ILoadOptionsFunctions): Promise<INodeListSearchResult> {
+	const client = await getAuthedApifyClient.call(this);
+	const limit = 100;
+	const offset = 0;
+	const { items } = await client.actors().list({ limit, offset });
 
 	return {
 		results: items.map((b: any) => ({
 			name: b.name,
 			value: b.id,
-			// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/input
 			url: `https://console.apify.com/actors/${b.id}/input`,
 			description: b.name,
 		})),
 	};
 }
+
+// export async function listStoreActors(this: ILoadOptionsFunctions): Promise<INodeListSearchResult> {
+// 	const client = await getAuthedApifyClient.call(this);
+// 	const { items } = await client.store().list({ limit: 50 });
+
+// 	return {
+// 		results: items.map((b: any) => ({
+// 			name: b.title || b.name,
+// 			value: b.id,
+// 			url: `https://console.apify.com/actors/${b.id}/input`,
+// 			description: b.description || b.name,
+// 		})),
+// 	};
+// }

@@ -1,8 +1,8 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
-import { apiRequestAllItems } from './genericFunctions';
+import { getAuthedApifyClient } from '../helpers/apify-client';
 
 const resourceLocatorProperty: INodeProperties = {
-	displayName: 'Actor Task ID',
+	displayName: 'Actor Task',
 	name: 'actorTaskId',
 	type: 'resourceLocator',
 	default: { mode: 'list', value: '' },
@@ -74,39 +74,17 @@ export function overrideActorTaskProperties(properties: INodeProperties[]) {
 	});
 }
 
-export async function listActorTasks(
-	this: ILoadOptionsFunctions,
-	query?: string,
-): Promise<INodeListSearchResult> {
-	// GET /v2/acts/{actorId}/runs
-	const searchResults = await apiRequestAllItems.call(
-		this,
-		'GET',
-		'/v2/actor-tasks',
-		{},
-		{
-			qs: {
-				limit: 100,
-				offset: 0,
-			},
-		},
-	);
-
-	// data:
-	// - id
-	// - createdAt
-	// - modifiedAt
-	// - name
-	// - username
-	const { data } = searchResults;
-	const { items } = data;
+export async function listActorTasks(this: ILoadOptionsFunctions): Promise<INodeListSearchResult> {
+	const client = await getAuthedApifyClient.call(this);
+	const limit = 100;
+	const offset = 0;
+	const { items } = await client.tasks().list({ limit, offset });
 
 	return {
 		results: items.map((b: any) => ({
 			name: b.name,
 			value: b.id,
-			// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/input
-			url: `https://console.apify.com/actors/${b.id}/input`,
+			url: `https://console.apify.com/actors/tasks/${b.id}/input`,
 			description: b.name,
 		})),
 	};

@@ -1,5 +1,5 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
-import { apiRequestAllItems } from './genericFunctions';
+import { getAuthedApifyClient } from '../helpers/apify-client';
 
 const resourceLocatorProperty: INodeProperties = {
 	displayName: 'Run ID',
@@ -74,63 +74,27 @@ export function overrideRunProperties(properties: INodeProperties[]) {
 	});
 }
 
-export async function listRuns(
-	this: ILoadOptionsFunctions,
-	query?: string,
-): Promise<INodeListSearchResult> {
-	const actorIdParam = this.getNodeParameter('actorId', null) as { value: string };
-	const actorTaskIdParam = this.getNodeParameter('actorTaskId', null) as { value: string };
+export async function listRuns(this: ILoadOptionsFunctions): Promise<INodeListSearchResult> {
+	const client = await getAuthedApifyClient.call(this);
+	const limit = 100;
+	const offset = 0;
 
-	let path = '/v2/actor-runs';
-
-	if (actorIdParam) {
-		path = `/v2/acts/${actorIdParam.value}/runs`;
-	}
-
-	if (actorTaskIdParam) {
-		path = `/v2/actor-tasks/${actorTaskIdParam.value}/runs`;
-	}
-
-	// /v2/acts/{actorId}/runs'
-	const searchResults = await apiRequestAllItems.call(
-		this,
-		'GET',
-		path,
-		{},
-		{
-			qs: {
-				limit: 100,
-				offset: 0,
-			},
-		},
-	);
-
-	// data:
-	// - id: HG7ML7M8z78YcAPEB
-	// actId: HDSasDasz78YcAPEB
-	// actorTaskId: KJHSKHausidyaJKHs
-	// status: SUCCEEDED
-	// startedAt: '2019-11-30T07:34:24.202Z'
-	// finishedAt: '2019-12-12T09:30:12.202Z'
-	// buildId: HG7ML7M8z78YcAPEB
-	// buildNumber: 0.0.2
-	// meta:
-	// 	origin: WEB
-	// usageTotalUsd: 0.2
-	// defaultKeyValueStoreId: sfAjeR4QmeJCQzTfe
-	// defaultDatasetId: 3ZojQDdFTsyE7Moy4
-	// defaultRequestQueueId: so93g2shcDzK3pA85
-	const { data } = searchResults;
-	const { items } = data;
+	const { items } = await client.runs().list({ limit, offset });
 
 	return {
-		results: items.map((b: any) => ({
-			// finishedAt as name
-			name: `${b.finishedAt} (${b.status})`,
-			value: b.id,
-			// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/input
-			url: `https://console.apify.com/actors/${b.id}/input`,
-			description: b.status,
-		})),
+		results: items.map((b: any) => {
+			const url = `https://console.apify.com/runs/${b.id}`;
+
+			const readableDateTime = b.finishedAt
+				? `${new Date(b.finishedAt).toDateString()} ${new Date(b.finishedAt).toLocaleTimeString()}`
+				: undefined;
+
+			return {
+				name: [readableDateTime, b.status].filter(Boolean).join(' - '),
+				value: b.id,
+				url,
+				description: b.status,
+			};
+		}),
 	};
 }

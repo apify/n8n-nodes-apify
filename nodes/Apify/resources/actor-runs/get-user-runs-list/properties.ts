@@ -1,22 +1,4 @@
-/* eslint-disable n8n-nodes-base/node-param-option-description-identical-to-name */
-/* eslint-disable n8n-nodes-base/node-param-display-name-miscased-id */
-/* eslint-disable n8n-nodes-base/node-param-display-name-miscased-id */
-/* eslint-disable n8n-nodes-base/node-param-description-boolean-without-whether */
-/* eslint-disable n8n-nodes-base/node-param-options-type-unsorted-items */
-
-/**
- * The following code was generated create-n8n-nodes tool.
- *
- * This file was automatically generated and should not be edited.
- *
- * If changes are required, please refer to the templates and scripts in the repository.
- * Repository: https://github.com/oneflow-vn/create-n8n-nodes
- */
-
 import { INodeProperties } from 'n8n-workflow';
-
-// @ts-ignore
-import * as helpers from '../../../helpers';
 
 export const properties: INodeProperties[] = [
 	{
@@ -41,13 +23,6 @@ export const properties: INodeProperties[] = [
 default value is \`0\`.`,
 		default: 0,
 		type: 'number',
-		routing: {
-			request: {
-				qs: {
-					offset: '={{ $value }}',
-				},
-			},
-		},
 		displayOptions: {
 			show: {
 				resource: ['Actor runs'],
@@ -64,13 +39,6 @@ default value is \`0\`.`,
 		typeOptions: {
 			minValue: 1,
 		},
-		routing: {
-			request: {
-				qs: {
-					limit: '={{ $value }}',
-				},
-			},
-		},
 		displayOptions: {
 			show: {
 				resource: ['Actor runs'],
@@ -81,17 +49,10 @@ default value is \`0\`.`,
 	{
 		displayName: 'Desc',
 		name: 'desc',
-		description: `If \`true\` or \`1\` then the objects are sorted by the \`startedAt\` field in
+		description: `Whether the objects are sorted by the \`startedAt\` field in
 descending order. By default, they are sorted in ascending order.`,
 		default: true,
 		type: 'boolean',
-		routing: {
-			request: {
-				qs: {
-					desc: '={{ $value }}',
-				},
-			},
-		},
 		displayOptions: {
 			show: {
 				resource: ['Actor runs'],
@@ -102,17 +63,16 @@ descending order. By default, they are sorted in ascending order.`,
 	{
 		displayName: 'Status',
 		name: 'status',
-		description: `Return only runs with the provided status ([available
+		description: `Return only runs with the provided terminal status ([available
 statuses](https://docs.apify.com/platform/actors/running/runs-and-builds#lifecycle))`,
 		default: 'SUCCEEDED',
-		type: 'string',
-		routing: {
-			request: {
-				qs: {
-					status: '={{ $value }}',
-				},
-			},
-		},
+		type: 'options',
+		options: [
+			{ name: 'SUCCEEDED', value: 'SUCCEEDED' },
+			{ name: 'FAILED', value: 'FAILED' },
+			{ name: 'TIMED-OUT', value: 'TIMED-OUT' },
+			{ name: 'ABORTED', value: 'ABORTED' },
+		],
 		displayOptions: {
 			show: {
 				resource: ['Actor runs'],

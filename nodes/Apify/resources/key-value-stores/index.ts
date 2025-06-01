@@ -5,7 +5,7 @@ import * as getKeyValueStoreRecord from './get-key-value-store-record';
 
 const operations: INodePropertyOptions[] = [getKeyValueStoreRecord.option];
 
-export const name = 'Key-Value Stores';
+const name = 'Key-Value Stores';
 
 const operationSelect: INodeProperties = {
 	displayName: 'Operation',
@@ -33,4 +33,4 @@ export const rawProperties: INodeProperties[] = [
 
 const { properties, methods } = runHooks(rawProperties);
 
-export { properties, methods };
+export { properties, methods, name };

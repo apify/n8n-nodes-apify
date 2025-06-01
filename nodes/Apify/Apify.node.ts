@@ -1,6 +1,12 @@
-import { INodeType, INodeTypeDescription } from 'n8n-workflow';
+import {
+	IExecuteFunctions,
+	INodeExecutionData,
+	INodeType,
+	INodeTypeDescription,
+} from 'n8n-workflow';
 import { properties } from './Apify.properties';
 import { methods } from './Apify.methods';
+import { resourceRouter } from './resources/router';
 
 export class Apify implements INodeType {
 	description: INodeTypeDescription = {
@@ -40,17 +46,19 @@ export class Apify implements INodeType {
 			},
 		],
 
-		requestDefaults: {
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json',
-				'x-apify-integration-platform': 'n8n',
-			},
-			baseURL: 'https://api.apify.com',
-		},
-
 		properties,
 	};
 
 	methods = methods;
+
+	async execute(this: IExecuteFunctions) {
+		const items = this.getInputData();
+		const returnData: INodeExecutionData[] = [];
+
+		for (let i = 0; i < items.length; i++) {
+			returnData.push(await resourceRouter.call(this, i));
+		}
+
+		return [returnData];
+	}
 }
