@@ -6,11 +6,9 @@
 		"n8n-community-node-package",
 		"n8n-nodes",
 		"n8n",
-		"n8n-community-node-package",
 		"apify",
 		"apify-node",
-		"apify-nodes",
-		"n8n-community-node-package"
+		"apify-nodes"
 	],
 	"license": "MIT",
 	"homepage": "https://github.com/apify/n8n-nodes-apify",

@@ -131,7 +131,7 @@ export class ApifyTrigger implements INodeType {
 						description: 'Trigger when Actor or task run times out',
 					},
 				],
-				default: ['any'],
+				default: ['ACTOR.RUN.SUCCEEDED'],
 				description: 'The status of the Actor or task run that should trigger the workflow',
 			},
 		],
@@ -164,6 +164,7 @@ export class ApifyTrigger implements INodeType {
 				const resource = this.getNodeParameter('resource') as string;
 				const selectedEventTypes = this.getNodeParameter('eventType', []) as string[];
 				const actorOrTaskId = getActorOrTaskId.call(this);
+				const webhookData = this.getWorkflowStaticData('node');
 
 				if (!actorOrTaskId) {
 					return false;
@@ -185,16 +186,18 @@ export class ApifyTrigger implements INodeType {
 					idempotencyKey,
 				};
 
-				const { id } = await apiRequest.call(this, 'POST', '/v2/webhooks', body);
-				this.getWorkflowStaticData('node').webhookId = id;
+				const {
+					data: { id },
+				} = await apiRequest.call(this, 'POST', '/v2/webhooks', body);
+				webhookData.webhookId = id;
 				return true;
 			},
 			async delete(this: IHookFunctions): Promise<boolean> {
-				const webhookId = this.getWorkflowStaticData('node').webhookId;
-				if (!webhookId) return false;
+				const webhookData = this.getWorkflowStaticData('node');
+				if (!webhookData.webhookId) return false;
 
-				await apiRequest.call(this, 'DELETE', `/v2/webhooks/${webhookId}`, {});
-				delete this.getWorkflowStaticData('node').webhookId;
+				await apiRequest.call(this, 'DELETE', `/v2/webhooks/${webhookData.webhookId}`, {});
+				delete webhookData.webhookId;
 				return true;
 			},
 		},
