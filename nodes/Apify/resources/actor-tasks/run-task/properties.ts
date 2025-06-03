@@ -66,8 +66,8 @@ export const properties: INodeProperties[] = [
 		},
 		displayOptions: {
 			show: {
-				resource: ['Actors'],
-				operation: ['Run actor'],
+				resource: ['Actor tasks'],
+				operation: ['Run task'],
 			},
 		},
 	},
