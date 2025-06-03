@@ -51,7 +51,8 @@ export const properties: INodeProperties[] = [
 	{
 		displayName: 'Wait For Finish',
 		name: 'waitForFinish',
-		description: 'The maximum number of seconds the server waits for the run to finish. By default the server do not wait for the run to finish and returns immediately. The maximum value is 60 seconds.',
+		description:
+			'The maximum number of seconds the server waits for the run to finish. By default the server do not wait for the run to finish and returns immediately. The maximum value is 60 seconds.',
 		default: null,
 		type: 'number',
 		typeOptions: {
@@ -82,7 +83,6 @@ timeout specified in the task settings.`,
 			request: {
 				qs: {
 					timeout: '={{ $value || $value === 0 ? $value : undefined }}',
-
 				},
 			},
 		},

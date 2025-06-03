@@ -18,9 +18,7 @@ import { runHooks } from './hooks';
 
 import * as getItems from './get-items';
 
-const operations: INodePropertyOptions[] = [
-	getItems.option,
-];
+const operations: INodePropertyOptions[] = [getItems.option];
 
 export const name = 'Datasets';
 
@@ -43,10 +41,7 @@ operationSelect.options = operations;
 // set the default operation
 operationSelect.default = operations.length > 0 ? operations[0].value : '';
 
-export const rawProperties: INodeProperties[] = [
-	operationSelect,
-	...getItems.properties,
-];
+export const rawProperties: INodeProperties[] = [operationSelect, ...getItems.properties];
 
 const { properties, methods } = runHooks(rawProperties);
 

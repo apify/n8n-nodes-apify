@@ -18,9 +18,7 @@ import { runHooks } from './hooks';
 
 import * as runTask from './run-task';
 
-const operations: INodePropertyOptions[] = [
-	runTask.option,
-];
+const operations: INodePropertyOptions[] = [runTask.option];
 
 export const name = 'Actor tasks';
 
@@ -43,10 +41,7 @@ operationSelect.options = operations;
 // set the default operation
 operationSelect.default = operations.length > 0 ? operations[0].value : '';
 
-export const rawProperties: INodeProperties[] = [
-	operationSelect,
-	...runTask.properties,
-];
+export const rawProperties: INodeProperties[] = [operationSelect, ...runTask.properties];
 
 const { properties, methods } = runHooks(rawProperties);
 
