@@ -1,4 +1,10 @@
-import { IExecuteFunctions, INodeExecutionData, IHttpRequestMethods } from 'n8n-workflow';
+import {
+	IExecuteFunctions,
+	INodeExecutionData,
+	NodeApiError,
+	NodeOperationError,
+} from 'n8n-workflow';
+import { getAuthedApifyClient } from '../../../helpers/apify-client';
 
 export async function getKeyValueStoreRecord(
 	this: IExecuteFunctions,
@@ -8,40 +14,56 @@ export async function getKeyValueStoreRecord(
 	const recordKey = this.getNodeParameter('recordKey', i) as { value: string };
 
 	if (!storeId || !recordKey) {
-		throw new Error('Store ID and Record Key are required');
+		throw new NodeOperationError(this, 'Store ID and Record Key are required');
 	}
 
+	const client = await getAuthedApifyClient.call(this);
+
 	try {
-		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'apifyApi', {
-			method: 'GET' as IHttpRequestMethods,
-			url: `https://api.apify.com/v2/key-value-stores/${storeId.value}/records/${recordKey.value}`,
-			returnFullResponse: true,
-			encoding: 'arraybuffer',
-		});
+		const record = await client.keyValueStore(storeId.value).getRecord(recordKey.value);
 
-		const contentType = response.headers['content-type'] as string;
+		if (!record) {
+			return { json: {} };
+		}
 
-		// If not JSON, treat as binary
-		if (!contentType.startsWith('application/json') && !contentType.startsWith('text/')) {
-			const fileName = recordKey.value || 'file';
+		const { value, contentType } = record;
+
+		const resultBase = {
+			storeId: storeId.value,
+			recordKey: recordKey.value,
+			contentType,
+		};
+
+		// If not JSON or text, treat as binary
+		if (
+			contentType &&
+			!contentType.startsWith('application/json') &&
+			!contentType.startsWith('text/')
+		) {
+			const fileName = recordKey.value || record.key || 'file';
+			const binaryData = await this.helpers.prepareBinaryData(value as any, fileName, contentType);
 			return {
-				json: { storeId: storeId.value, recordKey: recordKey.value },
-				binary: {
-					data: await this.helpers.prepareBinaryData(response.body, fileName, contentType),
-				},
+				json: { ...resultBase },
+				binary: { data: binaryData },
 			};
 		}
 
-		// Otherwise, parse as JSON or text
-		let data;
-		try {
-			data = JSON.parse(response.body.toString());
-		} catch {
-			data = response.body.toString();
+		// Handle object
+		if (typeof value === 'object') {
+			return { json: { ...resultBase, value } };
 		}
 
-		return { json: data };
+		// Handle other datatypes, such as HTML
+		// Add `data` property since passing text as result is counted as array
+		let finalData;
+		try {
+			finalData = typeof value === 'string' ? JSON.parse(value) : { data: value };
+		} catch {
+			finalData = { data: value?.toString() };
+		}
+
+		return { json: { ...resultBase, ...finalData } };
 	} catch (error) {
-		throw new Error(error);
+		throw new NodeApiError(this.getNode(), error);
 	}
 }
