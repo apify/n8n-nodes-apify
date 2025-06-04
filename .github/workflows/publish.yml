@@ -5,7 +5,7 @@ on:
     types: [published]
 
 jobs:
-  release:
+  build_and_release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -43,15 +43,16 @@ jobs:
       - name: Extract release version
         id: get_version
         run: |
-          echo "VERSION=${{ github.event.release.tag_name#v }}" >> $GITHUB_ENV
-          echo "Extracted version: ${{ github.event.release.tag_name#v }}"
+          FULL_TAG_NAME="${{ github.event.release.tag_name }}"
+          VERSION_NUMBER="${FULL_TAG_NAME#v}"
+          echo "VERSION=${VERSION_NUMBER}" >> $GITHUB_ENV
 
       - name: Update package.json version
         run: |
           echo "Updating package.json to version ${{ env.VERSION }}"
           pnpm version ${{ env.VERSION }} --no-git-tag-version
 
-     - name: Commit version update
+      - name: Commit version update
         run: |
           git add package.json pnpm-lock.yaml
           if ! git diff --staged --quiet; then
@@ -64,12 +65,18 @@ jobs:
             echo "No changes to commit in package.json or pnpm-lock.yaml for version update."
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.SERVICE_ACCOUNT_GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
       - name: Set up npm for publishing
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}" > .npmrc
+        run: echo "//registry.npmjs.org/:_authToken=${{secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}" > .npmrc
 
       - name: Publish to npm
-        run: pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
+        run: |
+          if pnpm view @apify/n8n-nodes-apify@${{ env.VERSION }} version > /dev/null 2>&1; then
+            echo "Version ${{ env.VERSION }} of @apify/n8n-nodes-apify is already published to npm. Skipping publish step."
+          else
+            echo "Publishing @apify/n8n-nodes-apify@${{ env.VERSION }} to npm..."
+            pnpm publish --access public --no-git-checks
+          fi
