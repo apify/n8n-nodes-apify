@@ -199,7 +199,9 @@ This project uses a GitHub Actions workflow to automate the release process, inc
 
 4.  **Set Release Title and Notes:**
     * Set the "Release title" (e.g., `vX.Y.Z` or a more descriptive title).
-    * Add release notes into the description field.
+    * For the release notes in the description field, you have a few options:
+        * **Write your prepared release notes.**
+        * **Click the "Generate release notes" button:** GitHub will attempt to automatically create release notes based on merged pull requests since the last release. You can then review and edit these auto-generated notes.
 
 5.  **Publish the Release:**
     * Click the **“Publish release”** button.
