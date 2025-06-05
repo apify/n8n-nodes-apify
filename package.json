@@ -6,7 +6,6 @@
 		"n8n-community-node-package",
 		"n8n-nodes",
 		"n8n",
-		"n8n-community-node-package",
 		"apify",
 		"apify-node",
 		"apify-nodes"
@@ -48,7 +47,8 @@
 			"dist/credentials/ApifyOAuth2Api.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/Apify/Apify.node.js"
+			"dist/nodes/Apify/Apify.node.js",
+			"dist/nodes/Apify/ApifyTrigger.node.js"
 		]
 	},
 	"devDependencies": {
