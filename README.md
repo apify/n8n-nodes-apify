@@ -83,7 +83,7 @@ By default, when running locally n8n generates webhook URLs using `localhost`, w
 1. **Set your webhook URL**  
 In the same shell or Docker environment where n8n runs, export the `WEBHOOK_URL` to a publicly-accessible address. For example:
   ```bash
-  export WEBHOOK_URL="https://your-tunnel.local
+  export WEBHOOK_URL="https://your-tunnel.local"
   ```
 2. **Restart n8n** 
   ```bash
