@@ -4,13 +4,13 @@ module.exports = {
 	packageName: 'n8n-nodes-apify',
 	credentials: {
 		ApifyApi: {
-			displayName: 'Apify API',
+			displayName: 'Apify API key connection',
 			name: 'apifyApi',
 			className: 'ApifyApi',
 			scheme: 'apiKey',
 		},
 		ApifyOAuth2Api: {
-			displayName: 'Apify OAuth2 API',
+			displayName: 'Apify OAuth2 connection',
 			name: 'apifyOAuth2Api',
 			className: 'ApifyOAuth2Api',
 			scheme: 'oauth2',
@@ -62,7 +62,7 @@ module.exports = {
 			baseUrl: 'https://api.apify.com',
 			credentials: [
 				{
-					displayName: 'Apify API',
+					displayName: 'Apify API key connection',
 					name: 'apifyApi',
 					required: false,
 					show: {
@@ -70,7 +70,7 @@ module.exports = {
 					},
 				},
 				{
-					displayName: 'Apify OAuth2 API',
+					displayName: 'Apify OAuth2 connection',
 					name: 'apifyOAuth2Api',
 					required: false,
 					show: {

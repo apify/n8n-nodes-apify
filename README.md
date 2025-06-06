@@ -72,6 +72,25 @@ pnpm run build
 n8n start
 ```
 
+---
+
+## Self-Hosted n8n: Public Webhook URL for triggers
+
+This configuration is required for our service’s trigger functionality to work correctly.
+
+By default, when running locally n8n generates webhook URLs using `localhost`, which external services cannot reach. To fix this:
+
+1. **Set your webhook URL**  
+In the same shell or Docker environment where n8n runs, export the `WEBHOOK_URL` to a publicly-accessible address. For example:
+  ```bash
+  export WEBHOOK_URL="https://your-tunnel.local"
+  ```
+2. **Restart n8n** 
+  ```bash
+  pnpm run build
+  n8n start
+  ```
+
 ## Operations
 
 This node supports a wide range of Apify operations, including:
@@ -89,6 +108,8 @@ This node supports a wide range of Apify operations, including:
   - Retrieve dataset collections and specific datasets
   - Fetch dataset items
 - **Key-value Store**: Retrieve a key-value store record by a given record key.
+- **Triggers**: Trigger a workflow when Actor or run finishes.
+  - Automatically start an n8n workflow whenever an Actor or task finishes execution
 
 ## Credentials
 
