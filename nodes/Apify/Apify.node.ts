@@ -25,7 +25,7 @@ export class Apify implements INodeType {
 		outputs: ['main'],
 		credentials: [
 			{
-				displayName: 'Apify connection',
+				displayName: 'Apify API key connection',
 				name: 'apifyApi',
 				required: false,
 				displayOptions: {
@@ -35,7 +35,7 @@ export class Apify implements INodeType {
 				},
 			},
 			{
-				displayName: 'Apify OAuth2 API',
+				displayName: 'Apify OAuth2 connection',
 				name: 'apifyOAuth2Api',
 				required: false,
 				displayOptions: {
