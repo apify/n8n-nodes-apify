@@ -28,7 +28,28 @@ export class ApifyTrigger implements INodeType {
 		defaults: { name: 'Apify Trigger' },
 		inputs: [],
 		outputs: ['main'],
-		credentials: [{ displayName: 'Apify API', name: 'apifyApi', required: true }],
+		credentials: [
+			{
+				displayName: 'Apify API key connection',
+				name: 'apifyApi',
+				required: false,
+				displayOptions: {
+					show: {
+						authentication: ['apifyApi'],
+					},
+				},
+			},
+			{
+				displayName: 'Apify OAuth2 connection',
+				name: 'apifyOAuth2Api',
+				required: false,
+				displayOptions: {
+					show: {
+						authentication: ['apifyOAuth2Api'],
+					},
+				},
+			},
+		],
 		webhooks: [
 			{
 				name: 'default',
