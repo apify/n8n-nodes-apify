@@ -1,5 +1,5 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
-import { getAuthedApifyClient } from '../helpers/apify-client';
+import { apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
 	displayName: 'Key-Value Store Record Key',
@@ -57,9 +57,19 @@ export async function listKeyValueStoreRecordKeys(
 	this: ILoadOptionsFunctions,
 ): Promise<INodeListSearchResult> {
 	const storeIdParam = this.getNodeParameter('storeId', null) as { value: string };
-	const client = await getAuthedApifyClient.call(this);
-	const limit = 100;
-	const { items } = await client.keyValueStore(storeIdParam.value).listKeys({ limit });
+
+	const searchResults = await apiRequestAllItems.call(this, {
+		method: 'GET',
+		uri: `/v2/key-value-stores/${storeIdParam.value}/keys`,
+		qs: {
+			limit: 100,
+			offset: 0,
+		},
+	});
+
+	const {
+		data: { items },
+	} = searchResults;
 
 	return {
 		results: items.map((b: any) => ({

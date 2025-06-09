@@ -77,8 +77,5 @@
 			"semver@<5.7.2": ">=5.7.2",
 			"axios@<1.8.2": ">=1.8.2"
 		}
-	},
-	"dependencies": {
-		"apify-client": "^2.12.5"
 	}
 }

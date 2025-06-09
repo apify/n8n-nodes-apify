@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { getAuthedApifyClient } from '../../../helpers/apify-client';
+import { apiRequest } from '../../../resources/genericFunctions';
 
 export async function getRun(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const runId = this.getNodeParameter('runId', i) as { value: string };
@@ -13,10 +13,11 @@ export async function getRun(this: IExecuteFunctions, i: number): Promise<INodeE
 		throw new NodeOperationError(this, 'Run ID is required');
 	}
 
-	const client = await getAuthedApifyClient.call(this);
-
 	try {
-		const run = await client.run(runId.value).get();
+		const run = await apiRequest.call(this, {
+			method: 'GET',
+			uri: `/v2/actor-runs/${runId.value}`,
+		});
 
 		if (!run) {
 			throw new NodeApiError(this.getNode(), {

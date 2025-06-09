@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { getAuthedApifyClient } from '../../../helpers/apify-client';
+import { apiRequest } from '../../../resources/genericFunctions';
 
 export async function getLastRun(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorId = this.getNodeParameter('actorId', i) as { value: string };
@@ -13,10 +13,11 @@ export async function getLastRun(this: IExecuteFunctions, i: number): Promise<IN
 		throw new NodeOperationError(this, 'Actor ID is required');
 	}
 
-	const client = await getAuthedApifyClient.call(this);
-
 	try {
-		const lastRun = await client.actor(actorId.value).lastRun().get();
+		const lastRun = await apiRequest.call(this, {
+			method: 'GET',
+			uri: `/v2/acts/${actorId.value}/runs/last`,
+		});
 
 		return { json: { ...lastRun } };
 	} catch (error) {

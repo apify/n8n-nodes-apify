@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { getAuthedApifyClient } from '../../../helpers/apify-client';
+import { apiRequest } from '../../../resources/genericFunctions';
 
 export async function getItems(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const datasetId = this.getNodeParameter('datasetId', i) as string;
@@ -15,13 +15,14 @@ export async function getItems(this: IExecuteFunctions, i: number): Promise<INod
 		throw new NodeOperationError(this, 'Dataset ID is required');
 	}
 
-	const client = await getAuthedApifyClient.call(this);
-
 	try {
-		const { items } = await client.dataset(datasetId).listItems({
-			offset: offset === null ? undefined : offset,
-			limit: limit === null ? undefined : limit,
+		const itemsResponse = await apiRequest.call(this, {
+			method: 'GET',
+			uri: `/v2/datasets/${datasetId}/items`,
+			qs: { offset, limit },
 		});
+
+		const items = itemsResponse?.items || itemsResponse?.data?.items || itemsResponse;
 
 		return { json: { items } };
 	} catch (error) {

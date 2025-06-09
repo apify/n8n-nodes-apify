@@ -1,5 +1,5 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
-import { getAuthedApifyClient } from '../helpers/apify-client';
+import { apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
 	displayName: 'Key-Value Store ID',
@@ -55,10 +55,18 @@ export function overrideKeyValueStoreProperties(properties: INodeProperties[]) {
 export async function listKeyValueStores(
 	this: ILoadOptionsFunctions,
 ): Promise<INodeListSearchResult> {
-	const client = await getAuthedApifyClient.call(this);
-	const limit = 100;
-	const offset = 0;
-	const { items } = await client.keyValueStores().list({ limit, offset });
+	const searchResults = await apiRequestAllItems.call(this, {
+		method: 'GET',
+		uri: '/v2/key-value-stores',
+		qs: {
+			limit: 100,
+			offset: 0,
+		},
+	});
+
+	const {
+		data: { items },
+	} = searchResults;
 
 	return {
 		results: items.map((b: any) => ({

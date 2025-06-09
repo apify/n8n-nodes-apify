@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { getAuthedApifyClient } from '../../../helpers/apify-client';
+import { apiRequest } from '../../../resources/genericFunctions';
 
 export async function runActor(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorId = this.getNodeParameter('actorId', i) as { value: string };
@@ -26,14 +26,18 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 		throw new NodeOperationError(this, 'Actor ID is required');
 	}
 
-	const client = await getAuthedApifyClient.call(this);
+	const query: Record<string, any> = {};
+	if (timeout != null) query.timeout = timeout;
+	if (memory != null) query.memory = memory;
+	if (build != null) query.build = build;
+	if (waitForFinish != null) query.waitForFinish = waitForFinish;
 
 	try {
-		const run = await client.actor(actorId.value).call(input, {
-			timeout: timeout == null ? undefined : timeout,
-			memory: memory == null ? undefined : memory,
-			build: build == null ? undefined : build,
-			waitSecs: waitForFinish == null ? undefined : waitForFinish,
+		const run = await apiRequest.call(this, {
+			method: 'POST',
+			uri: `/v2/acts/${actorId.value}/runs`,
+			body: input,
+			qs: query,
 		});
 
 		if (!run) {

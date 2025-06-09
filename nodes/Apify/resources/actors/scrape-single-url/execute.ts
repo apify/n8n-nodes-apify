@@ -1,5 +1,5 @@
 import { IExecuteFunctions, INodeExecutionData, NodeApiError } from 'n8n-workflow';
-import { getAuthedApifyClient } from '../../../helpers/apify-client';
+import { apiRequest } from '../../../resources/genericFunctions';
 import { consts } from '../../../helpers';
 
 export async function scrapeSingleUrl(
@@ -9,14 +9,10 @@ export async function scrapeSingleUrl(
 	const url = this.getNodeParameter('url', i) as string;
 	const crawlerType = this.getNodeParameter('crawlerType', i, 'cheerio') as string;
 
-	const client = await getAuthedApifyClient.call(this);
-
 	try {
 		const input = {
 			startUrls: [{ url }],
 			crawlerType,
-
-			// Default values for scrape single URL actor
 			maxCrawlDepth: 0,
 			maxCrawlPages: 1,
 			maxResults: 1,
@@ -29,9 +25,14 @@ export async function scrapeSingleUrl(
 		};
 
 		// Run the actor and wait for it to finish
-		const { defaultDatasetId } = await client
-			.actor(consts.WEB_CONTENT_SCRAPER_ACTOR_ID)
-			.call(input);
+		const run = await apiRequest.call(this, {
+			method: 'POST',
+			uri: `/v2/acts/${consts.WEB_CONTENT_SCRAPER_ACTOR_ID}/runs`,
+			body: input,
+			qs: { waitForFinish: 60 },
+		});
+
+		const defaultDatasetId = run?.data?.defaultDatasetId || run?.defaultDatasetId;
 
 		if (!defaultDatasetId) {
 			throw new NodeApiError(this.getNode(), {
@@ -39,7 +40,13 @@ export async function scrapeSingleUrl(
 			});
 		}
 
-		const { items } = await client.dataset(defaultDatasetId).listItems();
+		const itemsResponse = await apiRequest.call(this, {
+			method: 'GET',
+			uri: `/v2/datasets/${defaultDatasetId}/items`,
+			qs: { format: 'json' },
+		});
+
+		const items = itemsResponse?.items || itemsResponse?.data?.items || itemsResponse;
 
 		return { json: { items } };
 	} catch (error) {

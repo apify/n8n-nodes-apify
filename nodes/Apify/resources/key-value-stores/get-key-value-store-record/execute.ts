@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { getAuthedApifyClient } from '../../../helpers/apify-client';
+import { apiRequest } from '../../genericFunctions';
 
 export async function getKeyValueStoreRecord(
 	this: IExecuteFunctions,
@@ -17,16 +17,21 @@ export async function getKeyValueStoreRecord(
 		throw new NodeOperationError(this, 'Store ID and Record Key are required');
 	}
 
-	const client = await getAuthedApifyClient.call(this);
-
 	try {
-		const record = await client.keyValueStore(storeId.value).getRecord(recordKey.value);
+		const response = await apiRequest.call(this, {
+			method: 'GET',
+			uri: `/v2/key-value-stores/${storeId.value}/records/${recordKey.value}`,
+			json: true,
+			resolveWithFullResponse: true,
+			encoding: 'arraybuffer',
+		});
 
-		if (!record) {
+		if (!response) {
 			return { json: {} };
 		}
 
-		const { value, contentType } = record;
+		const contentType = response.headers['content-type'] as string;
+		const value = response.body;
 
 		const resultBase = {
 			storeId: storeId.value,
@@ -40,8 +45,10 @@ export async function getKeyValueStoreRecord(
 			!contentType.startsWith('application/json') &&
 			!contentType.startsWith('text/')
 		) {
-			const fileName = recordKey.value || record.key || 'file';
-			const binaryData = await this.helpers.prepareBinaryData(value as any, fileName, contentType);
+			const fileName = recordKey.value || response.key || 'file';
+
+			const buffer = Buffer.from(value);
+			const binaryData = await this.helpers.prepareBinaryData(buffer, fileName, contentType);
 			return {
 				json: { ...resultBase },
 				binary: { data: binaryData },
@@ -50,19 +57,19 @@ export async function getKeyValueStoreRecord(
 
 		// Handle object
 		if (typeof value === 'object') {
-			return { json: { ...resultBase, value } };
+			return { json: { ...resultBase, data: value } };
 		}
 
 		// Handle other datatypes, such as HTML
 		// Add `data` property since passing text as result is counted as array
 		let finalData;
 		try {
-			finalData = typeof value === 'string' ? JSON.parse(value) : { data: value };
+			finalData = typeof value === 'string' ? JSON.parse(value) : value;
 		} catch {
-			finalData = { data: value?.toString() };
+			finalData = value?.toString();
 		}
 
-		return { json: { ...resultBase, ...finalData } };
+		return { json: { ...resultBase, data: finalData } };
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
 	}

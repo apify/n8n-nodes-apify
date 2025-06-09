@@ -1,5 +1,5 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
-import { getAuthedApifyClient } from '../helpers/apify-client';
+import { apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
 	displayName: 'Actor Task',
@@ -75,10 +75,17 @@ export function overrideActorTaskProperties(properties: INodeProperties[]) {
 }
 
 export async function listActorTasks(this: ILoadOptionsFunctions): Promise<INodeListSearchResult> {
-	const client = await getAuthedApifyClient.call(this);
-	const limit = 100;
-	const offset = 0;
-	const { items } = await client.tasks().list({ limit, offset });
+	const searchResults = await apiRequestAllItems.call(this, {
+		method: 'GET',
+		uri: '/v2/actor-tasks',
+		qs: {
+			limit: 100,
+			offset: 0,
+		},
+	});
+
+	const { data } = searchResults;
+	const { items } = data;
 
 	return {
 		results: items.map((b: any) => ({

@@ -4,20 +4,33 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { getAuthedApifyClient } from '../../../helpers/apify-client';
+import { apiRequest } from '../../../resources/genericFunctions';
 
 export async function runTask(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorTaskId = this.getNodeParameter('actorTaskId', i) as { value: string };
 	const input = this.getNodeParameter('input', i, {}) as object;
+	const waitForFinish = this.getNodeParameter('waitForFinish', i, null) as number | null;
+	const timeout = this.getNodeParameter('timeout', i, null) as number | null;
+	const memory = this.getNodeParameter('memory', i, null) as number | null;
+	const build = this.getNodeParameter('build', i, '') as string;
 
 	if (!actorTaskId) {
 		throw new NodeOperationError(this, 'Task ID is required');
 	}
 
-	const client = await getAuthedApifyClient.call(this);
+	const qs: Record<string, any> = {};
+	if (waitForFinish != null) qs.waitForFinish = waitForFinish;
+	if (timeout != null) qs.timeout = timeout;
+	if (memory != null) qs.memory = memory;
+	if (build) qs.build = build;
 
 	try {
-		const run = await client.task(actorTaskId.value).call(input as any);
+		const run = await apiRequest.call(this, {
+			method: 'POST',
+			uri: `/v2/actor-tasks/${actorTaskId.value}/runs`,
+			body: input,
+			qs,
+		});
 
 		if (!run) {
 			throw new NodeApiError(this.getNode(), {
