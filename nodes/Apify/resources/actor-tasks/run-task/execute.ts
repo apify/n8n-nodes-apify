@@ -7,21 +7,21 @@ import {
 import { getAuthedApifyClient } from '../../../helpers/apify-client';
 
 export async function runTask(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
-	const taskId = this.getNodeParameter('taskId', i) as { value: string };
+	const actorTaskId = this.getNodeParameter('actorTaskId', i) as { value: string };
 	const input = this.getNodeParameter('input', i, {}) as object;
 
-	if (!taskId) {
+	if (!actorTaskId) {
 		throw new NodeOperationError(this, 'Task ID is required');
 	}
 
 	const client = await getAuthedApifyClient.call(this);
 
 	try {
-		const run = await client.task(taskId.value).call(input as any);
+		const run = await client.task(actorTaskId.value).call(input as any);
 
 		if (!run) {
 			throw new NodeApiError(this.getNode(), {
-				message: `Task run for ${taskId.value} not found`,
+				message: `Task run for ${actorTaskId.value} not found`,
 			});
 		}
 

@@ -82,7 +82,7 @@ export async function listActorTasks(this: ILoadOptionsFunctions): Promise<INode
 
 	return {
 		results: items.map((b: any) => ({
-			name: b.name,
+			name: b.title || b.name,
 			value: b.id,
 			url: `https://console.apify.com/actors/tasks/${b.id}/input`,
 			description: b.name,
