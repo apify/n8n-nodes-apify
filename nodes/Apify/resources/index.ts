@@ -62,11 +62,11 @@ const extraProperties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Input (JSON)',
+		displayName: 'Override Default Input',
 		name: 'customBody',
 		type: 'json',
 		default: '{}',
-		description: 'Custom body to send',
+		description: 'Override default input for the Actor',
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
