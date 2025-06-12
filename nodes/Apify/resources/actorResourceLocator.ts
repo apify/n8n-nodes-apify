@@ -18,17 +18,6 @@ const resourceLocatorProperty: INodeProperties = {
 				searchable: false,
 			},
 		},
-		// {
-		// 	displayName: 'From Store',
-		// 	name: 'store',
-		// 	type: 'list',
-		// 	placeholder: 'Choose from Apify Store...',
-		// 	typeOptions: {
-		// 		searchListMethod: 'listStoreActors',
-		// 		searchFilterRequired: false,
-		// 		searchable: false,
-		// 	},
-		// },
 		{
 			displayName: 'By URL',
 			name: 'url',
@@ -86,38 +75,47 @@ export function overrideActorProperties(properties: INodeProperties[]) {
 }
 
 export async function listActors(this: ILoadOptionsFunctions): Promise<INodeListSearchResult> {
-	const searchResults = await apiRequestAllItems.call(this, {
+	const actorSource = (this.getNodeParameter('actorSource', '') as string) || 'recentlyUsed';
+
+	const response = await apiRequestAllItems.call(this, {
 		method: 'GET',
 		uri: '/v2/acts',
 		qs: {
-			limit: 100,
+			limit: 200,
 			offset: 0,
 		},
 	});
 
-	const { data } = searchResults;
-	const { items } = data;
+	const recentActors = response.data.items;
+	if (actorSource === 'recentlyUsed') {
+		return {
+			results: recentActors.map((actor: any) => ({
+				name: actor.title || actor.name,
+				value: actor.id,
+				url: `https://console.apify.com/actors/${actor.id}/input`,
+				description: actor.description || actor.name,
+			})),
+		};
+	}
+
+	const storeResponse = await apiRequestAllItems.call(this, {
+		method: 'GET',
+		uri: '/v2/store',
+		qs: {
+			limit: 200,
+			offset: 0,
+		},
+	});
+
+	const recentIds = recentActors.map((actor: any) => actor.id);
+	const filtered = storeResponse.data.items.filter((actor: any) => !recentIds.includes(actor.id));
 
 	return {
-		results: items.map((b: any) => ({
-			name: b.title || b.name,
-			value: b.id,
-			url: `https://console.apify.com/actors/${b.id}/input`,
-			description: b.name,
+		results: filtered.map((actor: any) => ({
+			name: actor.title || actor.name,
+			value: actor.id,
+			url: `https://console.apify.com/actors/${actor.id}/input`,
+			description: actor.description || actor.name,
 		})),
 	};
 }
-
-// export async function listStoreActors(this: ILoadOptionsFunctions): Promise<INodeListSearchResult> {
-// 	const client = await getAuthedApifyClient.call(this);
-// 	const { items } = await client.store().list({ limit: 50 });
-
-// 	return {
-// 		results: items.map((b: any) => ({
-// 			name: b.title || b.name,
-// 			value: b.id,
-// 			url: `https://console.apify.com/actors/${b.id}/input`,
-// 			description: b.description || b.name,
-// 		})),
-// 	};
-// }

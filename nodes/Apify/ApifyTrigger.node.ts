@@ -1,8 +1,6 @@
 import {
 	IDataObject,
 	IHookFunctions,
-	ILoadOptionsFunctions,
-	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
 	IWebhookFunctions,
@@ -10,12 +8,16 @@ import {
 } from 'n8n-workflow';
 import {
 	apiRequest,
-	apiRequestAllItems,
+	compose,
 	generateIdempotencyKey,
 	getActorOrTaskId,
 	getCondition,
 	normalizeEventTypes,
 } from './resources/genericFunctions';
+import { listActors, overrideActorProperties } from './resources/actorResourceLocator';
+import { listActorTasks, overrideActorTaskProperties } from './resources/actorTaskResourceLocator';
+
+const triggerProperties = compose(overrideActorProperties, overrideActorTaskProperties);
 
 export class ApifyTrigger implements INodeType {
 	description: INodeTypeDescription = {
@@ -58,7 +60,24 @@ export class ApifyTrigger implements INodeType {
 				path: 'webhook',
 			},
 		],
-		properties: [
+		properties: triggerProperties([
+			{
+				displayName: 'Authentication',
+				name: 'authentication',
+				type: 'options',
+				options: [
+					{
+						name: 'API Key',
+						value: 'apifyApi',
+					},
+					{
+						name: 'OAuth2',
+						value: 'apifyOAuth2Api',
+					},
+				],
+				default: 'apifyApi',
+				description: 'Choose which authentication method to use',
+			},
 			{
 				displayName: 'Resource to Watch',
 				name: 'resource',
@@ -78,51 +97,28 @@ export class ApifyTrigger implements INodeType {
 				type: 'options',
 				displayOptions: { show: { resource: ['actor'] } },
 				options: [
-					{ name: 'Recently Used Actors', value: 'recent' },
+					{ name: 'Recently Used Actors', value: 'recentlyUsed' },
 					{ name: 'Apify Store Actors', value: 'store' },
 				],
-				default: 'recent',
+				default: 'recentlyUsed',
 			},
 			{
-				displayName: 'Recently Used Actors Name or ID',
+				displayName: 'Actor',
 				name: 'actorId',
-				type: 'options',
-				options: [],
-				default: '',
-				description:
-					'Recently used Apify Actor to monitor for runs. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
-				displayOptions: { show: { resource: ['actor'], actorSource: ['recent'] } },
-				typeOptions: {
-					loadOptionsMethod: 'getActors',
-				},
-				placeholder: 'Select Actor to watch',
-			},
-			{
-				displayName: 'Apify Store Actors Name or ID',
-				name: 'storeActorId',
-				type: 'options',
-				options: [],
-				default: '',
-				description:
-					'Apify Actor to monitor for runs. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
-				displayOptions: { show: { resource: ['actor'], actorSource: ['store'] } },
-				typeOptions: {
-					loadOptionsMethod: 'getActors',
-				},
-				placeholder: 'Select Actor to watch',
+				required: true,
+				description: "Actor ID or a tilde-separated owner's username and Actor name",
+				default: 'janedoe~my-actor',
+				type: 'string',
+				displayOptions: { show: { resource: ['actor'] } },
 			},
 			{
 				displayName: 'Saved Tasks Name or ID',
-				name: 'taskId',
-				type: 'options',
-				options: [],
+				name: 'actorTaskId',
+				type: 'string',
 				default: '',
 				description:
 					'Apify task to monitor for runs. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 				displayOptions: { show: { resource: ['task'] } },
-				typeOptions: {
-					loadOptionsMethod: 'getTasks',
-				},
 				placeholder: 'Select Task to watch',
 			},
 			{
@@ -155,7 +151,7 @@ export class ApifyTrigger implements INodeType {
 				default: ['ACTOR.RUN.SUCCEEDED'],
 				description: 'The status of the Actor or task run that should trigger the workflow',
 			},
-		],
+		]),
 	};
 
 	webhookMethods = {
@@ -170,7 +166,7 @@ export class ApifyTrigger implements INodeType {
 
 				const {
 					data: { items: webhooks },
-				} = await apiRequest.call(this, 'GET', '/v2/webhooks', {}, {});
+				} = await apiRequest.call(this, { method: 'GET', uri: '/v2/webhooks' });
 
 				return webhooks.some(
 					(webhook: any) =>
@@ -209,7 +205,7 @@ export class ApifyTrigger implements INodeType {
 
 				const {
 					data: { id },
-				} = await apiRequest.call(this, 'POST', '/v2/webhooks', body);
+				} = await apiRequest.call(this, { method: 'POST', uri: '/v2/webhooks', body });
 				webhookData.webhookId = id;
 				return true;
 			},
@@ -217,7 +213,10 @@ export class ApifyTrigger implements INodeType {
 				const webhookData = this.getWorkflowStaticData('node');
 				if (!webhookData.webhookId) return false;
 
-				await apiRequest.call(this, 'DELETE', `/v2/webhooks/${webhookData.webhookId}`, {});
+				await apiRequest.call(this, {
+					method: 'DELETE',
+					uri: `/v2/webhooks/${webhookData.webhookId}`,
+				});
 				delete webhookData.webhookId;
 				return true;
 			},
@@ -232,61 +231,9 @@ export class ApifyTrigger implements INodeType {
 	}
 
 	methods = {
-		loadOptions: {
-			async getActors(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const actorSource = this.getNodeParameter('actorSource', '') as string;
-				const response = await apiRequestAllItems.call(
-					this,
-					'GET',
-					'/v2/acts',
-					{},
-					{ qs: { limit: 200, offset: 0 } },
-				);
-
-				const recentActors = response.data.items;
-				if (actorSource === 'recent') {
-					return recentActors.map((actor: any) => ({
-						name: actor.title || actor.name,
-						value: actor.id,
-					}));
-				}
-
-				const storeResponse = await apiRequestAllItems.call(
-					this,
-					'GET',
-					'/v2/store',
-					{},
-					{ qs: { limit: 200, offset: 0 } },
-				);
-
-				const recentIds = recentActors.map((actor: any) => actor.id);
-				const filtered = storeResponse.data.items.filter(
-					(actor: any) => !recentIds.includes(actor.id),
-				);
-
-				return filtered.map((actor: any) => ({
-					name: actor.title || actor.name,
-					value: actor.id,
-				}));
-			},
-
-			async getTasks(this: ILoadOptionsFunctions): Promise<INodePropertyOptions[]> {
-				const returnData: INodePropertyOptions[] = [];
-				const response = await apiRequestAllItems.call(
-					this,
-					'GET',
-					'/v2/actor-tasks',
-					{},
-					{ qs: { limit: 200, offset: 0 } },
-				);
-				for (const task of response.data.items) {
-					returnData.push({
-						name: task.title || task.name,
-						value: task.id,
-					});
-				}
-				return returnData;
-			},
+		listSearch: {
+			listActors,
+			listActorTasks,
 		},
 	};
 }

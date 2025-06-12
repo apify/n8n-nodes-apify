@@ -109,16 +109,14 @@ export async function apiRequestAllItems(
 
 export function getActorOrTaskId(this: IHookFunctions): string {
 	const resource = this.getNodeParameter('resource', '') as string;
-	const actorSource = this.getNodeParameter('actorSource', '') as string;
-	const actorId = this.getNodeParameter('actorId', '') as string;
-	const storeActorId = this.getNodeParameter('storeActorId', '') as string;
-	const taskId = this.getNodeParameter('taskId', '') as string;
+	const actorId = this.getNodeParameter('actorId', '') as { value: string };
+	const actorTaskId = this.getNodeParameter('actorTaskId', '') as { value: string; };
 
 	if (resource === 'task') {
-		return taskId;
+		return actorTaskId.value;
 	}
 
-	return actorSource === 'store' ? storeActorId : actorId;
+	return actorId.value;
 }
 
 export function getCondition(this: IHookFunctions, resource: string, id: string): object {
@@ -141,4 +139,8 @@ export function generateIdempotencyKey(
 	const sortedEventTypes = eventTypes.sort();
 	hash.update(`${resource}:${actorOrTaskId}:${sortedEventTypes.join(',')}`);
 	return hash.digest('hex');
+}
+
+export function compose(...fns: Function[]) {
+	return (x: any) => fns.reduce((v, f) => f(v), x);
 }
