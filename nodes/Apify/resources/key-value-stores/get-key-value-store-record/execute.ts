@@ -1,10 +1,11 @@
 import {
 	IExecuteFunctions,
+	IHttpRequestMethods,
 	INodeExecutionData,
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest } from '../../genericFunctions';
+import { consts } from '../../../helpers';
 
 export async function getKeyValueStoreRecord(
 	this: IExecuteFunctions,
@@ -18,11 +19,10 @@ export async function getKeyValueStoreRecord(
 	}
 
 	try {
-		const response = await apiRequest.call(this, {
-			method: 'GET',
-			uri: `/v2/key-value-stores/${storeId.value}/records/${recordKey.value}`,
-			json: true,
-			resolveWithFullResponse: true,
+		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'apifyApi', {
+			method: 'GET' as IHttpRequestMethods,
+			url: `${consts.APIFY_API_URL}/v2/key-value-stores/${storeId.value}/records/${recordKey.value}`,
+			returnFullResponse: true,
 			encoding: 'arraybuffer',
 		});
 
@@ -47,26 +47,27 @@ export async function getKeyValueStoreRecord(
 		) {
 			const fileName = recordKey.value || response.key || 'file';
 
-			const buffer = Buffer.from(value);
-			const binaryData = await this.helpers.prepareBinaryData(buffer, fileName, contentType);
+			const binaryData = await this.helpers.prepareBinaryData(value, fileName, contentType);
 			return {
 				json: { ...resultBase },
 				binary: { data: binaryData },
 			};
 		}
 
-		// Handle object
-		if (typeof value === 'object') {
-			return { json: { ...resultBase, data: value } };
-		}
-
-		// Handle other datatypes, such as HTML
-		// Add `data` property since passing text as result is counted as array
-		let finalData;
-		try {
-			finalData = typeof value === 'string' ? JSON.parse(value) : value;
-		} catch {
-			finalData = value?.toString();
+		// Always get data from buffer for text or JSON
+		const buffer = value;
+		let finalData: any;
+		if (contentType && contentType.startsWith('application/json')) {
+			try {
+				finalData = JSON.parse(buffer.toString('utf8'));
+			} catch {
+				finalData = buffer.toString('utf8');
+			}
+		} else if (contentType && contentType.startsWith('text/')) {
+			finalData = buffer.toString('utf8');
+		} else {
+			// fallback: return as base64 string
+			finalData = buffer.toString('base64');
 		}
 
 		return { json: { ...resultBase, data: finalData } };
