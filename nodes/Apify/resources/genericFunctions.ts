@@ -110,7 +110,7 @@ export async function apiRequestAllItems(
 export function getActorOrTaskId(this: IHookFunctions): string {
 	const resource = this.getNodeParameter('resource', '') as string;
 	const actorId = this.getNodeParameter('actorId', '') as { value: string };
-	const actorTaskId = this.getNodeParameter('actorTaskId', '') as { value: string; };
+	const actorTaskId = this.getNodeParameter('actorTaskId', '') as { value: string };
 
 	if (resource === 'task') {
 		return actorTaskId.value;

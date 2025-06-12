@@ -1,9 +1,6 @@
 import { INodeProperties, INodeType } from 'n8n-workflow';
 
-import {
-	overrideActorProperties,
-	listActors,
-} from './actorResourceLocator';
+import { overrideActorProperties, listActors } from './actorResourceLocator';
 import { overrideActorTaskProperties, listActorTasks } from './actorTaskResourceLocator';
 import { overrideRunProperties, listRuns } from './runResourceLocator';
 import {
