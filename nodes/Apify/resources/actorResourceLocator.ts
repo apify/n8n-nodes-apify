@@ -113,7 +113,7 @@ export async function listActors(this: ILoadOptionsFunctions): Promise<INodeList
 	const mapToN8nResult = (actor: any) => ({
 		name: actor.title || actor.name,
 		value: actor.id,
-		url: `https://console.com/actors/${actor.id}/input`,
+		url: `https://console.apify.com/actors/${actor.id}/input`,
 		description: actor.description || actor.name,
 	});
 
