@@ -93,13 +93,8 @@ export class ApifyTrigger implements INodeType {
 			{
 				displayName: 'Actor Source',
 				name: 'actorSource',
-				description: 'Select the source of the actor to watch',
-				type: 'options',
+				type: 'hidden',
 				displayOptions: { show: { resource: ['actor'] } },
-				options: [
-					{ name: 'Recently Used Actors', value: 'recentlyUsed' },
-					{ name: 'Apify Store Actors', value: 'store' },
-				],
 				default: 'recentlyUsed',
 			},
 			{

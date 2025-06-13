@@ -19,20 +19,8 @@ export const properties: INodeProperties[] = [
 	{
 		displayName: 'Actor Source',
 		name: 'actorSource',
-		type: 'options',
-		options: [
-			{
-				name: 'Recently Used Actors',
-				value: 'recentlyUsed',
-			},
-			{
-				name: 'Apify Store Actors',
-				value: 'store',
-			},
-		],
+		type: 'hidden',
 		default: 'recentlyUsed',
-		description:
-			'Choose whether to select from your recently used actors or browse the Apify Store',
 		displayOptions: {
 			show: {
 				resource: ['Actors'],

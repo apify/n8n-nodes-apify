@@ -59,25 +59,67 @@ const resourceLocatorProperty: INodeProperties = {
 	],
 };
 
-function mapProperty(property: INodeProperties) {
+const actorSourceProperty: INodeProperties = {
+	displayName: 'Actor Source',
+	name: 'actorSource',
+	type: 'options',
+	options: [
+		{
+			name: 'Recently Used Actors',
+			value: 'recentlyUsed',
+		},
+		{
+			name: 'Apify Store Actors',
+			value: 'store',
+		},
+	],
+	default: 'recentlyUsed',
+	description: 'Choose whether to select from your recently used actors or browse the Apify Store',
+	displayOptions: { show: { resource: ['actor'] } },
+};
+
+function mapProperty(property: INodeProperties): INodeProperties {
 	return {
 		...property,
 		...resourceLocatorProperty,
 	};
 }
-export function overrideActorProperties(properties: INodeProperties[]) {
-	return properties.map((property) => {
+
+function createActorSourceProperty(displayOptions: any): INodeProperties {
+	return {
+		...actorSourceProperty,
+		displayOptions,
+	};
+}
+
+export function overrideActorProperties(properties: INodeProperties[]): INodeProperties[] {
+	const result: INodeProperties[] = [];
+
+	for (const property of properties) {
 		if (property.name === 'actorId') {
-			return mapProperty(property);
+			result.push(createActorSourceProperty(property.displayOptions));
+			result.push(mapProperty(property));
+		} else {
+			result.push(property);
 		}
-		return property;
-	});
+	}
+
+	return result;
 }
 
 export async function listActors(this: ILoadOptionsFunctions): Promise<INodeListSearchResult> {
-	const actorSource = (this.getNodeParameter('actorSource', '') as string) || 'recentlyUsed';
+	const actorSource = this.getNodeParameter('actorSource', 'recentlyUsed') as string;
 
-	const response = await apiRequestAllItems.call(this, {
+	const mapToN8nResult = (actor: any) => ({
+		name: actor.title || actor.name,
+		value: actor.id,
+		url: `https://console.com/actors/${actor.id}/input`,
+		description: actor.description || actor.name,
+	});
+
+	const {
+		data: { items: recentActors },
+	} = await apiRequestAllItems.call(this, {
 		method: 'GET',
 		uri: '/v2/acts',
 		qs: {
@@ -86,19 +128,15 @@ export async function listActors(this: ILoadOptionsFunctions): Promise<INodeList
 		},
 	});
 
-	const recentActors = response.data.items;
 	if (actorSource === 'recentlyUsed') {
 		return {
-			results: recentActors.map((actor: any) => ({
-				name: actor.title || actor.name,
-				value: actor.id,
-				url: `https://console.apify.com/actors/${actor.id}/input`,
-				description: actor.description || actor.name,
-			})),
+			results: recentActors.map(mapToN8nResult),
 		};
 	}
 
-	const storeResponse = await apiRequestAllItems.call(this, {
+	const {
+		data: { items: storeActors },
+	} = await apiRequestAllItems.call(this, {
 		method: 'GET',
 		uri: '/v2/store',
 		qs: {
@@ -108,14 +146,9 @@ export async function listActors(this: ILoadOptionsFunctions): Promise<INodeList
 	});
 
 	const recentIds = recentActors.map((actor: any) => actor.id);
-	const filtered = storeResponse.data.items.filter((actor: any) => !recentIds.includes(actor.id));
+	const filtered = storeActors.filter((actor: any) => !recentIds.includes(actor.id));
 
 	return {
-		results: filtered.map((actor: any) => ({
-			name: actor.title || actor.name,
-			value: actor.id,
-			url: `https://console.apify.com/actors/${actor.id}/input`,
-			description: actor.description || actor.name,
-		})),
+		results: filtered.map(mapToN8nResult),
 	};
 }
