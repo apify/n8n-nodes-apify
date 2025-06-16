@@ -17,7 +17,7 @@ export class Apify implements INodeType {
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description:
-			'The Apify integration for n8n empowers you to automate web scraping, data extraction, and workflow orchestration by connecting Apify Actors directly to your n8n workflows. This integration is especially valuable for AI and large language model (LLM) use cases, enabling you to collect, process, and deliver high-quality, up-to-date data for generative AI, chatbots.',
+			'The Apify integration for n8n lets you automate web scraping, data extraction, and workflow orchestration by connecting Apify Actors directly to your n8n workflows. This integration is especially valuable for AI and large language model (LLM) use cases. Collect, process, and deliver high-quality, up-to-date data for generative AI and chatbots.',
 		defaults: {
 			name: 'Apify',
 		},
