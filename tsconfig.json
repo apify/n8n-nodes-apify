@@ -21,12 +21,6 @@
 		"skipLibCheck": true,
 		"outDir": "./dist/"
 	},
-	"include": [
-		"credentials/**/*",
-		"nodes/**/*",
-		"nodes/**/*.json",
-		"package.json",
-		"nodes/Apify/__tests__"
-	],
-	"exclude": ["test", "**/__tests__/**", "**/*.spec.ts"]
+	"include": ["credentials/**/*", "nodes/**/*", "nodes/**/*.json", "package.json"],
+	"exclude": ["nodes/Apify/__tests__"]
 }
