@@ -1,0 +1,41 @@
+{
+	"name": "Get last run workflow",
+	"nodes": [
+		{
+			"parameters": {
+				"operation": "Get last run",
+				"actorId": {
+					"__rl": true,
+					"value": "nFJndFXA5zjCTuudP",
+					"mode": "list",
+					"cachedResultName": "Google Search Results Scraper",
+					"cachedResultUrl": "https://console.com/actors/nFJndFXA5zjCTuudP/input"
+				}
+			},
+			"id": "874a4468-0c56-4818-baa0-41967a17550a",
+			"name": "Get last run",
+			"type": "n8n-nodes-apify.apify",
+			"typeVersion": 1,
+			"position": [920, 460],
+			"credentials": {
+				"apifyApi": {
+					"id": "dJAynKkN2pRqy3Ko",
+					"name": "Apify account"
+				}
+			}
+		}
+	],
+	"pinData": {},
+	"connections": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "8c899a80-bc40-4d52-a418-ac341a836931",
+	"meta": {
+		"templateCredsSetupCompleted": true,
+		"instanceId": "3f65ba173ae28613be507e94c0a98de4375527c55e31b7fc173a4edee4e2ded3"
+	},
+	"id": "OFLCq8UoIVInQv2Y",
+	"tags": []
+}

@@ -1,0 +1,43 @@
+{
+	"name": "Run actor workflow",
+	"nodes": [
+		{
+			"parameters": {
+				"operation": "Run actor",
+				"actorId": {
+					"__rl": true,
+					"value": "nFJndFXA5zjCTuudP",
+					"mode": "list",
+					"cachedResultName": "Google Search Results Scraper",
+					"cachedResultUrl": "https://console.com/actors/nFJndFXA5zjCTuudP/input"
+				},
+				"waitForFinish": 60,
+				"customBody": "{\n    \"maxPagesPerQuery\": 1,\n    \"resultsPerPage\": 2,\n    \"queries\": \"javascript\\ntypescript\"\n}"
+			},
+			"id": "8b21ab5d-baff-48f1-9512-831704fd2df4",
+			"name": "Run actor",
+			"type": "n8n-nodes-apify.apify",
+			"typeVersion": 1,
+			"position": [1460, 520],
+			"credentials": {
+				"apifyApi": {
+					"id": "dJAynKkN2pRqy3Ko",
+					"name": "Apify account"
+				}
+			}
+		}
+	],
+	"pinData": {},
+	"connections": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "3407ee9f-0aac-4990-804f-702d06bbc85b",
+	"meta": {
+		"templateCredsSetupCompleted": true,
+		"instanceId": "3f65ba173ae28613be507e94c0a98de4375527c55e31b7fc173a4edee4e2ded3"
+	},
+	"id": "OFLCq8UoIVInQv2Y",
+	"tags": []
+}

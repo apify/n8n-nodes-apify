@@ -1,0 +1,49 @@
+{
+	"name": "Get Key-Value Store Record Workflow",
+	"nodes": [
+		{
+			"parameters": {
+				"resource": "Key-Value Stores",
+				"operation": "Get Key-Value Store Record",
+				"storeId": {
+					"__rl": true,
+					"value": "yTfMu13hDFe9bRjx6",
+					"mode": "list",
+					"cachedResultName": "scrape-single-url-with-screenshot",
+					"cachedResultUrl": "https://console.apify.com/storage/key-value-stores/yTfMu13hDFe9bRjx6"
+				},
+				"recordKey": {
+					"__rl": true,
+					"value": "INPUT",
+					"mode": "list",
+					"cachedResultName": "INPUT",
+					"cachedResultUrl": "https://api.apify.com/v2/key-value-stores/yTfMu13hDFe9bRjx6/records/INPUT"
+				}
+			},
+			"id": "baa008f9-c785-4a84-84a0-156728c60ef8",
+			"name": "Get Key-Value Store Record",
+			"type": "n8n-nodes-apify.apify",
+			"typeVersion": 1,
+			"position": [920, 460],
+			"credentials": {
+				"apifyApi": {
+					"id": "dJAynKkN2pRqy3Ko",
+					"name": "Apify account"
+				}
+			}
+		}
+	],
+	"pinData": {},
+	"connections": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "a8c6d7de-6912-4f78-9a74-41139dcfcf51",
+	"meta": {
+		"templateCredsSetupCompleted": true,
+		"instanceId": "3f65ba173ae28613be507e94c0a98de4375527c55e31b7fc173a4edee4e2ded3"
+	},
+	"id": "OFLCq8UoIVInQv2Y",
+	"tags": []
+}

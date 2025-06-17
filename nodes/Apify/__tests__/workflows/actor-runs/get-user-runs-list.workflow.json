@@ -1,0 +1,36 @@
+{
+	"name": "Get user runs list workflow",
+	"nodes": [
+		{
+			"parameters": {
+				"resource": "Actor runs",
+				"operation": "Get user runs list",
+				"limit": 2
+			},
+			"id": "ca31ba04-c199-459e-b042-5fec37ea3ccf",
+			"name": "Get user runs list",
+			"type": "n8n-nodes-apify.apify",
+			"typeVersion": 1,
+			"position": [920, 460],
+			"credentials": {
+				"apifyApi": {
+					"apiToken": "test-token",
+					"name": "Apify account"
+				}
+			}
+		}
+	],
+	"pinData": {},
+	"connections": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "b4d4aad1-8314-4211-aa04-63dc0214e565",
+	"meta": {
+		"templateCredsSetupCompleted": true,
+		"instanceId": "3f65ba173ae28613be507e94c0a98de4375527c55e31b7fc173a4edee4e2ded3"
+	},
+	"id": "OFLCq8UoIVInQv2Y",
+	"tags": []
+}

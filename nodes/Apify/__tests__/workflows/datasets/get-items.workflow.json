@@ -1,0 +1,36 @@
+{
+	"name": "Get items workflow",
+	"nodes": [
+		{
+			"parameters": {
+				"resource": "Datasets",
+				"operation": "Get items",
+				"datasetId": "WkzbQMuFYuamGv3YF"
+			},
+			"id": "e43c03ec-2a6b-4be3-a40b-1a5e695f4612",
+			"name": "Get items",
+			"type": "n8n-nodes-apify.apify",
+			"typeVersion": 1,
+			"position": [1000, 460],
+			"credentials": {
+				"apifyApi": {
+					"id": "dJAynKkN2pRqy3Ko",
+					"name": "Apify account"
+				}
+			}
+		}
+	],
+	"pinData": {},
+	"connections": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "be6a340f-3901-4f8c-881f-2cbb9a811cdd",
+	"meta": {
+		"templateCredsSetupCompleted": true,
+		"instanceId": "3f65ba173ae28613be507e94c0a98de4375527c55e31b7fc173a4edee4e2ded3"
+	},
+	"id": "OFLCq8UoIVInQv2Y",
+	"tags": []
+}

@@ -19,12 +19,14 @@
 		"declaration": true,
 		"sourceMap": true,
 		"skipLibCheck": true,
-		"outDir": "./dist/",
+		"outDir": "./dist/"
 	},
 	"include": [
 		"credentials/**/*",
 		"nodes/**/*",
 		"nodes/**/*.json",
 		"package.json",
+		"nodes/Apify/__tests__"
 	],
+	"exclude": ["test", "**/__tests__/**", "**/*.spec.ts"]
 }

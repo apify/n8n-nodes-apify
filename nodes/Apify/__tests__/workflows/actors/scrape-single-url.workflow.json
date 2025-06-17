@@ -1,0 +1,34 @@
+{
+	"name": "Scrape single URL workflow",
+	"nodes": [
+		{
+			"parameters": {
+				"operation": "Scrape single URL"
+			},
+			"id": "cde14951-f922-4710-b3c5-dc913fdcc10b",
+			"name": "Scrape single URL",
+			"type": "n8n-nodes-apify.apify",
+			"typeVersion": 1,
+			"position": [920, 460],
+			"credentials": {
+				"apifyApi": {
+					"id": "dJAynKkN2pRqy3Ko",
+					"name": "Apify account"
+				}
+			}
+		}
+	],
+	"pinData": {},
+	"connections": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "9395946a-a8de-48e7-8d04-c84b1274d95f",
+	"meta": {
+		"templateCredsSetupCompleted": true,
+		"instanceId": "3f65ba173ae28613be507e94c0a98de4375527c55e31b7fc173a4edee4e2ded3"
+	},
+	"id": "OFLCq8UoIVInQv2Y",
+	"tags": []
+}
