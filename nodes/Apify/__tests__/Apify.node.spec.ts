@@ -10,9 +10,16 @@ import * as helpers from '../helpers';
 
 describe('Apify Node', () => {
 	let apifyNode: Apify;
+	let credentialsHelper: CredentialsHelper;
 
 	beforeEach(() => {
 		apifyNode = new Apify();
+		credentialsHelper = new CredentialsHelper({
+			apifyApi: {
+				apiToken: 'test-token',
+				baseUrl: 'https://api.apify.com',
+			},
+		});
 	});
 
 	describe('description', () => {
@@ -40,13 +47,6 @@ describe('Apify Node', () => {
 					.get(`/v2/actor-runs/${runId}`)
 					.reply(200, mockRun);
 
-				const credentialsHelper = new CredentialsHelper({
-					apifyApi: {
-						apiToken: 'test-token',
-						baseUrl: 'https://api.apify.com',
-					},
-				});
-
 				const { waitPromise } = await executeWorkflow({
 					credentialsHelper,
 					workflow: getRunWorkflow,
@@ -73,13 +73,6 @@ describe('Apify Node', () => {
 					.get('/v2/actor-runs')
 					.query(true)
 					.reply(200, { data: { items: mockRunsList } });
-
-				const credentialsHelper = new CredentialsHelper({
-					apifyApi: {
-						apiToken: 'test-token',
-						baseUrl: 'https://api.apify.com',
-					},
-				});
 
 				const { waitPromise } = await executeWorkflow({
 					credentialsHelper,
@@ -110,13 +103,6 @@ describe('Apify Node', () => {
 					.query(true)
 					.reply(200, mockRunTask);
 
-				const credentialsHelper = new CredentialsHelper({
-					apifyApi: {
-						apiToken: 'test-token',
-						baseUrl: 'https://api.apify.com',
-					},
-				});
-
 				const runTaskWorkflow = require('./workflows/actor-tasks/run-task.workflow.json');
 				const { waitPromise } = await executeWorkflow({
 					credentialsHelper,
@@ -145,13 +131,6 @@ describe('Apify Node', () => {
 				const scope = nock('https://api.apify.com')
 					.get('/v2/acts/nFJndFXA5zjCTuudP/runs/last')
 					.reply(200, mockLastRun);
-
-				const credentialsHelper = new CredentialsHelper({
-					apifyApi: {
-						apiToken: 'test-token',
-						baseUrl: 'https://api.apify.com',
-					},
-				});
 
 				const getLastRunWorkflow = require('./workflows/actors/get-last-run.workflow.json');
 				const { waitPromise } = await executeWorkflow({
@@ -183,13 +162,6 @@ describe('Apify Node', () => {
 					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
 					.query({ waitForFinish: 60 })
 					.reply(200, fixtures.runActorResult()[0].data);
-
-				const credentialsHelper = new CredentialsHelper({
-					apifyApi: {
-						apiToken: 'test-token',
-						baseUrl: 'https://api.apify.com',
-					},
-				});
 
 				const runActorWorkflow = require('./workflows/actors/run-actor.workflow.json');
 				const { waitPromise } = await executeWorkflow({
@@ -224,13 +196,6 @@ describe('Apify Node', () => {
 					.query({ format: 'json' })
 					.reply(200, { items: mockItems });
 
-				const credentialsHelper = new CredentialsHelper({
-					apifyApi: {
-						apiToken: 'test-token',
-						baseUrl: 'https://api.apify.com',
-					},
-				});
-
 				const scrapeSingleUrlWorkflow = require('./workflows/actors/scrape-single-url.workflow.json');
 				const { waitPromise } = await executeWorkflow({
 					credentialsHelper,
@@ -262,13 +227,6 @@ describe('Apify Node', () => {
 					.query(true)
 					.reply(200, { items: mockItems });
 
-				const credentialsHelper = new CredentialsHelper({
-					apifyApi: {
-						apiToken: 'test-token',
-						baseUrl: 'https://api.apify.com',
-					},
-				});
-
 				const getItemsWorkflow = require('./workflows/datasets/get-items.workflow.json');
 				const { waitPromise } = await executeWorkflow({
 					credentialsHelper,
@@ -299,13 +257,6 @@ describe('Apify Node', () => {
 				const scope = nock('https://api.apify.com')
 					.get(`/v2/key-value-stores/${storeId}/records/${recordKey}`)
 					.reply(200, mockRecord);
-
-				const credentialsHelper = new CredentialsHelper({
-					apifyApi: {
-						apiToken: 'test-token',
-						baseUrl: 'https://api.apify.com',
-					},
-				});
 
 				const getKeyValueStoreRecordWorkflow = require('./workflows/key-value-stores/get-key-value-store-record.workflow.json');
 				const { waitPromise } = await executeWorkflow({
