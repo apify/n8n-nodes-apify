@@ -12,6 +12,7 @@ This is an n8n community node that integrates [Apify](https://apify.com) with yo
 - [Compatibility](#compatibility)
 - [Usage](#usage)
 - [Resources](#resources)
+- [Release](#releasing-a-new-version)
 - [Version History](#version-history)
 - [Troubleshooting](#troubleshooting)
 
@@ -170,7 +171,7 @@ This node has been tested with n8n version 1.57.0.
 - [n8n Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
 - [Apify API Documentation](https://docs.apify.com)
 
-# 📦 Releasing a New Version
+# Releasing a New Version
 
 This project uses a GitHub Actions workflow to automate the release process, including publishing to npm. Here's how to trigger a new release.
 
