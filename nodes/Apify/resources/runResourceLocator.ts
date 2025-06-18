@@ -8,7 +8,7 @@ const resourceLocatorProperty: INodeProperties = {
 	default: { mode: 'list', value: '' },
 	modes: [
 		{
-			displayName: 'From List',
+			displayName: 'From list',
 			name: 'list',
 			type: 'list',
 			placeholder: 'Choose...',
@@ -49,7 +49,7 @@ const resourceLocatorProperty: INodeProperties = {
 					type: 'regex',
 					properties: {
 						regex: '[a-zA-Z0-9]+',
-						errorMessage: 'Not a valid Apify Actor Run ID',
+						errorMessage: 'Not a valid Apify Actor run ID',
 					},
 				},
 			],
