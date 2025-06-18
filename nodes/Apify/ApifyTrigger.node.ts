@@ -21,7 +21,7 @@ const triggerProperties = compose(overrideActorProperties, overrideActorTaskProp
 
 export class ApifyTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Apify Trigger',
+		displayName: 'Apify trigger',
 		name: 'apifyTrigger',
 		icon: 'file:apify.svg',
 		group: ['trigger'],
@@ -67,7 +67,7 @@ export class ApifyTrigger implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'API Key',
+						name: 'API key',
 						value: 'apifyApi',
 					},
 					{
@@ -79,7 +79,7 @@ export class ApifyTrigger implements INodeType {
 				description: 'Choose which authentication method to use',
 			},
 			{
-				displayName: 'Resource to Watch',
+				displayName: 'Resource to watch',
 				name: 'resource',
 				type: 'options',
 				noDataExpression: true,
@@ -88,10 +88,10 @@ export class ApifyTrigger implements INodeType {
 					{ name: 'Task', value: 'task' },
 				],
 				default: 'actor',
-				description: 'Whether to fire when an actor or a task run finishes',
+				description: 'Whether to trigger when an Actor or a task run finishes',
 			},
 			{
-				displayName: 'Actor Source',
+				displayName: 'Actor source',
 				name: 'actorSource',
 				type: 'hidden',
 				displayOptions: { show: { resource: ['actor'] } },
@@ -101,23 +101,23 @@ export class ApifyTrigger implements INodeType {
 				displayName: 'Actor',
 				name: 'actorId',
 				required: true,
-				description: "Actor ID or a tilde-separated owner's username and Actor name",
+				description: "Actor ID or a tilde-separated username and Actor name",
 				default: 'janedoe~my-actor',
 				type: 'string',
 				displayOptions: { show: { resource: ['actor'] } },
 			},
 			{
-				displayName: 'Saved Tasks Name or ID',
+				displayName: 'Saved tasks name or ID',
 				name: 'actorTaskId',
 				type: 'string',
 				default: '',
 				description:
 					'Apify task to monitor for runs. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 				displayOptions: { show: { resource: ['task'] } },
-				placeholder: 'Select Task to watch',
+				placeholder: 'Select task to watch',
 			},
 			{
-				displayName: 'Event Type',
+				displayName: 'Event type',
 				name: 'eventType',
 				type: 'multiOptions',
 				options: [
