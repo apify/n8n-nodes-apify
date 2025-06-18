@@ -99,7 +99,8 @@ This node supports a wide range of Apify operations, organized by resource type:
 
 ### Actors
 - **Run Actor**: Execute an Actor with optional input parameters
-  - Supports custom input JSON
+  - **Default behavior**: Uses predefined input values
+  - **Custom input**: Provide JSON object to override any or all default parameters.
   - Configurable timeout and memory limits
   - Build version selection
 - **Scrape Single URL**: Quick scraping of a single URL
