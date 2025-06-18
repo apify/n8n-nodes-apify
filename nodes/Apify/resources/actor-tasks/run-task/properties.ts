@@ -17,10 +17,10 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Actor Task',
+		displayName: 'Actor task',
 		name: 'actorTaskId',
 		required: true,
-		description: "Task ID or a tilde-separated owner's username and task's name",
+		description: "Task ID or a tilde-separated username and task name",
 		default: 'janedoe~my-task',
 		type: 'string',
 		displayOptions: {
@@ -31,10 +31,10 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Wait For Finish',
+		displayName: 'Wait for finish',
 		name: 'waitForFinish',
 		description:
-			'The maximum number of seconds the server waits for the run to finish. By default the server do not wait for the run to finish and returns immediately. The maximum value is 60 seconds.',
+			'The maximum number of seconds the server waits for the run to finish. By default, the server doesn\'t wait for the run to finish and returns immediately. The maximum value is 60 seconds.',
 		default: null,
 		type: 'number',
 		typeOptions: {
@@ -100,7 +100,7 @@ limit specified in the task settings.`,
 	{
 		displayName: 'Build',
 		name: 'build',
-		description: `Specifies the actor build to run. It can be either a build tag or build
+		description: `Specifies the Actor build to run. It can be either a build tag or build
 number. By default, the run uses the build specified in the task
 settings (typically \`latest\`).`,
 		default: '',
