@@ -12,7 +12,7 @@ export const properties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['Actor runs'],
-				operation: ['Get Run'],
+				operation: ['Get run'],
 			},
 		},
 	},
@@ -25,7 +25,7 @@ export const properties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['Actor runs'],
-				operation: ['Get Run'],
+				operation: ['Get run'],
 			},
 		},
 	},
