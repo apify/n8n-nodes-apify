@@ -2,13 +2,13 @@ import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n
 import { apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
-	displayName: 'Actor Task',
+	displayName: 'Actor task',
 	name: 'actorTaskId',
 	type: 'resourceLocator',
 	default: { mode: 'list', value: '' },
 	modes: [
 		{
-			displayName: 'From List',
+			displayName: 'From list',
 			name: 'list',
 			type: 'list',
 			placeholder: 'Choose...',
