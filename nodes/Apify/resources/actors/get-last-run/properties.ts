@@ -17,7 +17,7 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Actor Source',
+		displayName: 'Actor source',
 		name: 'actorSource',
 		type: 'hidden',
 		default: 'recentlyUsed',
@@ -32,7 +32,7 @@ export const properties: INodeProperties[] = [
 		displayName: 'Actor',
 		name: 'actorId',
 		required: true,
-		description: "Actor ID or a tilde-separated owner's username and Actor name",
+		description: "Actor ID or a tilde-separated username and Actor name",
 		default: 'janedoe~my-actor',
 		type: 'string',
 		displayOptions: {
