@@ -17,7 +17,7 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Actor Source',
+		displayName: 'Actor source',
 		name: 'actorSource',
 		type: 'hidden',
 		default: 'recentlyUsed',
@@ -32,7 +32,7 @@ export const properties: INodeProperties[] = [
 		displayName: 'Actor',
 		name: 'actorId',
 		required: true,
-		description: "Actor ID or a tilde-separated owner's username and Actor name",
+		description: "Actor ID or a tilde-separated username and Actor name",
 		default: 'janedoe~my-actor',
 		type: 'string',
 		displayOptions: {
@@ -87,10 +87,10 @@ configuration for the Actor (typically \`latest\`).`,
 		},
 	},
 	{
-		displayName: 'Wait For Finish',
+		displayName: 'Wait for finish',
 		name: 'waitForFinish',
 		description:
-			'The maximum number of seconds the server waits for the run to finish. By default the server do not wait for the run to finish and returns immediately. The maximum value is 60 seconds.',
+			'The maximum number of seconds the server waits for the run to finish. By default the server doesn\'t wait for the run to finish and returns immediately. The maximum value is 60 seconds.',
 		default: null,
 		type: 'number',
 		typeOptions: {
