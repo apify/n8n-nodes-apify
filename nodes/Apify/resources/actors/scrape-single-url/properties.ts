@@ -15,7 +15,7 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Crawler type',
+		displayName: 'Crawler Type',
 		name: 'crawlerType',
 		default: 'cheerio',
 		type: 'options',

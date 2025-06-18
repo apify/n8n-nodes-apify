@@ -21,7 +21,7 @@ const triggerProperties = compose(overrideActorProperties, overrideActorTaskProp
 
 export class ApifyTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Apify trigger',
+		displayName: 'Apify Trigger',
 		name: 'apifyTrigger',
 		icon: 'file:apify.svg',
 		group: ['trigger'],
@@ -67,7 +67,7 @@ export class ApifyTrigger implements INodeType {
 				type: 'options',
 				options: [
 					{
-						name: 'API key',
+						name: 'API Key',
 						value: 'apifyApi',
 					},
 					{
@@ -79,7 +79,7 @@ export class ApifyTrigger implements INodeType {
 				description: 'Choose which authentication method to use',
 			},
 			{
-				displayName: 'Resource to watch',
+				displayName: 'Resource to Watch',
 				name: 'resource',
 				type: 'options',
 				noDataExpression: true,
@@ -91,7 +91,7 @@ export class ApifyTrigger implements INodeType {
 				description: 'Whether to trigger when an Actor or a task run finishes',
 			},
 			{
-				displayName: 'Actor source',
+				displayName: 'Actor Source',
 				name: 'actorSource',
 				type: 'hidden',
 				displayOptions: { show: { resource: ['actor'] } },
@@ -101,13 +101,13 @@ export class ApifyTrigger implements INodeType {
 				displayName: 'Actor',
 				name: 'actorId',
 				required: true,
-				description: "Actor ID or a tilde-separated username and Actor name",
+				description: 'Actor ID or a tilde-separated username and Actor name',
 				default: 'janedoe~my-actor',
 				type: 'string',
 				displayOptions: { show: { resource: ['actor'] } },
 			},
 			{
-				displayName: 'Saved tasks name or ID',
+				displayName: 'Saved Tasks Name or ID',
 				name: 'actorTaskId',
 				type: 'string',
 				default: '',
@@ -117,7 +117,7 @@ export class ApifyTrigger implements INodeType {
 				placeholder: 'Select task to watch',
 			},
 			{
-				displayName: 'Event type',
+				displayName: 'Event Type',
 				name: 'eventType',
 				type: 'multiOptions',
 				options: [

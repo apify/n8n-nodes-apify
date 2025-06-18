@@ -17,10 +17,10 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Actor task',
+		displayName: 'Actor Task',
 		name: 'actorTaskId',
 		required: true,
-		description: "Task ID or a tilde-separated username and task name",
+		description: 'Task ID or a tilde-separated username and task name',
 		default: 'janedoe~my-task',
 		type: 'string',
 		displayOptions: {
@@ -31,10 +31,10 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Wait for finish',
+		displayName: 'Wait for Finish',
 		name: 'waitForFinish',
 		description:
-			'The maximum number of seconds the server waits for the run to finish. By default, the server doesn\'t wait for the run to finish and returns immediately. The maximum value is 60 seconds.',
+			"The maximum number of seconds the server waits for the run to finish. By default, the server doesn't wait for the run to finish and returns immediately. The maximum value is 60 seconds.",
 		default: null,
 		type: 'number',
 		typeOptions: {

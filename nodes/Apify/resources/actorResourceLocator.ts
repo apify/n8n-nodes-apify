@@ -60,12 +60,12 @@ const resourceLocatorProperty: INodeProperties = {
 };
 
 const actorSourceProperty: INodeProperties = {
-	displayName: 'Actor source',
+	displayName: 'Actor Source',
 	name: 'actorSource',
 	type: 'options',
 	options: [
 		{
-			name: 'Recently used Actors',
+			name: 'Recently Used Actors',
 			value: 'recentlyUsed',
 		},
 		{
