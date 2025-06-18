@@ -8,7 +8,7 @@ const resourceLocatorProperty: INodeProperties = {
 	default: { mode: 'list', value: '' },
 	modes: [
 		{
-			displayName: 'From List',
+			displayName: 'From list',
 			name: 'list',
 			type: 'list',
 			placeholder: 'Choose...',
