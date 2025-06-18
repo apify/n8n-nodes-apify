@@ -8,7 +8,7 @@ const resourceLocatorProperty: INodeProperties = {
 	default: { mode: 'list', value: '' },
 	modes: [
 		{
-			displayName: 'From List',
+			displayName: 'From list',
 			name: 'list',
 			type: 'list',
 			placeholder: 'Choose...',
@@ -60,12 +60,12 @@ const resourceLocatorProperty: INodeProperties = {
 };
 
 const actorSourceProperty: INodeProperties = {
-	displayName: 'Actor Source',
+	displayName: 'Actor source',
 	name: 'actorSource',
 	type: 'options',
 	options: [
 		{
-			name: 'Recently Used Actors',
+			name: 'Recently used Actors',
 			value: 'recentlyUsed',
 		},
 		{
@@ -74,7 +74,7 @@ const actorSourceProperty: INodeProperties = {
 		},
 	],
 	default: 'recentlyUsed',
-	description: 'Choose whether to select from your recently used actors or browse the Apify Store',
+	description: 'Choose whether to select from your recently used Actors or browse Apify Store',
 	displayOptions: { show: { resource: ['actor'] } },
 };
 
