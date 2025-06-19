@@ -1,0 +1,41 @@
+{
+	"name": "Webhook Workflow",
+	"nodes": [
+		{
+			"parameters": {
+				"actorId": {
+					"__rl": true,
+					"value": "nFJndFXA5zjCTuudP",
+					"mode": "list",
+					"cachedResultName": "Google Search Results Scraper",
+					"cachedResultUrl": "https://console.com/actors/nFJndFXA5zjCTuudP/input"
+				}
+			},
+			"id": "498adf8f-f3a2-4a54-a268-699254e71221",
+			"name": "Apify Trigger",
+			"type": "n8n-nodes-apify.apifyTrigger",
+			"typeVersion": 1,
+			"position": [1820, 580],
+			"webhookId": "2726981e-4e01-461f-a548-1f467e997400",
+			"credentials": {
+				"apifyApi": {
+					"id": "dJAynKkN2pRqy3Ko",
+					"name": "Apify account"
+				}
+			}
+		}
+	],
+	"pinData": {},
+	"connections": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "e3f6ba0a-56cf-4d23-bdf2-0718cad2b0dd",
+	"meta": {
+		"templateCredsSetupCompleted": true,
+		"instanceId": "3f65ba173ae28613be507e94c0a98de4375527c55e31b7fc173a4edee4e2ded3"
+	},
+	"id": "OFLCq8UoIVInQv2Y",
+	"tags": []
+}
