@@ -22,10 +22,6 @@ export const runWebhookMethod = async (
 		additionalData,
 	);
 
-	// const nodesKeys = Object.keys(workflow.nodes);
-
-	// const node = workflow.nodes[nodesKeys[0]];
-
 	const webhookDescription: IWebhookDescription = {
 		name: 'default',
 		httpMethod: 'POST',
@@ -42,45 +38,20 @@ export const runWebhookMethod = async (
 		workflowExecuteAdditionalData: additionalData,
 	};
 
-	// const result = await workflow.runWebhookMethod(
-	//   method,
-	//   webhookNode,
-	//   NodeExecuteFunctions,
-	//   'manual',
-	//   'manual',
-	//   true,
-	// );
-
-	try {
-		// const result = await (
-		// 	workflow as unknown as Record<string, any> & {
-		// 		runWebhookMethod: (
-		// 			method: WebhookSetupMethodNames,
-		// 			webhookData: IWebhookData,
-		// 			nodeExecuteFunctions: INodeExecuteFunctions,
-		// 			mode: WorkflowExecuteMode,
-		// 			activation: WorkflowActivateMode,
-		// 			isTest?: boolean,
-		// 		) => Promise<boolean | undefined>;
-		// 	}
-		// ).runWebhookMethod(webhookData, node, additionalData, NodeExecuteFunctions, 'manual');
-
-		const result = await (
-			workflow as unknown as Record<string, any> & {
-				runWebhookMethod: (
-					method: WebhookSetupMethodNames,
-					webhookData: IWebhookData,
-					nodeExecuteFunctions: INodeExecuteFunctions,
-					mode: WorkflowExecuteMode,
-					activation: WorkflowActivateMode,
-					isTest?: boolean,
-				) => Promise<boolean | undefined>;
-			}
-		).runWebhookMethod(method, webhookData, NodeExecuteFunctions, 'manual', 'manual', true);
-
-		return result;
-	} catch (error) {
-		console.error(error);
-		throw error;
-	}
+	/*
+	 * Override runWebhookMethod which is a private method of the workflow
+	 * but is needed for the tests.
+	 */
+	return (
+		workflow as unknown as Record<string, any> & {
+			runWebhookMethod: (
+				method: WebhookSetupMethodNames,
+				webhookData: IWebhookData,
+				nodeExecuteFunctions: INodeExecuteFunctions,
+				mode: WorkflowExecuteMode,
+				activation: WorkflowActivateMode,
+				isTest?: boolean,
+			) => Promise<boolean | undefined>;
+		}
+	).runWebhookMethod(method, webhookData, NodeExecuteFunctions, 'manual', 'manual', true);
 };
