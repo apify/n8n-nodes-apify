@@ -34,8 +34,6 @@ describe('Apify Trigger Node', () => {
 		});
 
 		it('should return true in checkExists webhook method since there is a webhook created with the same url', async () => {
-			// webhook url is 'http://localhost:5678/2726981e-4e01-461f-a548-1f467e997400/webhook'
-
 			const scope = nock('https://api.apify.com')
 				.get('/v2/webhooks')
 				.reply(200, fixtures.getActorWebhookResult());
