@@ -7,6 +7,7 @@ import {
 	NodeHelpers,
 } from 'n8n-workflow';
 import { Apify } from '../../Apify.node';
+import { ApifyTrigger } from '../../ApifyTrigger.node';
 
 export class NodeTypesClass implements INodeTypes {
 	nodeTypes: INodeTypeData = {};
@@ -42,6 +43,6 @@ export class NodeTypesClass implements INodeTypes {
 const nodeTypes = new NodeTypesClass();
 
 nodeTypes.addNode('n8n-nodes-apify.apify', new Apify());
-// TODO: add ApifyTrigger
+nodeTypes.addNode('n8n-nodes-apify.apifyTrigger', new ApifyTrigger());
 
 export { nodeTypes };

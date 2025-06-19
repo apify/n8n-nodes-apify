@@ -1612,3 +1612,115 @@ export const getKeyValueStoreRecordResult = () => {
 		},
 	];
 };
+
+export const getActorWebhookResult = () => {
+	return {
+		data: {
+			total: 2,
+			count: 2,
+			offset: 0,
+			limit: 1000,
+			desc: false,
+			items: [
+				{
+					id: 'OYb2eUWmLC3UcIMMQ',
+					createdAt: '2025-06-12T20:17:07.105Z',
+					modifiedAt: '2025-06-12T20:17:07.105Z',
+					userId: 'A9zwKYff2yyRmaqc9',
+					isEnabled: true,
+					isAdHoc: false,
+					eventTypes: [
+						'ACTOR.RUN.SUCCEEDED',
+						'ACTOR.RUN.FAILED',
+						'ACTOR.RUN.TIMED_OUT',
+						'ACTOR.RUN.ABORTED',
+					],
+					condition: {
+						actorId: 'nFJndFXA5zjCTuudP',
+					},
+					ignoreSslErrors: false,
+					doNotRetry: false,
+					requestUrl:
+						'https://fcaa-193-165-0-33.ngrok-free.app/webhook/8856069e-bd4b-45b2-8042-5f18b9547804/webhook',
+					payloadTemplate:
+						'{\n    "userId": {{userId}},\n    "createdAt": {{createdAt}},\n    "eventType": {{eventType}},\n    "eventData": {{eventData}},\n    "resource": {{resource}}\n}',
+					lastDispatch: {
+						status: 'SUCCEEDED',
+						finishedAt: '2025-06-17T08:58:14.804Z',
+						removedAt: null,
+					},
+					stats: {
+						totalDispatches: 8,
+					},
+					actionType: 'HTTP_REQUEST',
+					shouldInterpolateStrings: false,
+				},
+				{
+					id: 'WmLC3UcIMMQOYb2eU',
+					createdAt: '2025-06-12T20:17:07.105Z',
+					modifiedAt: '2025-06-12T20:17:07.105Z',
+					userId: 'A9zwKYff2yyRmaqc9',
+					isEnabled: true,
+					isAdHoc: false,
+					eventTypes: [
+						'ACTOR.RUN.SUCCEEDED',
+						'ACTOR.RUN.FAILED',
+						'ACTOR.RUN.TIMED_OUT',
+						'ACTOR.RUN.ABORTED',
+					],
+					condition: {
+						actorId: 'nFJndFXA5zjCTuudP',
+					},
+					ignoreSslErrors: false,
+					doNotRetry: false,
+					// this URL is the same as the one in the webhook workflow - change with care
+					requestUrl: 'http://localhost:5678/2726981e-4e01-461f-a548-1f467e997400/webhook',
+					payloadTemplate:
+						'{\n    "userId": {{userId}},\n    "createdAt": {{createdAt}},\n    "eventType": {{eventType}},\n    "eventData": {{eventData}},\n    "resource": {{resource}}\n}',
+					lastDispatch: {
+						status: 'SUCCEEDED',
+						finishedAt: '2025-06-17T08:58:14.804Z',
+						removedAt: null,
+					},
+					stats: {
+						totalDispatches: 8,
+					},
+					actionType: 'HTTP_REQUEST',
+					shouldInterpolateStrings: false,
+				},
+			],
+		},
+	};
+};
+
+export const getCreateWebhookResult = () => {
+	return {
+		data: {
+			id: 'UcIMMQOYb2eWmLC3U',
+			createdAt: '2025-06-12T20:17:07.105Z',
+			modifiedAt: '2025-06-12T20:17:07.105Z',
+			userId: 'A9zwKYff2yyRmaqc9',
+			isEnabled: true,
+			isAdHoc: false,
+			eventTypes: [
+				'ACTOR.RUN.SUCCEEDED',
+				'ACTOR.RUN.FAILED',
+				'ACTOR.RUN.TIMED_OUT',
+				'ACTOR.RUN.ABORTED',
+			],
+			condition: {
+				actorId: 'nFJndFXA5zjCTuudP',
+			},
+			ignoreSslErrors: false,
+			doNotRetry: false,
+			requestUrl: 'http://localhost:5678/2f9d9edc-fada-47f5-b452-768dd81027cf/webhook',
+			payloadTemplate:
+				'{\n    "userId": {{userId}},\n    "createdAt": {{createdAt}},\n    "eventType": {{eventType}},\n    "eventData": {{eventData}},\n    "resource": {{resource}}\n}',
+			stats: {
+				totalDispatches: 0,
+			},
+			actionType: 'HTTP_REQUEST',
+			shouldInterpolateStrings: false,
+		},
+	};
+};
