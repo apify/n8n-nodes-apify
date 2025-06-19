@@ -35,7 +35,7 @@
 		"lintfix": "eslint nodes credentials package.json --fix",
 		"prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json",
 		"merge:api": "npx openapi-merge-cli --config ./openapi.config.json",
-		"test": "jest --testMatch '**/*.spec.*'"
+		"test": "WEBHOOK_URL=https://localhost:5678 jest --config jest.config.js"
 	},
 	"files": [
 		"dist"
