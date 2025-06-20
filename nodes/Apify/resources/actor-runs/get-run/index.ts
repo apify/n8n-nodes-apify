@@ -3,7 +3,7 @@ import { INodePropertyOptions } from 'n8n-workflow';
 import { properties as rawProperties } from './properties';
 import { runHooks } from './hooks';
 
-const name = 'Get Run';
+const name = 'Get run';
 
 const rawOption: INodePropertyOptions = {
 	name: name,

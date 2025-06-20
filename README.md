@@ -120,7 +120,7 @@ This node supports a wide range of Apify operations, organized by resource type:
   - Pagination support
   - Sorting options
   - Status filtering
-- **Get Run**: Retrieve detailed information about a specific run
+- **Get run**: Retrieve detailed information about a specific run
 
 ### Datasets
 - **Get Items**: Fetch items from a dataset

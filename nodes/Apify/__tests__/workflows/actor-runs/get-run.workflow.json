@@ -4,7 +4,7 @@
 		{
 			"parameters": {
 				"resource": "Actor runs",
-				"operation": "Get Run",
+				"operation": "Get run",
 				"runId": {
 					"__rl": true,
 					"value": "c7Orwz5b830Tbp784",
@@ -14,7 +14,7 @@
 				}
 			},
 			"id": "8d65b3e8-ff1a-4a7c-b710-1f1952888a93",
-			"name": "Get Run",
+			"name": "Get run",
 			"type": "n8n-nodes-apify.apify",
 			"typeVersion": 1,
 			"position": [920, 460],

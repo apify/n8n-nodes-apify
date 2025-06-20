@@ -53,7 +53,7 @@ describe('Apify Node', () => {
 				});
 				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Get Run');
+				const nodeResults = getRunTaskDataByNodeName(result, 'Get run');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
