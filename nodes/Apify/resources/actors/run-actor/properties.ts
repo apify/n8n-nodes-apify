@@ -72,10 +72,9 @@ limit specified in the default run configuration for the Actor.`,
 		},
 	},
 	{
-		displayName: 'Build',
+		displayName: 'Build Tag',
 		name: 'build',
-		description: `Specifies the Actor build to run. It can be either a build tag or build
-number. By default, the run uses the build specified in the default run
+		description: `Specifies the Actor build tag to run. By default, the run uses the build specified in the default run
 configuration for the Actor (typically \`latest\`).`,
 		default: '',
 		type: 'string',

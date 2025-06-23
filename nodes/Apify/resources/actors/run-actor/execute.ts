@@ -7,7 +7,9 @@ import {
 import { apiRequest } from '../../genericFunctions';
 
 export async function runActor(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
-	const actorId = this.getNodeParameter('actorId', i) as { value: string };
+	const actorId = this.getNodeParameter('actorId', i, undefined, {
+		extractValue: true,
+	}) as string;
 	const timeout = this.getNodeParameter('timeout', i) as number | null;
 	const memory = this.getNodeParameter('memory', i) as number | null;
 	const buildParam = this.getNodeParameter('build', i) as string | null;
@@ -28,11 +30,11 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	// 1. Get the actor details
 	const actor = await apiRequest.call(this, {
 		method: 'GET',
-		uri: `/v2/acts/${actorId.value}`,
+		uri: `/v2/acts/${actorId}`,
 	});
 	if (!actor || !actor.data) {
 		throw new NodeApiError(this.getNode(), {
-			message: `Actor ${actorId.value} not found`,
+			message: `Actor ${actorId} not found`,
 		});
 	}
 	const actorData = actor.data;
@@ -40,9 +42,9 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	// 2. Build selection logic
 	let build: any;
 	if (buildParam) {
-		build = await getBuildByTag.call(this, actorId.value, buildParam, actorData);
+		build = await getBuildByTag.call(this, actorId, buildParam, actorData);
 	} else {
-		build = await getDefaultBuild.call(this, actorId.value);
+		build = await getDefaultBuild.call(this, actorId);
 	}
 
 	// 3. Get default input for this build
@@ -59,7 +61,7 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	if (waitForFinish != null) qs.waitForFinish = waitForFinish;
 
 	// 6. Run the actor
-	const run = await runActorApi.call(this, actorId.value, mergedInput, qs);
+	const run = await runActorApi.call(this, actorId, mergedInput, qs);
 
 	return {
 		json: run,
@@ -75,7 +77,7 @@ async function getBuildByTag(
 	const buildByTag = actorData.taggedBuilds && actorData.taggedBuilds[buildTag];
 	if (!buildByTag?.buildId) {
 		throw new NodeApiError(this.getNode(), {
-			message: `Build tag '${buildTag}' does not exist for actor ${actorId}`,
+			message: `Build tag '${buildTag}' does not exist for actor ${actorData.title ?? actorData.name ?? actorId}`,
 		});
 	}
 	const buildResp = await apiRequest.call(this, {

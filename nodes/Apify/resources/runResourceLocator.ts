@@ -22,22 +22,22 @@ const resourceLocatorProperty: INodeProperties = {
 			displayName: 'By URL',
 			name: 'url',
 			type: 'string',
-			// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/runs/RDfcScrqIYHW0jfNF#log
-			placeholder: 'https://console.apify.com/actors/AtBpiepuIUNs2k2ku/runs/RDfcScrqIYHW0jfNF#log',
+			placeholder: 'https://console.apify.com/actors/runs/RDfcScrqIYHW0jfNF#output',
 			validation: [
 				{
 					type: 'regex',
 					properties: {
-						// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/runs/RDfcScrqIYHW0jfNF#log
-						regex: 'https://console.apify.com/actors/([a-zA-Z0-9]+)/runs/([a-zA-Z0-9]+)',
+						// https://console.apify.com/actors/runs/RDfcScrqIYHW0jfNF#output
+						regex:
+							'https://console.apify.com/actors(/[a-zA-Z0-9]+)?/runs/([a-zA-Z0-9]+)(#(output|log))?',
 						errorMessage: 'Not a valid Apify Actor Run URL',
 					},
 				},
 			],
 			extractValue: {
 				type: 'regex',
-				// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/runs/RDfcScrqIYHW0jfNF#log -> RDfcScrqIYHW0jfNF
-				regex: 'https://console.apify.com/actors/([a-zA-Z0-9]+)/runs/([a-zA-Z0-9]+)',
+				// https://console.apify.com/actors/runs/RDfcScrqIYHW0jfNF#output -> RDfcScrqIYHW0jfNF
+				regex: 'https://console.apify.com/actors(?:/[a-zA-Z0-9]+)?/runs/([a-zA-Z0-9]+)',
 			},
 		},
 		{
@@ -81,6 +81,7 @@ export async function listRuns(this: ILoadOptionsFunctions): Promise<INodeListSe
 		qs: {
 			limit: 100,
 			offset: 0,
+			desc: 1,
 		},
 	});
 

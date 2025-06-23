@@ -22,14 +22,14 @@ const resourceLocatorProperty: INodeProperties = {
 			displayName: 'By URL',
 			name: 'url',
 			type: 'string',
-			// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/input
 			placeholder: 'https://console.apify.com/actors/AtBpiepuIUNs2k2ku/input',
 			validation: [
 				{
 					type: 'regex',
 					properties: {
 						// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/input
-						regex: 'https://console.apify.com/actors/([a-zA-Z0-9]+)',
+						// https://console.apify.com/actors/AtBpiepuIUNs2k2ku
+						regex: 'https://console.apify.com/actors/([a-zA-Z0-9]+)(/input)?',
 						errorMessage: 'Not a valid Actor URL',
 					},
 				},
@@ -37,7 +37,8 @@ const resourceLocatorProperty: INodeProperties = {
 			extractValue: {
 				type: 'regex',
 				// https://console.apify.com/actors/AtBpiepuIUNs2k2ku/input -> AtBpiepuIUNs2k2ku
-				regex: 'https://console.apify.com/actors/([a-zA-Z0-9]+)',
+				// https://console.apify.com/actors/AtBpiepuIUNs2k2ku -> AtBpiepuIUNs2k2ku
+				regex: `https://console.apify.com/actors/([a-zA-Z0-9]+)`,
 			},
 		},
 		{

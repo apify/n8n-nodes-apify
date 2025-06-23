@@ -7,7 +7,9 @@ import {
 import { apiRequest } from '../../../resources/genericFunctions';
 
 export async function runTask(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
-	const actorTaskId = this.getNodeParameter('actorTaskId', i) as { value: string };
+	const actorTaskId = this.getNodeParameter('actorTaskId', i, undefined, {
+		extractValue: true,
+	}) as string;
 	const input = this.getNodeParameter('input', i, {}) as object;
 	const waitForFinish = this.getNodeParameter('waitForFinish', i, null) as number | null;
 	const timeout = this.getNodeParameter('timeout', i, null) as number | null;
@@ -27,14 +29,14 @@ export async function runTask(this: IExecuteFunctions, i: number): Promise<INode
 	try {
 		const run = await apiRequest.call(this, {
 			method: 'POST',
-			uri: `/v2/actor-tasks/${actorTaskId.value}/runs`,
+			uri: `/v2/actor-tasks/${actorTaskId}/runs`,
 			body: input,
 			qs,
 		});
 
 		if (!run) {
 			throw new NodeApiError(this.getNode(), {
-				message: `Task run for ${actorTaskId.value} not found`,
+				message: `Task run for ${actorTaskId} not found`,
 			});
 		}
 

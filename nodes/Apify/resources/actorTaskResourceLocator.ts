@@ -22,14 +22,14 @@ const resourceLocatorProperty: INodeProperties = {
 			displayName: 'By URL',
 			name: 'url',
 			type: 'string',
-			// https://console.apify.com/actors/tasks/WAtmhr6rhfBnwqKDY/input
 			placeholder: 'https://console.apify.com/actors/tasks/WAtmhr6rhfBnwqKDY/input',
 			validation: [
 				{
 					type: 'regex',
 					properties: {
 						// https://console.apify.com/actors/tasks/WAtmhr6rhfBnwqKDY/input
-						regex: 'https://console.apify.com/actors/tasks/([a-zA-Z0-9]+)',
+						// https://console.apify.com/actors/tasks/WAtmhr6rhfBnwqKDY
+						regex: 'https://console.apify.com/actors/tasks/([a-zA-Z0-9]+)(/input)?',
 						errorMessage: 'Not a valid Apify Actor Task URL',
 					},
 				},
@@ -37,6 +37,7 @@ const resourceLocatorProperty: INodeProperties = {
 			extractValue: {
 				type: 'regex',
 				// https://console.apify.com/actors/tasks/WAtmhr6rhfBnwqKDY/input -> WAtmhr6rhfBnwqKDY
+				// https://console.apify.com/actors/tasks/WAtmhr6rhfBnwqKDY -> WAtmhr6rhfBnwqKDY
 				regex: 'https://console.apify.com/actors/tasks/([a-zA-Z0-9]+)',
 			},
 		},
