@@ -15,7 +15,7 @@ export async function actorRunsRouter(
 
 	if (resource !== actorRunResourceName) {
 		throw new NodeOperationError(
-			this,
+			this.getNode(),
 			`Resource ${resource} is not valid for ${actorRunResourceName}. Please use correct resource.`,
 		);
 	}
@@ -29,7 +29,7 @@ export async function actorRunsRouter(
 
 		default:
 			throw new NodeOperationError(
-				this,
+				this.getNode(),
 				`Operation ${operation} not found. Please use correct operation.`,
 			);
 	}

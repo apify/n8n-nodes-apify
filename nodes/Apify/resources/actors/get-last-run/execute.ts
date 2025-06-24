@@ -10,7 +10,7 @@ export async function getLastRun(this: IExecuteFunctions, i: number): Promise<IN
 	const actorId = this.getNodeParameter('actorId', i) as { value: string };
 
 	if (!actorId) {
-		throw new NodeOperationError(this, 'Actor ID is required');
+		throw new NodeOperationError(this.getNode(), 'Actor ID is required');
 	}
 
 	try {

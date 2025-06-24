@@ -20,11 +20,14 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	try {
 		userInput = rawStringifiedInput ? JSON.parse(rawStringifiedInput) : {};
 	} catch (err) {
-		throw new NodeOperationError(this, `Could not parse custom body: ${rawStringifiedInput}`);
+		throw new NodeOperationError(
+			this.getNode(),
+			`Could not parse custom body: ${rawStringifiedInput}`,
+		);
 	}
 
 	if (!actorId) {
-		throw new NodeOperationError(this, 'Actor ID is required');
+		throw new NodeOperationError(this.getNode(), 'Actor ID is required');
 	}
 
 	// 1. Get the actor details

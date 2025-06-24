@@ -13,7 +13,7 @@ export async function keyValueStoresRouter(
 
 	if (resource !== keyValueStoreResourceName) {
 		throw new NodeOperationError(
-			this,
+			this.getNode(),
 			`Resource ${resource} is not valid for ${keyValueStoreResourceName}. Please use correct resource.`,
 		);
 	}
@@ -23,6 +23,6 @@ export async function keyValueStoresRouter(
 			return await getKeyValueStoreRecord.call(this, i);
 
 		default:
-			throw new NodeOperationError(this, `Operation ${operation} not found`);
+			throw new NodeOperationError(this.getNode(), `Operation ${operation} not found`);
 	}
 }

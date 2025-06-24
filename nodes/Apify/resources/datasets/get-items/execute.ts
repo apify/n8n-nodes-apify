@@ -12,7 +12,7 @@ export async function getItems(this: IExecuteFunctions, i: number): Promise<INod
 	const limit = this.getNodeParameter('limit', i, 50) as number;
 
 	if (!datasetId) {
-		throw new NodeOperationError(this, 'Dataset ID is required');
+		throw new NodeOperationError(this.getNode(), 'Dataset ID is required');
 	}
 
 	try {

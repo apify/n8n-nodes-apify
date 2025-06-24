@@ -15,7 +15,7 @@ export async function getKeyValueStoreRecord(
 	const recordKey = this.getNodeParameter('recordKey', i) as { value: string };
 
 	if (!storeId || !recordKey) {
-		throw new NodeOperationError(this, 'Store ID and Record Key are required');
+		throw new NodeOperationError(this.getNode(), 'Store ID and Record Key are required');
 	}
 
 	try {

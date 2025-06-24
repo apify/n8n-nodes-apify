@@ -12,7 +12,7 @@ export async function getRun(this: IExecuteFunctions, i: number): Promise<INodeE
 	}) as string;
 
 	if (!runId) {
-		throw new NodeOperationError(this, 'Run ID is required');
+		throw new NodeOperationError(this.getNode(), 'Run ID is required');
 	}
 
 	try {

@@ -17,7 +17,7 @@ export async function actorsRouter(
 
 	if (resource !== actorResourceName) {
 		throw new NodeOperationError(
-			this,
+			this.getNode(),
 			`Resource ${resource} is not valid for ${actorResourceName}. Please use correct resource.`,
 		);
 	}
@@ -32,7 +32,7 @@ export async function actorsRouter(
 
 		default:
 			throw new NodeOperationError(
-				this,
+				this.getNode(),
 				`Operation ${operation} not found. Please use correct operation.`,
 			);
 	}

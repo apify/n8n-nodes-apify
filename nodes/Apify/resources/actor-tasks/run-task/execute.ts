@@ -17,7 +17,7 @@ export async function runTask(this: IExecuteFunctions, i: number): Promise<INode
 	const build = this.getNodeParameter('build', i, '') as string;
 
 	if (!actorTaskId) {
-		throw new NodeOperationError(this, 'Task ID is required');
+		throw new NodeOperationError(this.getNode(), 'Task ID is required');
 	}
 
 	const qs: Record<string, any> = {};

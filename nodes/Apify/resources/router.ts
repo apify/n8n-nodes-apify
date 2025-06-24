@@ -34,6 +34,6 @@ export async function resourceRouter(
 			return await keyValueStoresRouter.call(this, i);
 
 		default:
-			throw new NodeOperationError(this, `Resource ${resource} not found`);
+			throw new NodeOperationError(this.getNode(), `Resource ${resource} not found`);
 	}
 }

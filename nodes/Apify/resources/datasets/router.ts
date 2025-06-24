@@ -13,7 +13,7 @@ export async function datasetsRouter(
 
 	if (resource !== datasetsResourceName) {
 		throw new NodeOperationError(
-			this,
+			this.getNode(),
 			`Resource ${resource} is not valid for ${datasetsResourceName}. Please use correct resource.`,
 		);
 	}
@@ -24,7 +24,7 @@ export async function datasetsRouter(
 
 		default:
 			throw new NodeOperationError(
-				this,
+				this.getNode(),
 				`Operation ${operation} not found. Please use correct operation.`,
 			);
 	}
