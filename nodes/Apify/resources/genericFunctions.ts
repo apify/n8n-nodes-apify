@@ -41,7 +41,10 @@ export async function apiRequest(
 		try {
 			await this.getCredentials(authenticationMethod);
 		} catch {
-			throw new NodeOperationError(this.getNode(), `No valid credentials found for ${authenticationMethod}. Please configure them first.`);
+			throw new NodeOperationError(
+				this.getNode(),
+				`No valid credentials found for ${authenticationMethod}. Please configure them first.`,
+			);
 		}
 
 		return await this.helpers.requestWithAuthentication.call(this, authenticationMethod, options);
