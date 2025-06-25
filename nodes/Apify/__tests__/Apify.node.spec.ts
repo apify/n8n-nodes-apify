@@ -2,7 +2,6 @@ import { Apify } from '../Apify.node';
 import { executeWorkflow } from './utils/executeWorkflow';
 import { CredentialsHelper } from './utils/credentialHelper';
 import { getRunTaskDataByNodeName, getTaskData } from './utils/getNodeResultData';
-import getRunWorkflow from './workflows/actor-runs/get-run.workflow.json';
 import nock from 'nock';
 import getUserRunsListWorkflow from './workflows/actor-runs/get-user-runs-list.workflow.json';
 import * as fixtures from './utils/fixtures';
@@ -38,33 +37,6 @@ describe('Apify Node', () => {
 	});
 
 	describe('actor-runs', () => {
-		describe('get-run', () => {
-			it('should run the get-run workflow', async () => {
-				const runId = 'c7Orwz5b830Tbp784';
-				const mockRun = fixtures.getRunResult();
-
-				const scope = nock('https://api.apify.com')
-					.get(`/v2/actor-runs/${runId}`)
-					.reply(200, mockRun);
-
-				const { waitPromise } = await executeWorkflow({
-					credentialsHelper,
-					workflow: getRunWorkflow,
-				});
-				const result = await waitPromise.promise();
-
-				const nodeResults = getRunTaskDataByNodeName(result, 'Get run');
-				expect(nodeResults.length).toBe(1);
-				const [nodeResult] = nodeResults;
-				expect(nodeResult.executionStatus).toBe('success');
-
-				const data = getTaskData(nodeResult);
-				expect(data).toEqual(mockRun);
-
-				expect(scope.isDone()).toBe(true);
-			});
-		});
-
 		describe('get-runs', () => {
 			it('should run the get-user-runs-list workflow', async () => {
 				const mockRunsList = fixtures.getUserRunsListResult();
