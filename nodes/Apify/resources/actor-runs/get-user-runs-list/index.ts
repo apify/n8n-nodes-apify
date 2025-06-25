@@ -10,7 +10,7 @@ const rawOption: INodePropertyOptions = {
 	value: 'Get user runs list',
 	action: 'Get user runs list',
 	description:
-		'Gets a list of all runs for a user The response is a list of objects where each object contains basic information about a single actor run The endpoint supports pagination using the limit and offset parameters and it will not return more than 1000 array elements By default the records are sorted by the startedAt field in ascending order Therefore you can use pagination to incrementally fetch all records while new ones are still being created To sort the records in descending order use desc 1 parameter You can also filter runs by status available statuses',
+		'Gets a list of Actor runs for the user. This endpoint is useful for retrieving a history of runs, their statuses, and other data.',
 };
 
 const { properties, option } = runHooks(rawOption, rawProperties);

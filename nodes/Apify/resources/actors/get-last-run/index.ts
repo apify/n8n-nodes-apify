@@ -10,7 +10,7 @@ const rawOption: INodePropertyOptions = {
 	value: 'Get last run',
 	action: 'Get last run',
 	description:
-		'This is not a single endpoint but an entire group of endpoints that lets you to retrieve and manage the last run of given Actor or any of its default storages',
+		'Retrieves the most recent run of an Actor. This endpoint is useful for quickly accessing the latest run details, including its status and storages, without needing to specify a run ID.',
 };
 
 const { properties, option } = runHooks(rawOption, rawProperties);
