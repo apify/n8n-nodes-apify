@@ -8,7 +8,7 @@ export const name = 'Get items';
 const rawOption: INodePropertyOptions = {
 	name: 'Get Items',
 	value: 'Get items',
-	action: 'Get items',
+	action: 'Get dataset items',
 	description: 'Retrieves items from a dataset',
 };
 
