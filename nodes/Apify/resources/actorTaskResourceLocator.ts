@@ -75,7 +75,10 @@ export function overrideActorTaskProperties(properties: INodeProperties[]) {
 	});
 }
 
-export async function listActorTasks(this: ILoadOptionsFunctions): Promise<INodeListSearchResult> {
+export async function listActorTasks(
+	this: ILoadOptionsFunctions,
+	searchTerm?: string,
+): Promise<INodeListSearchResult> {
 	const searchResults = await apiRequestAllItems.call(this, {
 		method: 'GET',
 		uri: '/v2/actor-tasks',
@@ -85,11 +88,18 @@ export async function listActorTasks(this: ILoadOptionsFunctions): Promise<INode
 		},
 	});
 
-	const { data } = searchResults;
-	const { items } = data;
+	const {
+		data: { items },
+	} = searchResults;
+
+	let filteredItems = [...items];
+	if (searchTerm) {
+		const regex = new RegExp(searchTerm, 'i');
+		filteredItems = items.filter((b: any) => regex.test(b.title || '') || regex.test(b.name || ''));
+	}
 
 	return {
-		results: items.map((b: any) => ({
+		results: filteredItems.map((b: any) => ({
 			name: b.title || b.name,
 			value: b.id,
 			url: `https://console.apify.com/actors/tasks/${b.id}/input`,
