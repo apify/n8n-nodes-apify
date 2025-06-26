@@ -15,7 +15,7 @@ const resourceLocatorProperty: INodeProperties = {
 			typeOptions: {
 				searchListMethod: 'listActorTasks',
 				searchFilterRequired: false,
-				searchable: false,
+				searchable: true,
 			},
 		},
 		{

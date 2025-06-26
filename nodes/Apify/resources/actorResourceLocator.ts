@@ -15,7 +15,7 @@ const resourceLocatorProperty: INodeProperties = {
 			typeOptions: {
 				searchListMethod: 'listActors',
 				searchFilterRequired: false,
-				searchable: false,
+				searchable: true,
 			},
 		},
 		{
@@ -108,7 +108,10 @@ export function overrideActorProperties(properties: INodeProperties[]): INodePro
 	return result;
 }
 
-export async function listActors(this: ILoadOptionsFunctions): Promise<INodeListSearchResult> {
+export async function listActors(
+	this: ILoadOptionsFunctions,
+	searchTerm?: string,
+): Promise<INodeListSearchResult> {
 	const actorSource = this.getNodeParameter('actorSource', 'recentlyUsed') as string;
 
 	const mapToN8nResult = (actor: any) => ({
@@ -130,6 +133,15 @@ export async function listActors(this: ILoadOptionsFunctions): Promise<INodeList
 	});
 
 	if (actorSource === 'recentlyUsed') {
+		if (searchTerm) {
+			const regex = new RegExp(searchTerm, 'i');
+			const filteredActors = recentActors.filter(
+				(actor: any) => regex.test(actor.title || '') || regex.test(actor.name || ''),
+			);
+			return {
+				results: filteredActors.map(mapToN8nResult),
+			};
+		}
 		return {
 			results: recentActors.map(mapToN8nResult),
 		};
@@ -143,6 +155,7 @@ export async function listActors(this: ILoadOptionsFunctions): Promise<INodeList
 		qs: {
 			limit: 200,
 			offset: 0,
+			search: searchTerm,
 		},
 	});
 
