@@ -6,7 +6,7 @@ import { runHooks } from './hooks';
 export const scrapeSingleUrlName = 'Scrape single URL';
 
 const rawOption: INodePropertyOptions = {
-	name: scrapeSingleUrlName,
+	name: 'Scrape Single URL',
 	value: scrapeSingleUrlName,
 	action: scrapeSingleUrlName,
 	description:
