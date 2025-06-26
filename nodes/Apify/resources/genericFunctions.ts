@@ -7,7 +7,6 @@ import {
 	type ILoadOptionsFunctions,
 	type IRequestOptions,
 } from 'n8n-workflow';
-import { createHash } from 'crypto';
 
 type IApiRequestOptions = IRequestOptions & { uri?: string };
 
@@ -144,10 +143,9 @@ export function generateIdempotencyKey(
 	actorOrTaskId: string,
 	eventTypes: string[],
 ): string {
-	const hash = createHash('sha256');
-	const sortedEventTypes = eventTypes.sort();
-	hash.update(`${resource}:${actorOrTaskId}:${sortedEventTypes.join(',')}`);
-	return hash.digest('hex');
+	const sortedEventTypes = [...eventTypes].sort();
+	const raw = `${resource}:${actorOrTaskId}:${sortedEventTypes.join(',')}`;
+	return Buffer.from(raw).toString('base64');
 }
 
 export function compose(...fns: Function[]) {

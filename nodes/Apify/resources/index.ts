@@ -66,7 +66,8 @@ const extraProperties: INodeProperties[] = [
 		name: 'customBody',
 		type: 'json',
 		default: '{}',
-		description: 'Input for the Actor run. If empty, the run uses the input specified in the default run configuration.',
+		description:
+			'Input for the Actor run. If empty, the run uses the input specified in the default run configuration.',
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
