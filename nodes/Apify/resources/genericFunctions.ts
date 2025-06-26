@@ -7,7 +7,7 @@ import {
 	type ILoadOptionsFunctions,
 	type IRequestOptions,
 } from 'n8n-workflow';
-import { createHash } from 'node:crypto';
+import { createHash } from 'crypto';
 
 type IApiRequestOptions = IRequestOptions & { uri?: string };
 

@@ -8,7 +8,7 @@ const name = 'Get Key-Value Store Record';
 const rawOption: INodePropertyOptions = {
 	name: name,
 	value: name,
-	action: name,
+	action: 'Get key-value store record',
 	description: 'Gets a value stored in the key-value store under a specific key',
 };
 

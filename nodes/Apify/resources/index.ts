@@ -62,11 +62,11 @@ const extraProperties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Override Default Input',
+		displayName: 'Input JSON',
 		name: 'customBody',
 		type: 'json',
 		default: '{}',
-		description: 'Override default input for the Actor',
+		description: 'Input for the Actor run. If empty, the run uses the input specified in the default run configuration.',
 		displayOptions: {
 			show: {
 				resource: ['Actors'],

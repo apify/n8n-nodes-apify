@@ -4,7 +4,7 @@ export const properties: INodeProperties[] = [
 	{
 		displayName: 'URL',
 		name: 'url',
-		description: 'URL to be scraped',
+		description: 'URL to be scraped. Must start with http:// or https:// and be a valid URL.',
 		default: 'https://docs.apify.com/academy/web-scraping-for-beginners',
 		type: 'string',
 		displayOptions: {
