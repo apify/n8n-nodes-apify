@@ -20,7 +20,7 @@ export const properties: INodeProperties[] = [
 		displayName: 'Run ID',
 		name: 'runId',
 		required: true,
-		default: '3KH8gEpp4d8uQSe8T',
+		default: '',
 		type: 'string',
 		displayOptions: {
 			show: {

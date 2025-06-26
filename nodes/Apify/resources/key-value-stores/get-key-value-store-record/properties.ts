@@ -21,7 +21,7 @@ export const properties: INodeProperties[] = [
 		name: 'storeId',
 		required: true,
 		description: 'The ID of the Key-Value Store',
-		default: 'dmXls2mjfQVdzfrC6',
+		default: '',
 		type: 'string',
 		displayOptions: {
 			show: {

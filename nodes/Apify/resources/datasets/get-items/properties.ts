@@ -21,7 +21,7 @@ export const properties: INodeProperties[] = [
 		name: 'datasetId',
 		required: true,
 		description: 'Dataset ID or `username~dataset-name`',
-		default: 'WkzbQMuFYuamGv3YF',
+		default: '',
 		type: 'string',
 		displayOptions: {
 			show: {
