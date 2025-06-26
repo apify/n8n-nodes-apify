@@ -43,6 +43,20 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
+		displayName: 'Input JSON',
+		name: 'customBody',
+		type: 'json',
+		default: '{}',
+		description:
+			'Input for the Actor run. If empty, the run uses the input specified in the default run configuration.',
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Run actor'],
+			},
+		},
+	},
+	{
 		displayName: 'Timeout',
 		name: 'timeout',
 		description: `Optional timeout for the run, in seconds. By default, the run uses a

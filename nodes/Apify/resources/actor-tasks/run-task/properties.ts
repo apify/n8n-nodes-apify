@@ -31,6 +31,34 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
+		displayName: 'Use Custom Body',
+		name: 'useCustomBody',
+		type: 'boolean',
+		description: 'Whether to use a custom body',
+		// default to false since Task should use task-defined input for its Actor
+		default: false,
+		displayOptions: {
+			show: {
+				resource: ['Actor tasks'],
+				operation: ['Run task'],
+			},
+		},
+	},
+	{
+		displayName: 'Input (JSON)',
+		name: 'customBody',
+		type: 'json',
+		default: '{}',
+		description: 'Custom body to send',
+		displayOptions: {
+			show: {
+				useCustomBody: [true],
+				resource: ['Actor tasks'],
+				operation: ['Run task'],
+			},
+		},
+	},
+	{
 		displayName: 'Wait for Finish',
 		name: 'waitForFinish',
 		description:

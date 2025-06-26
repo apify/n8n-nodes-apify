@@ -45,52 +45,6 @@ const resourceSelect: INodeProperties[] = [
 	},
 ];
 
-// TODO: consider moving this to the operation specific properties
-const extraProperties: INodeProperties[] = [
-	{
-		displayName: 'Use Custom Body',
-		name: 'useCustomBody',
-		type: 'boolean',
-		description: 'Whether to use a custom body',
-		// default to false since Task should use task-defined input for its Actor
-		default: false,
-		displayOptions: {
-			show: {
-				resource: ['Actor tasks'],
-				operation: ['Run task'],
-			},
-		},
-	},
-	{
-		displayName: 'Input JSON',
-		name: 'customBody',
-		type: 'json',
-		default: '{}',
-		description:
-			'Input for the Actor run. If empty, the run uses the input specified in the default run configuration.',
-		displayOptions: {
-			show: {
-				resource: ['Actors'],
-				operation: ['Run actor'],
-			},
-		},
-	},
-	{
-		displayName: 'Input (JSON)',
-		name: 'customBody',
-		type: 'json',
-		default: '{}',
-		description: 'Custom body to send',
-		displayOptions: {
-			show: {
-				useCustomBody: [true],
-				resource: ['Actor tasks'],
-				operation: ['Run task'],
-			},
-		},
-	},
-];
-
 const rawProperties: INodeProperties[] = [
 	...authenticationProperties,
 	...resourceSelect,
@@ -99,7 +53,6 @@ const rawProperties: INodeProperties[] = [
 	...actorRuns.properties,
 	...datasets.properties,
 	...keyValueStores.properties,
-	...extraProperties,
 ];
 
 const { properties, methods: selfMethods } = runHooks(rawProperties);
