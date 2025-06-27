@@ -127,7 +127,7 @@ export async function listActors(
 		method: 'GET',
 		uri: '/v2/acts',
 		qs: {
-			limit: 200,
+			limit: 1000,
 			offset: 0,
 		},
 	});
