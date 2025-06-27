@@ -14,7 +14,7 @@ import { keyValueStoresRouter } from './key-value-stores/router';
 export async function resourceRouter(
 	this: IExecuteFunctions,
 	i: number,
-): Promise<INodeExecutionData> {
+): Promise<INodeExecutionData | INodeExecutionData[]> {
 	const resource = this.getNodeParameter('resource', 0);
 
 	switch (resource) {

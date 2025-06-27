@@ -56,7 +56,12 @@ export class Apify implements INodeType {
 		const returnData: INodeExecutionData[] = [];
 
 		for (let i = 0; i < items.length; i++) {
-			returnData.push(await resourceRouter.call(this, i));
+			const data = await resourceRouter.call(this, i);
+			if (Array.isArray(data)) {
+				returnData.push(...data);
+			} else {
+				returnData.push(data);
+			}
 		}
 
 		return [returnData];

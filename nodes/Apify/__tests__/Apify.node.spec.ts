@@ -1,7 +1,7 @@
 import { Apify } from '../Apify.node';
 import { executeWorkflow } from './utils/executeWorkflow';
 import { CredentialsHelper } from './utils/credentialHelper';
-import { getRunTaskDataByNodeName, getTaskData } from './utils/getNodeResultData';
+import { getRunTaskDataByNodeName, getTaskArrayData, getTaskData } from './utils/getNodeResultData';
 import getRunWorkflow from './workflows/actor-runs/get-run.workflow.json';
 import nock from 'nock';
 import getUserRunsListWorkflow from './workflows/actor-runs/get-user-runs-list.workflow.json';
@@ -59,7 +59,7 @@ describe('Apify Node', () => {
 				expect(nodeResult.executionStatus).toBe('success');
 
 				const data = getTaskData(nodeResult);
-				expect(data).toEqual(mockRun);
+				expect(data).toEqual(mockRun.data);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -72,7 +72,7 @@ describe('Apify Node', () => {
 				const scope = nock('https://api.apify.com')
 					.get('/v2/actor-runs')
 					.query(true)
-					.reply(200, { data: { items: mockRunsList } });
+					.reply(200, mockRunsList);
 
 				const { waitPromise } = await executeWorkflow({
 					credentialsHelper,
@@ -85,8 +85,9 @@ describe('Apify Node', () => {
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
 
-				const data = getTaskData(nodeResult);
-				expect(data).toEqual({ runs: mockRunsList });
+				const data = getTaskArrayData(nodeResult);
+				expect(Array.isArray(data)).toBe(true);
+				expect(data?.map((item) => item.json)).toEqual(mockRunsList.data.items);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -116,7 +117,7 @@ describe('Apify Node', () => {
 				expect(nodeResult.executionStatus).toBe('success');
 
 				const data = getTaskData(nodeResult);
-				expect(data).toEqual(mockRunTask);
+				expect(data).toEqual(mockRunTask.data);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -126,7 +127,7 @@ describe('Apify Node', () => {
 	describe('actors', () => {
 		describe('get-last-run', () => {
 			it('should run the get-last-run workflow', async () => {
-				const mockLastRun = fixtures.getLastRunResult()[0].data;
+				const mockLastRun = fixtures.getLastRunResult();
 
 				const scope = nock('https://api.apify.com')
 					.get('/v2/acts/nFJndFXA5zjCTuudP/runs/last')
@@ -145,14 +146,14 @@ describe('Apify Node', () => {
 				expect(nodeResult.executionStatus).toBe('success');
 
 				const data = getTaskData(nodeResult);
-				expect(data).toEqual(mockLastRun);
+				expect(data).toEqual(mockLastRun.data);
 
 				expect(scope.isDone()).toBe(true);
 			});
 		});
 		describe('run-actor', () => {
 			it('should run the run-actor workflow', async () => {
-				const mockRunActor = fixtures.runActorResult()[0].data;
+				const mockRunActor = fixtures.runActorResult();
 
 				const scope = nock('https://api.apify.com')
 					.get('/v2/acts/nFJndFXA5zjCTuudP')
@@ -161,7 +162,7 @@ describe('Apify Node', () => {
 					.reply(200, { data: fixtures.getBuildResult() })
 					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
 					.query({ waitForFinish: 60 })
-					.reply(200, fixtures.runActorResult()[0].data);
+					.reply(200, mockRunActor);
 
 				const runActorWorkflow = require('./workflows/actors/run-actor.workflow.json');
 				const { waitPromise } = await executeWorkflow({
@@ -176,7 +177,7 @@ describe('Apify Node', () => {
 				expect(nodeResult.executionStatus).toBe('success');
 
 				const data = getTaskData(nodeResult);
-				expect(data).toEqual(mockRunActor);
+				expect(data).toEqual(mockRunActor.data);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -240,9 +241,9 @@ describe('Apify Node', () => {
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
 
-				const data = getTaskData(nodeResult);
+				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data).toEqual(mockItems);
+				expect(data?.map((item) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});

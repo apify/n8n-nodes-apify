@@ -67,7 +67,7 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	const run = await runActorApi.call(this, actorId, mergedInput, qs);
 
 	return {
-		json: run,
+		json: { ...run.data },
 	};
 }
 
@@ -85,7 +85,7 @@ async function getBuildByTag(
 	}
 	const buildResp = await apiRequest.call(this, {
 		method: 'GET',
-		uri: `/v2/acts/${actorId}/builds/${buildByTag.buildId}`,
+		uri: `/v2/actor-builds/${buildByTag.buildId}`,
 	});
 	if (!buildResp || !buildResp.data) {
 		throw new NodeApiError(this.getNode(), {

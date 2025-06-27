@@ -19,19 +19,19 @@ export async function getKeyValueStoreRecord(
 	}
 
 	try {
-		const response = await this.helpers.httpRequestWithAuthentication.call(this, 'apifyApi', {
+		const apiResult = await this.helpers.httpRequestWithAuthentication.call(this, 'apifyApi', {
 			method: 'GET' as IHttpRequestMethods,
 			url: `${consts.APIFY_API_URL}/v2/key-value-stores/${storeId.value}/records/${recordKey.value}`,
 			returnFullResponse: true,
 			encoding: 'arraybuffer',
 		});
 
-		if (!response) {
+		if (!apiResult) {
 			return { json: {} };
 		}
 
-		const contentType = response.headers['content-type'] as string;
-		const value = response.body;
+		const contentType = apiResult.headers['content-type'] as string;
+		const value = apiResult.body;
 
 		const resultBase = {
 			storeId: storeId.value,
@@ -45,7 +45,7 @@ export async function getKeyValueStoreRecord(
 			!contentType.startsWith('application/json') &&
 			!contentType.startsWith('text/')
 		) {
-			const fileName = recordKey.value || response.key || 'file';
+			const fileName = recordKey.value || apiResult.key || 'file';
 
 			const binaryData = await this.helpers.prepareBinaryData(value, fileName, contentType);
 			return {

@@ -27,20 +27,20 @@ export async function runTask(this: IExecuteFunctions, i: number): Promise<INode
 	if (build) qs.build = build;
 
 	try {
-		const run = await apiRequest.call(this, {
+		const apiResult = await apiRequest.call(this, {
 			method: 'POST',
 			uri: `/v2/actor-tasks/${actorTaskId}/runs`,
 			body: input,
 			qs,
 		});
 
-		if (!run) {
+		if (!apiResult) {
 			throw new NodeApiError(this.getNode(), {
 				message: `Task run for ${actorTaskId} not found`,
 			});
 		}
 
-		return { json: { ...run } };
+		return { json: { ...apiResult.data } };
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
 	}

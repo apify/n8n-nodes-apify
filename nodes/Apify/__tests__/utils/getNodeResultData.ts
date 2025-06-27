@@ -7,3 +7,7 @@ export const getRunTaskDataByNodeName = (result: IRun, nodeName: string) => {
 export const getTaskData = (result: ITaskData) => {
 	return result.data?.main[0]?.[0].json;
 };
+
+export const getTaskArrayData = (result: ITaskData) => {
+	return result.data?.main[0];
+};

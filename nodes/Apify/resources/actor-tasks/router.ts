@@ -7,7 +7,7 @@ import { runTask } from './run-task/execute';
 export async function actorTasksRouter(
 	this: IExecuteFunctions,
 	i: number,
-): Promise<INodeExecutionData> {
+): Promise<INodeExecutionData | INodeExecutionData[]> {
 	const resource = this.getNodeParameter('resource', i);
 	const operation = this.getNodeParameter('operation', i);
 

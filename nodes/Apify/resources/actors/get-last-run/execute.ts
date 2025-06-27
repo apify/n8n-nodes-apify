@@ -14,12 +14,12 @@ export async function getLastRun(this: IExecuteFunctions, i: number): Promise<IN
 	}
 
 	try {
-		const lastRun = await apiRequest.call(this, {
+		const apiResult = await apiRequest.call(this, {
 			method: 'GET',
 			uri: `/v2/acts/${actorId.value}/runs/last`,
 		});
 
-		return { json: { ...lastRun } };
+		return { json: { ...apiResult.data } };
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
 	}

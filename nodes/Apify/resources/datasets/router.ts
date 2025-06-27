@@ -7,7 +7,7 @@ import { getItems } from './get-items/execute';
 export async function datasetsRouter(
 	this: IExecuteFunctions,
 	i: number,
-): Promise<INodeExecutionData> {
+): Promise<INodeExecutionData | INodeExecutionData[]> {
 	const resource = this.getNodeParameter('resource', i);
 	const operation = this.getNodeParameter('operation', i);
 

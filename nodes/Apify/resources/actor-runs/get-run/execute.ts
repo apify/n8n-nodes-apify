@@ -16,25 +16,25 @@ export async function getRun(this: IExecuteFunctions, i: number): Promise<INodeE
 	}
 
 	try {
-		const run = await apiRequest.call(this, {
+		const apiResult = await apiRequest.call(this, {
 			method: 'GET',
 			uri: `/v2/actor-runs/${runId}`,
 		});
 
-		if (!run) {
+		if (!apiResult) {
 			throw new NodeApiError(this.getNode(), {
 				message: `Run ${runId} not found`,
 			});
 		}
 
-		if (run.error) {
+		if (apiResult.error) {
 			throw new NodeApiError(this.getNode(), {
-				message: run.error.message,
-				type: run.error.type,
+				message: apiResult.error.message,
+				type: apiResult.error.type,
 			});
 		}
 
-		return { json: { ...run } };
+		return { json: { ...apiResult.data } };
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
 	}

@@ -11,7 +11,7 @@ import { getLastRun } from './get-last-run/execute';
 export async function actorsRouter(
 	this: IExecuteFunctions,
 	i: number,
-): Promise<INodeExecutionData> {
+): Promise<INodeExecutionData | INodeExecutionData[]> {
 	const resource = this.getNodeParameter('resource', i);
 	const operation = this.getNodeParameter('operation', i);
 

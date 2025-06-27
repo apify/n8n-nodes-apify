@@ -9,7 +9,7 @@ import { getUserRunsList } from './get-user-runs-list/execute';
 export async function actorRunsRouter(
 	this: IExecuteFunctions,
 	i: number,
-): Promise<INodeExecutionData> {
+): Promise<INodeExecutionData | INodeExecutionData[]> {
 	const resource = this.getNodeParameter('resource', i);
 	const operation = this.getNodeParameter('operation', i);
 
