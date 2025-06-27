@@ -40,15 +40,13 @@ export async function scrapeSingleUrl(
 			});
 		}
 
-		const itemsResponse = await apiRequest.call(this, {
+		const [item] = await apiRequest.call(this, {
 			method: 'GET',
 			uri: `/v2/datasets/${defaultDatasetId}/items`,
 			qs: { format: 'json' },
 		});
 
-		const items = itemsResponse?.items || itemsResponse?.data?.items || itemsResponse;
-
-		return { json: { items } };
+		return { json: { ...item } };
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
 	}
