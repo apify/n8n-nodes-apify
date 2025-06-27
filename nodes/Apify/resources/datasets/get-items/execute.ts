@@ -16,15 +16,13 @@ export async function getItems(this: IExecuteFunctions, i: number): Promise<INod
 	}
 
 	try {
-		const itemsResponse = await apiRequest.call(this, {
+		const items = await apiRequest.call(this, {
 			method: 'GET',
 			uri: `/v2/datasets/${datasetId}/items`,
 			qs: { offset, limit },
 		});
 
-		const items = itemsResponse?.items || itemsResponse?.data?.items || itemsResponse;
-
-		return { json: { items } };
+		return { json: items };
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
 	}
