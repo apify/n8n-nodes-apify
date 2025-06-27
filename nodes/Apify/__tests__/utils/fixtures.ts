@@ -1244,272 +1244,268 @@ export const getBuildResult = () => {
 export const getItemsResult = () => {
 	return [
 		{
-			items: [
+			'#debug': {
+				requestId: 'mLP4Zdz37yoTaQH',
+				url: 'http://www.google.com/search?q=typescript&num=2',
+				loadedUrl: 'http://www.google.com/search?q=typescript&num=2',
+				method: 'GET',
+				retryCount: 0,
+				errorMessages: [],
+				statusCode: 200,
+			},
+			'#error': false,
+			searchQuery: {
+				term: 'typescript',
+				url: 'http://www.google.com/search?q=typescript&num=2',
+				device: 'DESKTOP',
+				page: 1,
+				type: 'SEARCH',
+				domain: 'google.com',
+				countryCode: 'US',
+				languageCode: null,
+				locationUule: null,
+				resultsPerPage: '2',
+			},
+			url: 'http://www.google.com/search?q=typescript&num=2',
+			hasNextPage: true,
+			serpProviderCode: 'L',
+			resultsTotal: 148000000,
+			relatedQueries: [
 				{
-					'#debug': {
-						requestId: 'mLP4Zdz37yoTaQH',
-						url: 'http://www.google.com/search?q=typescript&num=2',
-						loadedUrl: 'http://www.google.com/search?q=typescript&num=2',
-						method: 'GET',
-						retryCount: 0,
-						errorMessages: [],
-						statusCode: 200,
-					},
-					'#error': false,
-					searchQuery: {
-						term: 'typescript',
-						url: 'http://www.google.com/search?q=typescript&num=2',
-						device: 'DESKTOP',
-						page: 1,
-						type: 'SEARCH',
-						domain: 'google.com',
-						countryCode: 'US',
-						languageCode: null,
-						locationUule: null,
-						resultsPerPage: '2',
-					},
-					url: 'http://www.google.com/search?q=typescript&num=2',
-					hasNextPage: true,
-					serpProviderCode: 'L',
-					resultsTotal: 148000000,
-					relatedQueries: [
-						{
-							title: 'TypeScript tutorial',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+tutorial&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhCEAE',
-						},
-						{
-							title: 'TypeScript vs JavaScript',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+vs+JavaScript&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhBEAE',
-						},
-						{
-							title: 'TypeScript npm',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+npm&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhAEAE',
-						},
-						{
-							title: 'TypeScript operator',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+operator&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg_EAE',
-						},
-						{
-							title: 'TypeScript W3Schools',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+W3Schools&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg7EAE',
-						},
-						{
-							title: 'TypeScript download',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+download&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg-EAE',
-						},
-						{
-							title: 'Typescript github',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=Typescript+github&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg9EAE',
-						},
-						{
-							title: 'TypeScript install',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+install&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg8EAE',
-						},
-						{
-							title: 'TypeScript tutorial',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+tutorial&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhCEAE',
-						},
-						{
-							title: 'TypeScript vs JavaScript',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+vs+JavaScript&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhBEAE',
-						},
-						{
-							title: 'TypeScript npm',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+npm&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhAEAE',
-						},
-						{
-							title: 'TypeScript operator',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+operator&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg_EAE',
-						},
-						{
-							title: 'TypeScript W3Schools',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+W3Schools&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg7EAE',
-						},
-						{
-							title: 'TypeScript download',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+download&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg-EAE',
-						},
-						{
-							title: 'Typescript github',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=Typescript+github&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg9EAE',
-						},
-						{
-							title: 'TypeScript install',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+install&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg8EAE',
-						},
-					],
-					paidResults: [],
-					paidProducts: [],
-					organicResults: [
-						{
-							title: 'TypeScript: JavaScript With Syntax For Types.',
-							url: 'https://www.typescriptlang.org/',
-							displayedUrl: 'https://www.typescriptlang.org',
-							description:
-								'TypeScript is a strongly typed programming language that builds on JavaScript, giving you better tooling at any scale.',
-							emphasizedKeywords: ['TypeScript'],
-							siteLinks: [],
-							productInfo: {},
-							type: 'organic',
-							position: 1,
-						},
-						{
-							title: 'TypeScript Introduction',
-							url: 'https://www.w3schools.com/typescript/typescript_intro.php',
-							displayedUrl: 'https://www.w3schools.com › typescript_intro',
-							description:
-								'TypeScript is a syntactic superset of JavaScript which adds static typing. This basically means that TypeScript adds syntax on top of JavaScript, allowing ...',
-							emphasizedKeywords: ['TypeScript'],
-							siteLinks: [],
-							productInfo: {},
-							type: 'organic',
-							position: 2,
-						},
-					],
-					suggestedResults: [],
-					peopleAlsoAsk: [],
-					aiOverview: {
-						type: 'live',
-						content: '',
-						sources: [],
-					},
-					customData: null,
-					htmlSnapshotUrl:
-						'https://api.apify.com/v2/key-value-stores/K1AdT7nsdFw2ThD5J/records/mLP4Zdz37yoTaQH-0.html',
+					title: 'TypeScript tutorial',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+tutorial&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhCEAE',
 				},
 				{
-					'#debug': {
-						requestId: 'wHMKm6x65gIpI7J',
-						url: 'http://www.google.com/search?q=javascript&num=2',
-						loadedUrl: 'http://www.google.com/search?q=javascript&num=2',
-						method: 'GET',
-						retryCount: 0,
-						errorMessages: [],
-						statusCode: 200,
-					},
-					'#error': false,
-					searchQuery: {
-						term: 'javascript',
-						url: 'http://www.google.com/search?q=javascript&num=2',
-						device: 'DESKTOP',
-						page: 1,
-						type: 'SEARCH',
-						domain: 'google.com',
-						countryCode: 'US',
-						languageCode: null,
-						locationUule: null,
-						resultsPerPage: '2',
-					},
-					url: 'http://www.google.com/search?q=javascript&num=2',
-					hasNextPage: true,
-					serpProviderCode: 'L',
-					resultsTotal: 5850000000,
-					relatedQueries: [
-						{
-							title: 'JavaScript download',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+download&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhGEAE',
-						},
-						{
-							title: 'JavaScript tutorial',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+tutorial&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhFEAE',
-						},
-						{
-							title: 'JavaScript code',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+code&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhEEAE',
-						},
-						{
-							title: 'Enable JavaScript',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=Enable+JavaScript&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhDEAE',
-						},
-						{
-							title: 'JavaScript compiler',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+compiler&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAg_EAE',
-						},
-						{
-							title: 'JavaScript interview questions',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+interview+questions&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhAEAE',
-						},
-						{
-							title: 'JavaScript - wikipedia',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+-+wikipedia&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhBEAE',
-						},
-						{
-							title: 'JavaScript W3Schools',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+W3Schools&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhCEAE',
-						},
-						{
-							title: 'JavaScript download',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+download&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhGEAE',
-						},
-						{
-							title: 'JavaScript tutorial',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+tutorial&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhFEAE',
-						},
-						{
-							title: 'JavaScript code',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+code&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhEEAE',
-						},
-						{
-							title: 'Enable JavaScript',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=Enable+JavaScript&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhDEAE',
-						},
-						{
-							title: 'JavaScript compiler',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+compiler&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAg_EAE',
-						},
-						{
-							title: 'JavaScript interview questions',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+interview+questions&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhAEAE',
-						},
-						{
-							title: 'JavaScript - wikipedia',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+-+wikipedia&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhBEAE',
-						},
-						{
-							title: 'JavaScript W3Schools',
-							url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+W3Schools&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhCEAE',
-						},
-					],
-					paidResults: [],
-					paidProducts: [],
-					organicResults: [
-						{
-							title: 'Learn JavaScript Online - Courses for Beginners - javascript ...',
-							url: 'https://www.javascript.com/',
-							displayedUrl: 'https://www.javascript.com',
-							description:
-								'JavaScript.com is a resource for the JavaScript community. You will find resources and examples for JavaScript beginners as well as support for JavaScript ...',
-							emphasizedKeywords: ['JavaScript.com'],
-							siteLinks: [],
-							productInfo: {},
-							type: 'organic',
-							position: 1,
-						},
-						{
-							title: 'JavaScript Tutorial',
-							url: 'https://www.w3schools.com/js/',
-							displayedUrl: 'https://www.w3schools.com › ...',
-							description:
-								'JavaScript is the programming language of the Web. JavaScript is easy to learn. This tutorial will teach you JavaScript from basic to advanced.',
-							emphasizedKeywords: ['JavaScript'],
-							siteLinks: [],
-							productInfo: {},
-							type: 'organic',
-							position: 2,
-						},
-					],
-					suggestedResults: [],
-					peopleAlsoAsk: [],
-					aiOverview: {
-						type: 'live',
-						content: '',
-						sources: [],
-					},
-					customData: null,
-					htmlSnapshotUrl:
-						'https://api.apify.com/v2/key-value-stores/K1AdT7nsdFw2ThD5J/records/wHMKm6x65gIpI7J-0.html',
+					title: 'TypeScript vs JavaScript',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+vs+JavaScript&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhBEAE',
+				},
+				{
+					title: 'TypeScript npm',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+npm&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhAEAE',
+				},
+				{
+					title: 'TypeScript operator',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+operator&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg_EAE',
+				},
+				{
+					title: 'TypeScript W3Schools',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+W3Schools&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg7EAE',
+				},
+				{
+					title: 'TypeScript download',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+download&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg-EAE',
+				},
+				{
+					title: 'Typescript github',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=Typescript+github&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg9EAE',
+				},
+				{
+					title: 'TypeScript install',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+install&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg8EAE',
+				},
+				{
+					title: 'TypeScript tutorial',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+tutorial&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhCEAE',
+				},
+				{
+					title: 'TypeScript vs JavaScript',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+vs+JavaScript&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhBEAE',
+				},
+				{
+					title: 'TypeScript npm',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+npm&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAhAEAE',
+				},
+				{
+					title: 'TypeScript operator',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+operator&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg_EAE',
+				},
+				{
+					title: 'TypeScript W3Schools',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+W3Schools&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg7EAE',
+				},
+				{
+					title: 'TypeScript download',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+download&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg-EAE',
+				},
+				{
+					title: 'Typescript github',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=Typescript+github&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg9EAE',
+				},
+				{
+					title: 'TypeScript install',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=TypeScript+install&sa=X&ved=2ahUKEwjj9I7IjPeNAxXQ4skDHdzsMVwQ1QJ6BAg8EAE',
 				},
 			],
+			paidResults: [],
+			paidProducts: [],
+			organicResults: [
+				{
+					title: 'TypeScript: JavaScript With Syntax For Types.',
+					url: 'https://www.typescriptlang.org/',
+					displayedUrl: 'https://www.typescriptlang.org',
+					description:
+						'TypeScript is a strongly typed programming language that builds on JavaScript, giving you better tooling at any scale.',
+					emphasizedKeywords: ['TypeScript'],
+					siteLinks: [],
+					productInfo: {},
+					type: 'organic',
+					position: 1,
+				},
+				{
+					title: 'TypeScript Introduction',
+					url: 'https://www.w3schools.com/typescript/typescript_intro.php',
+					displayedUrl: 'https://www.w3schools.com › typescript_intro',
+					description:
+						'TypeScript is a syntactic superset of JavaScript which adds static typing. This basically means that TypeScript adds syntax on top of JavaScript, allowing ...',
+					emphasizedKeywords: ['TypeScript'],
+					siteLinks: [],
+					productInfo: {},
+					type: 'organic',
+					position: 2,
+				},
+			],
+			suggestedResults: [],
+			peopleAlsoAsk: [],
+			aiOverview: {
+				type: 'live',
+				content: '',
+				sources: [],
+			},
+			customData: null,
+			htmlSnapshotUrl:
+				'https://api.apify.com/v2/key-value-stores/K1AdT7nsdFw2ThD5J/records/mLP4Zdz37yoTaQH-0.html',
+		},
+		{
+			'#debug': {
+				requestId: 'wHMKm6x65gIpI7J',
+				url: 'http://www.google.com/search?q=javascript&num=2',
+				loadedUrl: 'http://www.google.com/search?q=javascript&num=2',
+				method: 'GET',
+				retryCount: 0,
+				errorMessages: [],
+				statusCode: 200,
+			},
+			'#error': false,
+			searchQuery: {
+				term: 'javascript',
+				url: 'http://www.google.com/search?q=javascript&num=2',
+				device: 'DESKTOP',
+				page: 1,
+				type: 'SEARCH',
+				domain: 'google.com',
+				countryCode: 'US',
+				languageCode: null,
+				locationUule: null,
+				resultsPerPage: '2',
+			},
+			url: 'http://www.google.com/search?q=javascript&num=2',
+			hasNextPage: true,
+			serpProviderCode: 'L',
+			resultsTotal: 5850000000,
+			relatedQueries: [
+				{
+					title: 'JavaScript download',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+download&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhGEAE',
+				},
+				{
+					title: 'JavaScript tutorial',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+tutorial&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhFEAE',
+				},
+				{
+					title: 'JavaScript code',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+code&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhEEAE',
+				},
+				{
+					title: 'Enable JavaScript',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=Enable+JavaScript&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhDEAE',
+				},
+				{
+					title: 'JavaScript compiler',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+compiler&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAg_EAE',
+				},
+				{
+					title: 'JavaScript interview questions',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+interview+questions&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhAEAE',
+				},
+				{
+					title: 'JavaScript - wikipedia',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+-+wikipedia&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhBEAE',
+				},
+				{
+					title: 'JavaScript W3Schools',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+W3Schools&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhCEAE',
+				},
+				{
+					title: 'JavaScript download',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+download&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhGEAE',
+				},
+				{
+					title: 'JavaScript tutorial',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+tutorial&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhFEAE',
+				},
+				{
+					title: 'JavaScript code',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+code&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhEEAE',
+				},
+				{
+					title: 'Enable JavaScript',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=Enable+JavaScript&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhDEAE',
+				},
+				{
+					title: 'JavaScript compiler',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+compiler&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAg_EAE',
+				},
+				{
+					title: 'JavaScript interview questions',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+interview+questions&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhAEAE',
+				},
+				{
+					title: 'JavaScript - wikipedia',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+-+wikipedia&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhBEAE',
+				},
+				{
+					title: 'JavaScript W3Schools',
+					url: 'https://www.google.com/search?num=2&sca_esv=881644282a8af5f4&gl=us&hl=en&q=JavaScript+W3Schools&sa=X&ved=2ahUKEwiCjKDIjPeNAxVJV0EAHQEfNt0Q1QJ6BAhCEAE',
+				},
+			],
+			paidResults: [],
+			paidProducts: [],
+			organicResults: [
+				{
+					title: 'Learn JavaScript Online - Courses for Beginners - javascript ...',
+					url: 'https://www.javascript.com/',
+					displayedUrl: 'https://www.javascript.com',
+					description:
+						'JavaScript.com is a resource for the JavaScript community. You will find resources and examples for JavaScript beginners as well as support for JavaScript ...',
+					emphasizedKeywords: ['JavaScript.com'],
+					siteLinks: [],
+					productInfo: {},
+					type: 'organic',
+					position: 1,
+				},
+				{
+					title: 'JavaScript Tutorial',
+					url: 'https://www.w3schools.com/js/',
+					displayedUrl: 'https://www.w3schools.com › ...',
+					description:
+						'JavaScript is the programming language of the Web. JavaScript is easy to learn. This tutorial will teach you JavaScript from basic to advanced.',
+					emphasizedKeywords: ['JavaScript'],
+					siteLinks: [],
+					productInfo: {},
+					type: 'organic',
+					position: 2,
+				},
+			],
+			suggestedResults: [],
+			peopleAlsoAsk: [],
+			aiOverview: {
+				type: 'live',
+				content: '',
+				sources: [],
+			},
+			customData: null,
+			htmlSnapshotUrl:
+				'https://api.apify.com/v2/key-value-stores/K1AdT7nsdFw2ThD5J/records/wHMKm6x65gIpI7J-0.html',
 		},
 	];
 };
@@ -1517,87 +1513,83 @@ export const getItemsResult = () => {
 export const scrapeSingleUrlResult = () => {
 	return [
 		{
-			items: [
-				{
-					url: 'https://docs.apify.com/academy/web-scraping-for-beginners',
-					crawl: {
-						loadedUrl: 'https://docs.apify.com/academy/web-scraping-for-beginners',
-						loadedTime: '2025-06-16T23:34:15.523Z',
-						referrerUrl: 'https://docs.apify.com/academy/web-scraping-for-beginners',
-						depth: 0,
-						httpStatusCode: 200,
+			url: 'https://docs.apify.com/academy/web-scraping-for-beginners',
+			crawl: {
+				loadedUrl: 'https://docs.apify.com/academy/web-scraping-for-beginners',
+				loadedTime: '2025-06-16T23:34:15.523Z',
+				referrerUrl: 'https://docs.apify.com/academy/web-scraping-for-beginners',
+				depth: 0,
+				httpStatusCode: 200,
+			},
+			metadata: {
+				canonicalUrl: 'https://docs.apify.com/academy/web-scraping-for-beginners',
+				title: '',
+				description:
+					'Learn how to develop web scrapers with this comprehensive and practical course. Go from beginner to expert, all in one place.',
+				author: null,
+				keywords: null,
+				languageCode: 'en',
+				openGraph: [
+					{
+						property: 'og:url',
+						content: 'https://docs.apify.com/academy/web-scraping-for-beginners',
 					},
-					metadata: {
-						canonicalUrl: 'https://docs.apify.com/academy/web-scraping-for-beginners',
-						title: '',
-						description:
+					{
+						property: 'og:locale',
+						content: 'en',
+					},
+					{
+						property: 'og:title',
+						content: 'Web scraping basics for JavaScript devs | Academy | Apify Documentation',
+					},
+					{
+						property: 'og:description',
+						content:
 							'Learn how to develop web scrapers with this comprehensive and practical course. Go from beginner to expert, all in one place.',
-						author: null,
-						keywords: null,
-						languageCode: 'en',
-						openGraph: [
-							{
-								property: 'og:url',
-								content: 'https://docs.apify.com/academy/web-scraping-for-beginners',
-							},
-							{
-								property: 'og:locale',
-								content: 'en',
-							},
-							{
-								property: 'og:title',
-								content: 'Web scraping basics for JavaScript devs | Academy | Apify Documentation',
-							},
-							{
-								property: 'og:description',
-								content:
-									'Learn how to develop web scrapers with this comprehensive and practical course. Go from beginner to expert, all in one place.',
-							},
-							{
-								property: 'og:image',
-								content:
-									'https://apify.com/og-image/docs-article?title=Web+scraping+basics+for+JavaScript+devs',
-							},
-						],
-						jsonLd: null,
-						headers: {
-							':status': 200,
-							'content-type': 'text/html; charset=utf-8',
-							'content-length': '9859',
-							server: 'nginx',
-							'x-origin-cache': 'HIT',
-							'last-modified': 'Mon, 16 Jun 2025 16:15:02 GMT',
-							'access-control-allow-origin': '*',
-							'strict-transport-security': 'max-age=31556952',
-							'x-proxy-cache': 'MISS',
-							'x-github-request-id': '48EF:29A380:237AB7:27223B:685043BF',
-							'accept-ranges': 'bytes',
-							via: '1.1 varnish, 1.1 b7f97186b1999ddac2896624abb211e4.cloudfront.net (CloudFront)',
-							'x-served-by': 'cache-iad-kiad7000026-IAD',
-							'x-cache-hits': '0',
-							'x-timer': 'S1750090689.639343,VS0,VE18',
-							'x-fastly-request-id': '3b0bec76ee796ada03210a986cd4e988e11c9276',
-							'x-frame-options': 'SAMEORIGIN',
-							date: 'Mon, 16 Jun 2025 23:34:15 GMT',
-							'cache-control': 'max-age=600',
-							expires: 'Mon, 16 Jun 2025 22:17:22 GMT',
-							etag: 'W/"68504306-9443"',
-							vary: 'Accept-Encoding',
-							'x-cache': 'RefreshHit from cloudfront',
-							'x-amz-cf-pop': 'CMH68-P1',
-							'x-amz-cf-id': '0cBkRyhy38NBtROWSOOpRkjpZHBaoH4fCyDnQObNPKP4cA623n5SxA==',
-						},
 					},
-					screenshotUrl: null,
-					text: "Web scraping basics for JavaScript devs\nLearn how to develop web scrapers with this comprehensive and practical course. Go from beginner to expert, all in one place.\nWelcome to Web scraping basics for JavaScript devs, a comprehensive, practical and long form web scraping course that will take you from an absolute beginner to a successful web scraper developer. If you're looking for a quick start, we recommend trying this tutorial instead.\nThis course is made by Apify, the web scraping and automation platform, but we will use only open-source technologies throughout all academy lessons. This means that the skills you learn will be applicable to any scraping project, and you'll be able to run your scrapers on any computer. No Apify account needed.\nIf you would like to learn about the Apify platform and how it can help you build, run and scale your web scraping and automation projects, see the Apify platform course, where we'll teach you all about Apify serverless infrastructure, proxies, API, scheduling, webhooks and much more.\nWhy learn scraper development?​\nWith so many point-and-click tools and no-code software that can help you extract data from websites, what is the point of learning web scraper development? Contrary to what their marketing departments say, a point-and-click or no-code tool will never be as flexible, as powerful, or as optimized as a custom-built scraper.\nAny software can do only what it was programmed to do. If you build your own scraper, it can do anything you want. And you can always quickly change it to do more, less, or the same, but faster or cheaper. The possibilities are endless once you know how scraping really works.\nScraper development is a fun and challenging way to learn web development, web technologies, and understand the internet. You will reverse-engineer websites and understand how they work internally, what technologies they use and how they communicate with their servers. You will also master your chosen programming language and core programming concepts. When you truly understand web scraping, learning other technologies like React or Next.js will be a piece of cake.\nCourse Summary​\nWhen we set out to create the Academy, we wanted to build a complete guide to web scraping - a course that a beginner could use to create their first scraper, as well as a resource that professionals will continuously use to learn about advanced and niche web scraping techniques and technologies. All lessons include code examples and code-along exercises that you can use to immediately put your scraping skills into action.\nThis is what you'll learn in the Web scraping basics for JavaScript devs course:\nWeb scraping basics for JavaScript devs \nBasics of data extraction\nBasics of crawling\nBest practices\nRequirements​\nYou don't need to be a developer or a software engineer to complete this course, but basic programming knowledge is recommended. Don't be afraid, though. We explain everything in great detail in the course and provide external references that can help you level up your web scraping and web development skills. If you're new to programming, pay very close attention to the instructions and examples. A seemingly insignificant thing like using [] instead of () can make a lot of difference.\nIf you don't already have basic programming knowledge and would like to be well-prepared for this course, we recommend learning about JavaScript basics and CSS Selectors.\nAs you progress to the more advanced courses, the coding will get more challenging, but will still be manageable to a person with an intermediate level of programming skills.\nIdeally, you should have at least a moderate understanding of the following concepts:\nJavaScript + Node.js​\nIt is recommended to understand at least the fundamentals of JavaScript and be proficient with Node.js prior to starting this course. If you are not yet comfortable with asynchronous programming (with promises and async...await), loops (and the different types of loops in JavaScript), modularity, or working with external packages, we would recommend studying the following resources before coming back and continuing this section:\nasync...await (YouTube)\nJavaScript loops (MDN)\nModularity in Node.js\nGeneral web development​\nThroughout the next lessons, we will sometimes use certain technologies and terms related to the web without explaining them. This is because their knowledge will be assumed (unless we're showing something out of the ordinary).\nHTML\nHTTP protocol\nDevTools\njQuery or Cheerio​\nWe'll be using the Cheerio package a lot to parse data from HTML. This package provides an API using jQuery syntax to help traverse downloaded HTML within Node.js.\nNext up​\nThe course begins with a small bit of theory and moves into some realistic and practical examples of extracting data from the most popular websites on the internet using your browser console. Let's get to it!\nIf you already have experience with HTML, CSS, and browser DevTools, feel free to skip to the Basics of crawling section.",
-					html: '<div id="readability-content"><h1>Web scraping basics for JavaScript devs</h1><div id="readability-page-1" class="page"><div><header></header>\n<p><strong>Learn how to develop web scrapers with this comprehensive and practical course. Go from beginner to expert, all in one place.</strong></p>\n<hr>\n<p>Welcome to <strong>Web scraping basics for JavaScript devs</strong>, a comprehensive, practical and long form web scraping course that will take you from an absolute beginner to a successful web scraper developer. If you\'re looking for a quick start, we recommend trying <a href="https://blog.apify.com/web-scraping-javascript-nodejs/" target="_blank" rel="noopener">this tutorial</a> instead.</p>\n<p>This course is made by <a href="https://apify.com/" target="_blank" rel="noopener">Apify</a>, the web scraping and automation platform, but we will use only open-source technologies throughout all academy lessons. This means that the skills you learn will be applicable to any scraping project, and you\'ll be able to run your scrapers on any computer. No Apify account needed.</p>\n<p>If you would like to learn about the Apify platform and how it can help you build, run and scale your web scraping and automation projects, see the <a href="https://docs.apify.com/academy/apify-platform">Apify platform course</a>, where we\'ll teach you all about Apify serverless infrastructure, proxies, API, scheduling, webhooks and much more.</p>\n<h2 id="why-learn">Why learn scraper development?<a href="#why-learn" aria-label="Direct link to Why learn scraper development?" title="Direct link to Why learn scraper development?">​</a></h2>\n<p>With so many point-and-click tools and no-code software that can help you extract data from websites, what is the point of learning web scraper development? Contrary to what their marketing departments say, a point-and-click or no-code tool will never be as flexible, as powerful, or as optimized as a custom-built scraper.</p>\n<p>Any software can do only what it was programmed to do. If you build your own scraper, it can do anything you want. And you can always quickly change it to do more, less, or the same, but faster or cheaper. The possibilities are endless once you know how scraping really works.</p>\n<p>Scraper development is a fun and challenging way to learn web development, web technologies, and understand the internet. You will reverse-engineer websites and understand how they work internally, what technologies they use and how they communicate with their servers. You will also master your chosen programming language and core programming concepts. When you truly understand web scraping, learning other technologies like React or Next.js will be a piece of cake.</p>\n<h2 id="summary">Course Summary<a href="#summary" aria-label="Direct link to Course Summary" title="Direct link to Course Summary">​</a></h2>\n<p>When we set out to create the Academy, we wanted to build a complete guide to web scraping - a course that a beginner could use to create their first scraper, as well as a resource that professionals will continuously use to learn about advanced and niche web scraping techniques and technologies. All lessons include code examples and code-along exercises that you can use to immediately put your scraping skills into action.</p>\n<p>This is what you\'ll learn in the <strong>Web scraping basics for JavaScript devs</strong> course:</p>\n<ul>\n<li><a href="https://docs.apify.com/academy/web-scraping-for-beginners">Web scraping basics for JavaScript devs</a>\n<ul>\n<li><a href="https://docs.apify.com/academy/web-scraping-for-beginners/data-extraction">Basics of data extraction</a></li>\n<li><a href="https://docs.apify.com/academy/web-scraping-for-beginners/crawling">Basics of crawling</a></li>\n<li><a href="https://docs.apify.com/academy/web-scraping-for-beginners/best-practices">Best practices</a></li>\n</ul>\n</li>\n</ul>\n<h2 id="requirements">Requirements<a href="#requirements" aria-label="Direct link to Requirements" title="Direct link to Requirements">​</a></h2>\n<p>You don\'t need to be a developer or a software engineer to complete this course, but basic programming knowledge is recommended. Don\'t be afraid, though. We explain everything in great detail in the course and provide external references that can help you level up your web scraping and web development skills. If you\'re new to programming, pay very close attention to the instructions and examples. A seemingly insignificant thing like using <code>[]</code> instead of <code>()</code> can make a lot of difference.</p>\n<blockquote>\n<p>If you don\'t already have basic programming knowledge and would like to be well-prepared for this course, we recommend learning about <a href="https://developer.mozilla.org/en-US/curriculum/core/javascript-fundamentals/" target="_blank" rel="noopener">JavaScript basics</a> and <a href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors" target="_blank" rel="noopener">CSS Selectors</a>.</p>\n</blockquote>\n<p>As you progress to the more advanced courses, the coding will get more challenging, but will still be manageable to a person with an intermediate level of programming skills.</p>\n<p>Ideally, you should have at least a moderate understanding of the following concepts:</p>\n<h3 id="javascript-and-node">JavaScript + Node.js<a href="#javascript-and-node" aria-label="Direct link to JavaScript + Node.js" title="Direct link to JavaScript + Node.js">​</a></h3>\n<p>It is recommended to understand at least the fundamentals of JavaScript and be proficient with Node.js prior to starting this course. If you are not yet comfortable with asynchronous programming (with promises and <code>async...await</code>), loops (and the different types of loops in JavaScript), modularity, or working with external packages, we would recommend studying the following resources before coming back and continuing this section:</p>\n<ul>\n<li><a href="https://www.youtube.com/watch?v=vn3tm0quoqE&amp;ab_channel=Fireship" target="_blank" rel="noopener"><code>async...await</code> (YouTube)</a></li>\n<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration" target="_blank" rel="noopener">JavaScript loops (MDN)</a></li>\n<li><a href="https://javascript.plainenglish.io/how-to-use-modular-patterns-in-nodejs-982f0e5c8f6e" target="_blank" rel="noopener">Modularity in Node.js</a></li>\n</ul>\n<h3 id="general-web-development">General web development<a href="#general-web-development" aria-label="Direct link to General web development" title="Direct link to General web development">​</a></h3>\n<p>Throughout the next lessons, we will sometimes use certain technologies and terms related to the web without explaining them. This is because their knowledge will be <strong>assumed</strong> (unless we\'re showing something out of the ordinary).</p>\n<ul>\n<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank" rel="noopener">HTML</a></li>\n<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP" target="_blank" rel="noopener">HTTP protocol</a></li>\n<li><a href="https://docs.apify.com/academy/web-scraping-for-beginners/data-extraction/browser-devtools">DevTools</a></li>\n</ul>\n<h3 id="jquery-or-cheerio">jQuery or Cheerio<a href="#jquery-or-cheerio" aria-label="Direct link to jQuery or Cheerio" title="Direct link to jQuery or Cheerio">​</a></h3>\n<p>We\'ll be using the <a href="https://www.npmjs.com/package/cheerio" target="_blank" rel="noopener"><strong>Cheerio</strong></a> package a lot to parse data from HTML. This package provides an API using jQuery syntax to help traverse downloaded HTML within Node.js.</p>\n<h2 id="next">Next up<a href="#next" aria-label="Direct link to Next up" title="Direct link to Next up">​</a></h2>\n<p>The course begins with a small bit of theory and moves into some realistic and practical examples of extracting data from the most popular websites on the internet using your browser console. <a href="https://docs.apify.com/academy/web-scraping-for-beginners/introduction">Let\'s get to it!</a></p>\n<blockquote>\n<p>If you already have experience with HTML, CSS, and browser DevTools, feel free to skip to the <a href="https://docs.apify.com/academy/web-scraping-for-beginners/crawling">Basics of crawling</a> section.</p>\n</blockquote></div></div></div>',
-					markdown:
-						'# Web scraping basics for JavaScript devs\n\n**Learn how to develop web scrapers with this comprehensive and practical course. Go from beginner to expert, all in one place.**\n\n* * *\n\nWelcome to **Web scraping basics for JavaScript devs**, a comprehensive, practical and long form web scraping course that will take you from an absolute beginner to a successful web scraper developer. If you\'re looking for a quick start, we recommend trying [this tutorial](https://blog.apify.com/web-scraping-javascript-nodejs/) instead.\n\nThis course is made by [Apify](https://apify.com/), the web scraping and automation platform, but we will use only open-source technologies throughout all academy lessons. This means that the skills you learn will be applicable to any scraping project, and you\'ll be able to run your scrapers on any computer. No Apify account needed.\n\nIf you would like to learn about the Apify platform and how it can help you build, run and scale your web scraping and automation projects, see the [Apify platform course](https://docs.apify.com/academy/apify-platform), where we\'ll teach you all about Apify serverless infrastructure, proxies, API, scheduling, webhooks and much more.\n\n## Why learn scraper development?[​](#why-learn "Direct link to Why learn scraper development?")\n\nWith so many point-and-click tools and no-code software that can help you extract data from websites, what is the point of learning web scraper development? Contrary to what their marketing departments say, a point-and-click or no-code tool will never be as flexible, as powerful, or as optimized as a custom-built scraper.\n\nAny software can do only what it was programmed to do. If you build your own scraper, it can do anything you want. And you can always quickly change it to do more, less, or the same, but faster or cheaper. The possibilities are endless once you know how scraping really works.\n\nScraper development is a fun and challenging way to learn web development, web technologies, and understand the internet. You will reverse-engineer websites and understand how they work internally, what technologies they use and how they communicate with their servers. You will also master your chosen programming language and core programming concepts. When you truly understand web scraping, learning other technologies like React or Next.js will be a piece of cake.\n\n## Course Summary[​](#summary "Direct link to Course Summary")\n\nWhen we set out to create the Academy, we wanted to build a complete guide to web scraping - a course that a beginner could use to create their first scraper, as well as a resource that professionals will continuously use to learn about advanced and niche web scraping techniques and technologies. All lessons include code examples and code-along exercises that you can use to immediately put your scraping skills into action.\n\nThis is what you\'ll learn in the **Web scraping basics for JavaScript devs** course:\n\n*   [Web scraping basics for JavaScript devs](https://docs.apify.com/academy/web-scraping-for-beginners)\n    *   [Basics of data extraction](https://docs.apify.com/academy/web-scraping-for-beginners/data-extraction)\n    *   [Basics of crawling](https://docs.apify.com/academy/web-scraping-for-beginners/crawling)\n    *   [Best practices](https://docs.apify.com/academy/web-scraping-for-beginners/best-practices)\n\n## Requirements[​](#requirements "Direct link to Requirements")\n\nYou don\'t need to be a developer or a software engineer to complete this course, but basic programming knowledge is recommended. Don\'t be afraid, though. We explain everything in great detail in the course and provide external references that can help you level up your web scraping and web development skills. If you\'re new to programming, pay very close attention to the instructions and examples. A seemingly insignificant thing like using `[]` instead of `()` can make a lot of difference.\n\n> If you don\'t already have basic programming knowledge and would like to be well-prepared for this course, we recommend learning about [JavaScript basics](https://developer.mozilla.org/en-US/curriculum/core/javascript-fundamentals/) and [CSS Selectors](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors).\n\nAs you progress to the more advanced courses, the coding will get more challenging, but will still be manageable to a person with an intermediate level of programming skills.\n\nIdeally, you should have at least a moderate understanding of the following concepts:\n\n### JavaScript + Node.js[​](#javascript-and-node "Direct link to JavaScript + Node.js")\n\nIt is recommended to understand at least the fundamentals of JavaScript and be proficient with Node.js prior to starting this course. If you are not yet comfortable with asynchronous programming (with promises and `async...await`), loops (and the different types of loops in JavaScript), modularity, or working with external packages, we would recommend studying the following resources before coming back and continuing this section:\n\n*   [`async...await` (YouTube)](https://www.youtube.com/watch?v=vn3tm0quoqE&ab_channel=Fireship)\n*   [JavaScript loops (MDN)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration)\n*   [Modularity in Node.js](https://javascript.plainenglish.io/how-to-use-modular-patterns-in-nodejs-982f0e5c8f6e)\n\n### General web development[​](#general-web-development "Direct link to General web development")\n\nThroughout the next lessons, we will sometimes use certain technologies and terms related to the web without explaining them. This is because their knowledge will be **assumed** (unless we\'re showing something out of the ordinary).\n\n*   [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML)\n*   [HTTP protocol](https://developer.mozilla.org/en-US/docs/Web/HTTP)\n*   [DevTools](https://docs.apify.com/academy/web-scraping-for-beginners/data-extraction/browser-devtools)\n\n### jQuery or Cheerio[​](#jquery-or-cheerio "Direct link to jQuery or Cheerio")\n\nWe\'ll be using the [**Cheerio**](https://www.npmjs.com/package/cheerio) package a lot to parse data from HTML. This package provides an API using jQuery syntax to help traverse downloaded HTML within Node.js.\n\n## Next up[​](#next "Direct link to Next up")\n\nThe course begins with a small bit of theory and moves into some realistic and practical examples of extracting data from the most popular websites on the internet using your browser console. [Let\'s get to it!](https://docs.apify.com/academy/web-scraping-for-beginners/introduction)\n\n> If you already have experience with HTML, CSS, and browser DevTools, feel free to skip to the [Basics of crawling](https://docs.apify.com/academy/web-scraping-for-beginners/crawling) section.',
-					debug: {
-						requestHandlerMode: 'http',
+					{
+						property: 'og:image',
+						content:
+							'https://apify.com/og-image/docs-article?title=Web+scraping+basics+for+JavaScript+devs',
 					},
+				],
+				jsonLd: null,
+				headers: {
+					':status': 200,
+					'content-type': 'text/html; charset=utf-8',
+					'content-length': '9859',
+					server: 'nginx',
+					'x-origin-cache': 'HIT',
+					'last-modified': 'Mon, 16 Jun 2025 16:15:02 GMT',
+					'access-control-allow-origin': '*',
+					'strict-transport-security': 'max-age=31556952',
+					'x-proxy-cache': 'MISS',
+					'x-github-request-id': '48EF:29A380:237AB7:27223B:685043BF',
+					'accept-ranges': 'bytes',
+					via: '1.1 varnish, 1.1 b7f97186b1999ddac2896624abb211e4.cloudfront.net (CloudFront)',
+					'x-served-by': 'cache-iad-kiad7000026-IAD',
+					'x-cache-hits': '0',
+					'x-timer': 'S1750090689.639343,VS0,VE18',
+					'x-fastly-request-id': '3b0bec76ee796ada03210a986cd4e988e11c9276',
+					'x-frame-options': 'SAMEORIGIN',
+					date: 'Mon, 16 Jun 2025 23:34:15 GMT',
+					'cache-control': 'max-age=600',
+					expires: 'Mon, 16 Jun 2025 22:17:22 GMT',
+					etag: 'W/"68504306-9443"',
+					vary: 'Accept-Encoding',
+					'x-cache': 'RefreshHit from cloudfront',
+					'x-amz-cf-pop': 'CMH68-P1',
+					'x-amz-cf-id': '0cBkRyhy38NBtROWSOOpRkjpZHBaoH4fCyDnQObNPKP4cA623n5SxA==',
 				},
-			],
+			},
+			screenshotUrl: null,
+			text: "Web scraping basics for JavaScript devs\nLearn how to develop web scrapers with this comprehensive and practical course. Go from beginner to expert, all in one place.\nWelcome to Web scraping basics for JavaScript devs, a comprehensive, practical and long form web scraping course that will take you from an absolute beginner to a successful web scraper developer. If you're looking for a quick start, we recommend trying this tutorial instead.\nThis course is made by Apify, the web scraping and automation platform, but we will use only open-source technologies throughout all academy lessons. This means that the skills you learn will be applicable to any scraping project, and you'll be able to run your scrapers on any computer. No Apify account needed.\nIf you would like to learn about the Apify platform and how it can help you build, run and scale your web scraping and automation projects, see the Apify platform course, where we'll teach you all about Apify serverless infrastructure, proxies, API, scheduling, webhooks and much more.\nWhy learn scraper development?​\nWith so many point-and-click tools and no-code software that can help you extract data from websites, what is the point of learning web scraper development? Contrary to what their marketing departments say, a point-and-click or no-code tool will never be as flexible, as powerful, or as optimized as a custom-built scraper.\nAny software can do only what it was programmed to do. If you build your own scraper, it can do anything you want. And you can always quickly change it to do more, less, or the same, but faster or cheaper. The possibilities are endless once you know how scraping really works.\nScraper development is a fun and challenging way to learn web development, web technologies, and understand the internet. You will reverse-engineer websites and understand how they work internally, what technologies they use and how they communicate with their servers. You will also master your chosen programming language and core programming concepts. When you truly understand web scraping, learning other technologies like React or Next.js will be a piece of cake.\nCourse Summary​\nWhen we set out to create the Academy, we wanted to build a complete guide to web scraping - a course that a beginner could use to create their first scraper, as well as a resource that professionals will continuously use to learn about advanced and niche web scraping techniques and technologies. All lessons include code examples and code-along exercises that you can use to immediately put your scraping skills into action.\nThis is what you'll learn in the Web scraping basics for JavaScript devs course:\nWeb scraping basics for JavaScript devs \nBasics of data extraction\nBasics of crawling\nBest practices\nRequirements​\nYou don't need to be a developer or a software engineer to complete this course, but basic programming knowledge is recommended. Don't be afraid, though. We explain everything in great detail in the course and provide external references that can help you level up your web scraping and web development skills. If you're new to programming, pay very close attention to the instructions and examples. A seemingly insignificant thing like using [] instead of () can make a lot of difference.\nIf you don't already have basic programming knowledge and would like to be well-prepared for this course, we recommend learning about JavaScript basics and CSS Selectors.\nAs you progress to the more advanced courses, the coding will get more challenging, but will still be manageable to a person with an intermediate level of programming skills.\nIdeally, you should have at least a moderate understanding of the following concepts:\nJavaScript + Node.js​\nIt is recommended to understand at least the fundamentals of JavaScript and be proficient with Node.js prior to starting this course. If you are not yet comfortable with asynchronous programming (with promises and async...await), loops (and the different types of loops in JavaScript), modularity, or working with external packages, we would recommend studying the following resources before coming back and continuing this section:\nasync...await (YouTube)\nJavaScript loops (MDN)\nModularity in Node.js\nGeneral web development​\nThroughout the next lessons, we will sometimes use certain technologies and terms related to the web without explaining them. This is because their knowledge will be assumed (unless we're showing something out of the ordinary).\nHTML\nHTTP protocol\nDevTools\njQuery or Cheerio​\nWe'll be using the Cheerio package a lot to parse data from HTML. This package provides an API using jQuery syntax to help traverse downloaded HTML within Node.js.\nNext up​\nThe course begins with a small bit of theory and moves into some realistic and practical examples of extracting data from the most popular websites on the internet using your browser console. Let's get to it!\nIf you already have experience with HTML, CSS, and browser DevTools, feel free to skip to the Basics of crawling section.",
+			html: '<div id="readability-content"><h1>Web scraping basics for JavaScript devs</h1><div id="readability-page-1" class="page"><div><header></header>\n<p><strong>Learn how to develop web scrapers with this comprehensive and practical course. Go from beginner to expert, all in one place.</strong></p>\n<hr>\n<p>Welcome to <strong>Web scraping basics for JavaScript devs</strong>, a comprehensive, practical and long form web scraping course that will take you from an absolute beginner to a successful web scraper developer. If you\'re looking for a quick start, we recommend trying <a href="https://blog.apify.com/web-scraping-javascript-nodejs/" target="_blank" rel="noopener">this tutorial</a> instead.</p>\n<p>This course is made by <a href="https://apify.com/" target="_blank" rel="noopener">Apify</a>, the web scraping and automation platform, but we will use only open-source technologies throughout all academy lessons. This means that the skills you learn will be applicable to any scraping project, and you\'ll be able to run your scrapers on any computer. No Apify account needed.</p>\n<p>If you would like to learn about the Apify platform and how it can help you build, run and scale your web scraping and automation projects, see the <a href="https://docs.apify.com/academy/apify-platform">Apify platform course</a>, where we\'ll teach you all about Apify serverless infrastructure, proxies, API, scheduling, webhooks and much more.</p>\n<h2 id="why-learn">Why learn scraper development?<a href="#why-learn" aria-label="Direct link to Why learn scraper development?" title="Direct link to Why learn scraper development?">​</a></h2>\n<p>With so many point-and-click tools and no-code software that can help you extract data from websites, what is the point of learning web scraper development? Contrary to what their marketing departments say, a point-and-click or no-code tool will never be as flexible, as powerful, or as optimized as a custom-built scraper.</p>\n<p>Any software can do only what it was programmed to do. If you build your own scraper, it can do anything you want. And you can always quickly change it to do more, less, or the same, but faster or cheaper. The possibilities are endless once you know how scraping really works.</p>\n<p>Scraper development is a fun and challenging way to learn web development, web technologies, and understand the internet. You will reverse-engineer websites and understand how they work internally, what technologies they use and how they communicate with their servers. You will also master your chosen programming language and core programming concepts. When you truly understand web scraping, learning other technologies like React or Next.js will be a piece of cake.</p>\n<h2 id="summary">Course Summary<a href="#summary" aria-label="Direct link to Course Summary" title="Direct link to Course Summary">​</a></h2>\n<p>When we set out to create the Academy, we wanted to build a complete guide to web scraping - a course that a beginner could use to create their first scraper, as well as a resource that professionals will continuously use to learn about advanced and niche web scraping techniques and technologies. All lessons include code examples and code-along exercises that you can use to immediately put your scraping skills into action.</p>\n<p>This is what you\'ll learn in the <strong>Web scraping basics for JavaScript devs</strong> course:</p>\n<ul>\n<li><a href="https://docs.apify.com/academy/web-scraping-for-beginners">Web scraping basics for JavaScript devs</a>\n<ul>\n<li><a href="https://docs.apify.com/academy/web-scraping-for-beginners/data-extraction">Basics of data extraction</a></li>\n<li><a href="https://docs.apify.com/academy/web-scraping-for-beginners/crawling">Basics of crawling</a></li>\n<li><a href="https://docs.apify.com/academy/web-scraping-for-beginners/best-practices">Best practices</a></li>\n</ul>\n</li>\n</ul>\n<h2 id="requirements">Requirements<a href="#requirements" aria-label="Direct link to Requirements" title="Direct link to Requirements">​</a></h2>\n<p>You don\'t need to be a developer or a software engineer to complete this course, but basic programming knowledge is recommended. Don\'t be afraid, though. We explain everything in great detail in the course and provide external references that can help you level up your web scraping and web development skills. If you\'re new to programming, pay very close attention to the instructions and examples. A seemingly insignificant thing like using <code>[]</code> instead of <code>()</code> can make a lot of difference.</p>\n<blockquote>\n<p>If you don\'t already have basic programming knowledge and would like to be well-prepared for this course, we recommend learning about <a href="https://developer.mozilla.org/en-US/curriculum/core/javascript-fundamentals/" target="_blank" rel="noopener">JavaScript basics</a> and <a href="https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors" target="_blank" rel="noopener">CSS Selectors</a>.</p>\n</blockquote>\n<p>As you progress to the more advanced courses, the coding will get more challenging, but will still be manageable to a person with an intermediate level of programming skills.</p>\n<p>Ideally, you should have at least a moderate understanding of the following concepts:</p>\n<h3 id="javascript-and-node">JavaScript + Node.js<a href="#javascript-and-node" aria-label="Direct link to JavaScript + Node.js" title="Direct link to JavaScript + Node.js">​</a></h3>\n<p>It is recommended to understand at least the fundamentals of JavaScript and be proficient with Node.js prior to starting this course. If you are not yet comfortable with asynchronous programming (with promises and <code>async...await</code>), loops (and the different types of loops in JavaScript), modularity, or working with external packages, we would recommend studying the following resources before coming back and continuing this section:</p>\n<ul>\n<li><a href="https://www.youtube.com/watch?v=vn3tm0quoqE&amp;ab_channel=Fireship" target="_blank" rel="noopener"><code>async...await</code> (YouTube)</a></li>\n<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration" target="_blank" rel="noopener">JavaScript loops (MDN)</a></li>\n<li><a href="https://javascript.plainenglish.io/how-to-use-modular-patterns-in-nodejs-982f0e5c8f6e" target="_blank" rel="noopener">Modularity in Node.js</a></li>\n</ul>\n<h3 id="general-web-development">General web development<a href="#general-web-development" aria-label="Direct link to General web development" title="Direct link to General web development">​</a></h3>\n<p>Throughout the next lessons, we will sometimes use certain technologies and terms related to the web without explaining them. This is because their knowledge will be <strong>assumed</strong> (unless we\'re showing something out of the ordinary).</p>\n<ul>\n<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank" rel="noopener">HTML</a></li>\n<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP" target="_blank" rel="noopener">HTTP protocol</a></li>\n<li><a href="https://docs.apify.com/academy/web-scraping-for-beginners/data-extraction/browser-devtools">DevTools</a></li>\n</ul>\n<h3 id="jquery-or-cheerio">jQuery or Cheerio<a href="#jquery-or-cheerio" aria-label="Direct link to jQuery or Cheerio" title="Direct link to jQuery or Cheerio">​</a></h3>\n<p>We\'ll be using the <a href="https://www.npmjs.com/package/cheerio" target="_blank" rel="noopener"><strong>Cheerio</strong></a> package a lot to parse data from HTML. This package provides an API using jQuery syntax to help traverse downloaded HTML within Node.js.</p>\n<h2 id="next">Next up<a href="#next" aria-label="Direct link to Next up" title="Direct link to Next up">​</a></h2>\n<p>The course begins with a small bit of theory and moves into some realistic and practical examples of extracting data from the most popular websites on the internet using your browser console. <a href="https://docs.apify.com/academy/web-scraping-for-beginners/introduction">Let\'s get to it!</a></p>\n<blockquote>\n<p>If you already have experience with HTML, CSS, and browser DevTools, feel free to skip to the <a href="https://docs.apify.com/academy/web-scraping-for-beginners/crawling">Basics of crawling</a> section.</p>\n</blockquote></div></div></div>',
+			markdown:
+				'# Web scraping basics for JavaScript devs\n\n**Learn how to develop web scrapers with this comprehensive and practical course. Go from beginner to expert, all in one place.**\n\n* * *\n\nWelcome to **Web scraping basics for JavaScript devs**, a comprehensive, practical and long form web scraping course that will take you from an absolute beginner to a successful web scraper developer. If you\'re looking for a quick start, we recommend trying [this tutorial](https://blog.apify.com/web-scraping-javascript-nodejs/) instead.\n\nThis course is made by [Apify](https://apify.com/), the web scraping and automation platform, but we will use only open-source technologies throughout all academy lessons. This means that the skills you learn will be applicable to any scraping project, and you\'ll be able to run your scrapers on any computer. No Apify account needed.\n\nIf you would like to learn about the Apify platform and how it can help you build, run and scale your web scraping and automation projects, see the [Apify platform course](https://docs.apify.com/academy/apify-platform), where we\'ll teach you all about Apify serverless infrastructure, proxies, API, scheduling, webhooks and much more.\n\n## Why learn scraper development?[​](#why-learn "Direct link to Why learn scraper development?")\n\nWith so many point-and-click tools and no-code software that can help you extract data from websites, what is the point of learning web scraper development? Contrary to what their marketing departments say, a point-and-click or no-code tool will never be as flexible, as powerful, or as optimized as a custom-built scraper.\n\nAny software can do only what it was programmed to do. If you build your own scraper, it can do anything you want. And you can always quickly change it to do more, less, or the same, but faster or cheaper. The possibilities are endless once you know how scraping really works.\n\nScraper development is a fun and challenging way to learn web development, web technologies, and understand the internet. You will reverse-engineer websites and understand how they work internally, what technologies they use and how they communicate with their servers. You will also master your chosen programming language and core programming concepts. When you truly understand web scraping, learning other technologies like React or Next.js will be a piece of cake.\n\n## Course Summary[​](#summary "Direct link to Course Summary")\n\nWhen we set out to create the Academy, we wanted to build a complete guide to web scraping - a course that a beginner could use to create their first scraper, as well as a resource that professionals will continuously use to learn about advanced and niche web scraping techniques and technologies. All lessons include code examples and code-along exercises that you can use to immediately put your scraping skills into action.\n\nThis is what you\'ll learn in the **Web scraping basics for JavaScript devs** course:\n\n*   [Web scraping basics for JavaScript devs](https://docs.apify.com/academy/web-scraping-for-beginners)\n    *   [Basics of data extraction](https://docs.apify.com/academy/web-scraping-for-beginners/data-extraction)\n    *   [Basics of crawling](https://docs.apify.com/academy/web-scraping-for-beginners/crawling)\n    *   [Best practices](https://docs.apify.com/academy/web-scraping-for-beginners/best-practices)\n\n## Requirements[​](#requirements "Direct link to Requirements")\n\nYou don\'t need to be a developer or a software engineer to complete this course, but basic programming knowledge is recommended. Don\'t be afraid, though. We explain everything in great detail in the course and provide external references that can help you level up your web scraping and web development skills. If you\'re new to programming, pay very close attention to the instructions and examples. A seemingly insignificant thing like using `[]` instead of `()` can make a lot of difference.\n\n> If you don\'t already have basic programming knowledge and would like to be well-prepared for this course, we recommend learning about [JavaScript basics](https://developer.mozilla.org/en-US/curriculum/core/javascript-fundamentals/) and [CSS Selectors](https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Selectors).\n\nAs you progress to the more advanced courses, the coding will get more challenging, but will still be manageable to a person with an intermediate level of programming skills.\n\nIdeally, you should have at least a moderate understanding of the following concepts:\n\n### JavaScript + Node.js[​](#javascript-and-node "Direct link to JavaScript + Node.js")\n\nIt is recommended to understand at least the fundamentals of JavaScript and be proficient with Node.js prior to starting this course. If you are not yet comfortable with asynchronous programming (with promises and `async...await`), loops (and the different types of loops in JavaScript), modularity, or working with external packages, we would recommend studying the following resources before coming back and continuing this section:\n\n*   [`async...await` (YouTube)](https://www.youtube.com/watch?v=vn3tm0quoqE&ab_channel=Fireship)\n*   [JavaScript loops (MDN)](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration)\n*   [Modularity in Node.js](https://javascript.plainenglish.io/how-to-use-modular-patterns-in-nodejs-982f0e5c8f6e)\n\n### General web development[​](#general-web-development "Direct link to General web development")\n\nThroughout the next lessons, we will sometimes use certain technologies and terms related to the web without explaining them. This is because their knowledge will be **assumed** (unless we\'re showing something out of the ordinary).\n\n*   [HTML](https://developer.mozilla.org/en-US/docs/Web/HTML)\n*   [HTTP protocol](https://developer.mozilla.org/en-US/docs/Web/HTTP)\n*   [DevTools](https://docs.apify.com/academy/web-scraping-for-beginners/data-extraction/browser-devtools)\n\n### jQuery or Cheerio[​](#jquery-or-cheerio "Direct link to jQuery or Cheerio")\n\nWe\'ll be using the [**Cheerio**](https://www.npmjs.com/package/cheerio) package a lot to parse data from HTML. This package provides an API using jQuery syntax to help traverse downloaded HTML within Node.js.\n\n## Next up[​](#next "Direct link to Next up")\n\nThe course begins with a small bit of theory and moves into some realistic and practical examples of extracting data from the most popular websites on the internet using your browser console. [Let\'s get to it!](https://docs.apify.com/academy/web-scraping-for-beginners/introduction)\n\n> If you already have experience with HTML, CSS, and browser DevTools, feel free to skip to the [Basics of crawling](https://docs.apify.com/academy/web-scraping-for-beginners/crawling) section.',
+			debug: {
+				requestHandlerMode: 'http',
+			},
 		},
 	];
 };

@@ -194,7 +194,7 @@ describe('Apify Node', () => {
 					.reply(200, mockRunResponse)
 					.get(`/v2/datasets/${datasetId}/items`)
 					.query({ format: 'json' })
-					.reply(200, { items: mockItems });
+					.reply(200, mockItems);
 
 				const scrapeSingleUrlWorkflow = require('./workflows/actors/scrape-single-url.workflow.json');
 				const { waitPromise } = await executeWorkflow({
@@ -209,7 +209,8 @@ describe('Apify Node', () => {
 				expect(nodeResult.executionStatus).toBe('success');
 
 				const data = getTaskData(nodeResult);
-				expect(data).toEqual({ items: mockItems });
+				expect(typeof data).toBe('object');
+				expect(data).toEqual(mockItems[0]);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -225,7 +226,7 @@ describe('Apify Node', () => {
 				const scope = nock('https://api.apify.com')
 					.get(`/v2/datasets/${datasetId}/items`)
 					.query(true)
-					.reply(200, { items: mockItems });
+					.reply(200, mockItems);
 
 				const getItemsWorkflow = require('./workflows/datasets/get-items.workflow.json');
 				const { waitPromise } = await executeWorkflow({
@@ -240,7 +241,8 @@ describe('Apify Node', () => {
 				expect(nodeResult.executionStatus).toBe('success');
 
 				const data = getTaskData(nodeResult);
-				expect(data).toEqual({ items: mockItems });
+				expect(Array.isArray(data)).toBe(true);
+				expect(data).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});
