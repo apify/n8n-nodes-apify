@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { apiRequest } from '../../genericFunctions';
+import * as helpers from '../../../helpers';
 
 export async function runActor(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorId = this.getNodeParameter('actorId', i, undefined, {
@@ -13,7 +14,7 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	const timeout = this.getNodeParameter('timeout', i) as number | null;
 	const memory = this.getNodeParameter('memory', i) as number | null;
 	const buildParam = this.getNodeParameter('build', i) as string | null;
-	const waitForFinish = this.getNodeParameter('waitForFinish', i) as number | null;
+	const waitForFinish = this.getNodeParameter('waitForFinish', i) as boolean;
 	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string;
 
 	let userInput: any;
@@ -61,13 +62,52 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	if (timeout != null) qs.timeout = timeout;
 	if (memory != null) qs.memory = memory;
 	if (build?.buildTag) qs.build = build.buildTag;
-	if (waitForFinish != null) qs.waitForFinish = waitForFinish;
+	qs.waitForFinish = 0; // set initial run actor to not wait for finish
 
 	// 6. Run the actor
 	const run = await runActorApi.call(this, actorId, mergedInput, qs);
+	if (!run?.data?.id) {
+		throw new NodeApiError(this.getNode(), {
+			message: `Run ID not found after running the actor`,
+		});
+	}
 
+	// 7a. If waitForFinish is false, return the run data immediately
+	if (!waitForFinish) {
+		return {
+			json: { ...run.data },
+		};
+	}
+
+	// 7b. Start polling for run status until it reaches a terminal state or max attempts are reached
+	const runId = run.data.id;
+	let lastRunData = run.data;
+	for (
+		let pollAttempt = 0;
+		pollAttempt < helpers.consts.WAIT_FOR_FINISH_POLL_ATTEMPTS;
+		pollAttempt++
+	) {
+		try {
+			const pollResult = await apiRequest.call(this, {
+				method: 'GET',
+				uri: `/v2/actor-runs/${runId}`,
+			});
+			const status = pollResult?.data?.status;
+			lastRunData = pollResult?.data;
+			if (helpers.consts.TERMINAL_RUN_STATUSES.includes(status)) {
+				break;
+			}
+		} catch (err) {
+			throw new NodeApiError(this.getNode(), {
+				message: `Error polling run status: ${err}`,
+			});
+		}
+		await new Promise((resolve) =>
+			setTimeout(resolve, helpers.consts.WAIT_FOR_FINISH_POLL_INTERVAL),
+		);
+	}
 	return {
-		json: { ...run.data },
+		json: { ...lastRunData },
 	};
 }
 
