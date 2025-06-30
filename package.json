@@ -69,16 +69,5 @@
 	},
 	"peerDependencies": {
 		"n8n-workflow": "*"
-	},
-	"pnpm": {
-		"overrides": {
-			"decode-uri-component@<0.2.1": ">=0.2.1",
-			"es5-ext@>=0.10.0 <0.10.63": ">=0.10.63",
-			"braces@<3.0.3": ">=3.0.3",
-			"micromatch@<4.0.8": ">=4.0.8",
-			"cross-spawn@>=7.0.0 <7.0.5": ">=7.0.5",
-			"semver@<5.7.2": ">=5.7.2",
-			"axios@<1.8.2": ">=1.8.2"
-		}
 	}
 }
