@@ -1,5 +1,5 @@
 {
-	"name": "Run actor workflow",
+	"name": "Run actor and wait for finish - workflow",
 	"nodes": [
 		{
 			"parameters": {
@@ -11,7 +11,7 @@
 					"cachedResultName": "Google Search Results Scraper",
 					"cachedResultUrl": "https://console.com/actors/nFJndFXA5zjCTuudP/input"
 				},
-				"waitForFinish": false,
+				"waitForFinish": true,
 				"customBody": "{\n    \"maxPagesPerQuery\": 1,\n    \"resultsPerPage\": 2,\n    \"queries\": \"javascript\\ntypescript\"\n}"
 			},
 			"id": "8b21ab5d-baff-48f1-9512-831704fd2df4",

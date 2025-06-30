@@ -243,52 +243,135 @@ export const getLastRunResult = () => {
 	};
 };
 
+// without waitForFinish (waitForFinish = 0)
 export const runActorResult = () => {
 	return {
 		data: {
-			id: 'gbNI2e1oNCufgd5Rn',
+			id: 'Icz6E0IHX0c40yEi7',
 			actId: 'nFJndFXA5zjCTuudP',
 			userId: 'A9zwKYff2yyRmaqc9',
-			startedAt: '2025-06-16T23:30:42.255Z',
-			finishedAt: '2025-06-16T23:30:52.922Z',
+			startedAt: '2025-06-30T12:36:08.502Z',
+			finishedAt: null,
+			status: 'READY',
+			meta: {
+				origin: 'API',
+				userAgent: 'axios/1.7.4',
+			},
+			stats: {
+				inputBodyLen: 346,
+				migrationCount: 0,
+				rebootCount: 0,
+				restartCount: 0,
+				resurrectCount: 0,
+				computeUnits: 0,
+			},
+			options: {
+				build: 'latest',
+				timeoutSecs: 604800,
+				memoryMbytes: 1024,
+				maxTotalChargeUsd: 37.42362467983089,
+				diskMbytes: 2048,
+			},
+			buildId: 'DgGC7ZxWmZ0cnuNIy',
+			defaultKeyValueStoreId: 'dgt7oov3cthGsD4yq',
+			defaultDatasetId: '63kMAihbWVgBvEAZ2',
+			defaultRequestQueueId: 'cGohS4eFRrm2mItLx',
+			pricingInfo: {
+				pricingModel: 'PAY_PER_EVENT',
+				reasonForChange:
+					'We are introducing Store pricing discounts for this Actor and a new pricing model to give you more transparency and flexibility; more info in the follow-up email.',
+				minimalMaxTotalChargeUsd: 0.5,
+				createdAt: '2025-05-29T14:45:00.000Z',
+				startedAt: '2025-06-10T08:00:00.000Z',
+				apifyMarginPercentage: 0,
+				notifiedAboutChangeAt: '2025-06-10T08:00:00.000Z',
+				pricingPerEvent: {
+					actorChargeEvents: {
+						'actor-start': {
+							eventTitle: 'Actor start',
+							eventDescription: 'Flat fee for starting an Actor run.',
+							eventPriceUsd: 0.0015,
+						},
+						'search-page-scraped': {
+							eventTitle: 'Search results page scraped',
+							eventDescription: 'Cost per page of Google Search results successfully scraped.',
+							eventPriceUsd: 0.0035,
+						},
+						'ads-scraped': {
+							eventTitle: 'Add-on: Paid results (ads) extraction',
+							eventDescription:
+								'Extra cost per page for attempting to extract paid results (ads) from Google Search. This applies when the ads extraction feature is enabled, regardless of whether ads are found on the specific page.',
+							eventPriceUsd: 0.005,
+						},
+					},
+				},
+			},
+			chargedEventCounts: {
+				'actor-start': 0,
+				'search-page-scraped': 0,
+				'ads-scraped': 0,
+			},
+			platformUsageBillingModel: 'DEVELOPER',
+			accountedChargedEventCounts: {
+				'actor-start': 0,
+				'search-page-scraped': 0,
+				'ads-scraped': 0,
+			},
+			generalAccess: 'FOLLOW_USER_SETTING',
+			buildNumber: '0.0.166',
+			containerUrl: 'https://fttjdkagbv7c.runs.apify.net',
+			usageTotalUsd: 0,
+		},
+	};
+};
+
+export const getSuccessRunResult = () => {
+	return {
+		data: {
+			id: 'ZtmMxsnaxohefirDg',
+			actId: 'nFJndFXA5zjCTuudP',
+			userId: 'A9zwKYff2yyRmaqc9',
+			startedAt: '2025-06-30T12:35:16.689Z',
+			finishedAt: '2025-06-30T12:35:24.942Z',
 			status: 'SUCCEEDED',
-			statusMessage: 'Finished! Total 2 requests: 2 succeeded, 0 failed.',
+			statusMessage:
+				'Actor finished successfully. Processed 3 queries on 3 pages. Extracted: 110 organicResults, 0 paidResults, 0 paidProducts, 48 relatedQueries, 1 aiOverviews.',
 			isStatusMessageTerminal: true,
 			meta: {
 				origin: 'API',
 				userAgent: 'axios/1.7.4',
 			},
 			stats: {
-				inputBodyLen: 336,
+				inputBodyLen: 346,
 				migrationCount: 0,
 				rebootCount: 0,
 				restartCount: 0,
-				durationMillis: 10476,
+				durationMillis: 8137,
 				resurrectCount: 0,
-				runTimeSecs: 10.476,
+				runTimeSecs: 8.137,
 				metamorph: 0,
-				computeUnits: 0.00291,
-				memAvgBytes: 128424657.84661157,
-				memMaxBytes: 145063936,
-				memCurrentBytes: 0,
-				cpuAvgUsage: 15.432343907121574,
-				cpuMaxUsage: 91.47420111042567,
-				cpuCurrentUsage: 0,
-				netRxBytes: 620882,
-				netTxBytes: 467443,
+				computeUnits: 0.0022602777777777777,
+				memAvgBytes: 114593891.31194456,
+				memMaxBytes: 171585536,
+				memCurrentBytes: 171585536,
+				cpuAvgUsage: 41.576489958372534,
+				cpuMaxUsage: 112.53407249466952,
+				cpuCurrentUsage: 59.16827757125155,
+				netRxBytes: 539776,
+				netTxBytes: 503865,
 			},
 			options: {
 				build: 'latest',
 				timeoutSecs: 604800,
 				memoryMbytes: 1024,
-				maxTotalChargeUsd: 36.57444567272754,
+				maxTotalChargeUsd: 37.44156455943874,
 				diskMbytes: 2048,
 			},
-			buildId: 'da2D8ovPHWBN98zj2',
+			buildId: 'DgGC7ZxWmZ0cnuNIy',
 			exitCode: 0,
-			defaultKeyValueStoreId: 'K1AdT7nsdFw2ThD5J',
-			defaultDatasetId: '6kTQQ34S3DftNqbE5',
-			defaultRequestQueueId: '2cPPDy1XSk5k17yst',
+			defaultKeyValueStoreId: '4aoPkdUdfoRpf9w7E',
+			defaultDatasetId: 'U0hEU6N57UfDgqI98',
+			defaultRequestQueueId: 'qNGmAgPf3Pb50PhqC',
 			pricingInfo: {
 				pricingModel: 'PAY_PER_EVENT',
 				reasonForChange:
@@ -331,9 +414,10 @@ export const runActorResult = () => {
 				'ads-scraped': 0,
 			},
 			generalAccess: 'FOLLOW_USER_SETTING',
-			buildNumber: '0.0.165',
-			containerUrl: 'https://xds5z9sxx8sx.runs.apify.net',
+			buildNumber: '0.0.166',
+			containerUrl: 'https://mc9gwqvhjshq.runs.apify.net',
 			usageTotalUsd: 0.0015,
+			consoleUrl: 'https://console.apify.com/view/runs/ZtmMxsnaxohefirDg',
 		},
 	};
 };

@@ -157,11 +157,11 @@ describe('Apify Node', () => {
 
 				const scope = nock('https://api.apify.com')
 					.get('/v2/acts/nFJndFXA5zjCTuudP')
-					.reply(200, { data: fixtures.getActorResult() })
+					.reply(200, fixtures.getActorResult())
 					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
-					.reply(200, { data: fixtures.getBuildResult() })
+					.reply(200, fixtures.getBuildResult())
 					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
-					.query({ waitForFinish: 60 })
+					.query({ waitForFinish: 0 })
 					.reply(200, mockRunActor);
 
 				const runActorWorkflow = require('./workflows/actors/run-actor.workflow.json');
@@ -178,6 +178,41 @@ describe('Apify Node', () => {
 
 				const data = getTaskData(nodeResult);
 				expect(data).toEqual(mockRunActor.data);
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should run the run-actor workflow and wait for finish', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockFinishedRun = fixtures.getRunResult();
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, fixtures.getBuildResult())
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
+					.query({ waitForFinish: 0 })
+					.reply(200, mockRunActor)
+					.get('/v2/actor-runs/Icz6E0IHX0c40yEi7')
+					.reply(200, mockFinishedRun);
+
+				const runActorWorkflow = require('./workflows/actors/run-actor-wait-for-finish.workflow.json');
+				const { waitPromise } = await executeWorkflow({
+					credentialsHelper,
+					workflow: runActorWorkflow,
+				});
+				const result = await waitPromise.promise();
+
+				const nodeResults = getRunTaskDataByNodeName(result, 'Run actor');
+				expect(nodeResults.length).toBe(1);
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+
+				const data = getTaskData(nodeResult);
+				// exptect polled terminal run as result
+				expect(data).not.toEqual(mockRunActor.data);
+				expect(data).toEqual(mockFinishedRun.data);
 
 				expect(scope.isDone()).toBe(true);
 			});
