@@ -48,8 +48,8 @@ descending order. By default, they are sorted in ascending order.`,
 	{
 		displayName: 'Status',
 		name: 'status',
-		description: `Return only runs with the provided terminal status ([available
-statuses](https://docs.apify.com/platform/actors/running/runs-and-builds#lifecycle))`,
+		description: `Return only runs with the provided terminal status, available
+statuses: https://docs.apify.com/platform/actors/running/runs-and-builds#lifecycle`,
 		default: 'SUCCEEDED',
 		type: 'options',
 		options: [
