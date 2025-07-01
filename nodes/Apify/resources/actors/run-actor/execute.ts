@@ -80,6 +80,8 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	}
 
 	// 7b. Start polling for run status until it reaches a terminal state
+	// This loop is infinite and will only stop when a terminal status is reached,
+	// or when the workflow maximum timeout is hit, as set in your n8n configuration.
 	const runId = run.data.id;
 	let lastRunData = run.data;
 	while (true) {
