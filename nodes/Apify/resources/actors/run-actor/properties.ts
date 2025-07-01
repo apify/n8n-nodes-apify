@@ -103,7 +103,7 @@ configuration for the Actor (typically \`latest\`).`,
 		displayName: 'Wait for Finish',
 		name: 'waitForFinish',
 		description:
-			'Whether to wait for the run to finish. If true, the node will poll the run status until it reaches a terminal state (SUCCEEDED, FAILED, TIMED-OUT, ABORTED) or 5 minutes have passed. If false, the node will return immediately after starting the run.',
+			'Whether to wait for the run to finish. If true, the node will poll the run status until it reaches a terminal state (SUCCEEDED, FAILED, TIMED-OUT, ABORTED) or until the n8n workflow times out. If false, the node will return immediately after starting the run.',
 		default: true,
 		type: 'boolean',
 		displayOptions: {

@@ -79,14 +79,10 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 		};
 	}
 
-	// 7b. Start polling for run status until it reaches a terminal state or max attempts are reached
+	// 7b. Start polling for run status until it reaches a terminal state
 	const runId = run.data.id;
 	let lastRunData = run.data;
-	for (
-		let pollAttempt = 0;
-		pollAttempt < helpers.consts.WAIT_FOR_FINISH_POLL_ATTEMPTS;
-		pollAttempt++
-	) {
+	while (true) {
 		try {
 			const pollResult = await apiRequest.call(this, {
 				method: 'GET',

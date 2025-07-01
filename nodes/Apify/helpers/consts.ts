@@ -4,5 +4,3 @@ export const APIFY_API_URL = 'https://api.apify.com';
 export const TERMINAL_RUN_STATUSES = ['SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'];
 // 1 second
 export const WAIT_FOR_FINISH_POLL_INTERVAL = 1000;
-// 300 * poll-interval = 5 minutes
-export const WAIT_FOR_FINISH_POLL_ATTEMPTS = 300;
