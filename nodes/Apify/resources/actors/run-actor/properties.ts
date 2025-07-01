@@ -2,21 +2,6 @@ import { INodeProperties } from 'n8n-workflow';
 
 export const properties: INodeProperties[] = [
 	{
-		displayName: 'POST /v2/acts/{actorId}/runs',
-		name: 'operation',
-		type: 'notice',
-		typeOptions: {
-			theme: 'info',
-		},
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['Actors'],
-				operation: ['Run actor'],
-			},
-		},
-	},
-	{
 		displayName: 'Actor Source',
 		name: 'actorSource',
 		type: 'hidden',

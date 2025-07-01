@@ -2,21 +2,6 @@ import { INodeProperties } from 'n8n-workflow';
 
 export const properties: INodeProperties[] = [
 	{
-		displayName: 'GET /v2/key-value-stores/{storeId}/records/{recordKey}',
-		name: 'operation',
-		type: 'notice',
-		typeOptions: {
-			theme: 'info',
-		},
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['Key-Value Stores'],
-				operation: ['Get Key-Value Store Record'],
-			},
-		},
-	},
-	{
 		displayName: 'Key-Value Store ID',
 		name: 'storeId',
 		required: true,

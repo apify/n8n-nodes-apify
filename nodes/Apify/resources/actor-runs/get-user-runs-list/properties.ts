@@ -2,21 +2,6 @@ import { INodeProperties } from 'n8n-workflow';
 
 export const properties: INodeProperties[] = [
 	{
-		displayName: 'GET /v2/actor-runs',
-		name: 'operation',
-		type: 'notice',
-		typeOptions: {
-			theme: 'info',
-		},
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['Actor runs'],
-				operation: ['Get user runs list'],
-			},
-		},
-	},
-	{
 		displayName: 'Offset',
 		name: 'offset',
 		description: `Number of array elements that should be skipped at the start. The
