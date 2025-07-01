@@ -29,6 +29,9 @@ export async function apiRequest(
 		method,
 		qs: query,
 		url: endpoint,
+		headers: {
+			'x-apify-integration-platform': 'n8n',
+		},
 	};
 
 	if (method === 'GET') {
