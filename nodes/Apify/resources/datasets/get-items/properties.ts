@@ -2,21 +2,6 @@ import { INodeProperties } from 'n8n-workflow';
 
 export const properties: INodeProperties[] = [
 	{
-		displayName: 'GET /v2/datasets/{datasetId}/items',
-		name: 'operation',
-		type: 'notice',
-		typeOptions: {
-			theme: 'info',
-		},
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['Datasets'],
-				operation: ['Get items'],
-			},
-		},
-	},
-	{
 		displayName: 'Dataset ID',
 		name: 'datasetId',
 		required: true,

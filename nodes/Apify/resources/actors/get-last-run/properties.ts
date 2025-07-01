@@ -2,21 +2,6 @@ import { INodeProperties } from 'n8n-workflow';
 
 export const properties: INodeProperties[] = [
 	{
-		displayName: 'GET /v2/acts/{actorId}/runs/last',
-		name: 'operation',
-		type: 'notice',
-		typeOptions: {
-			theme: 'info',
-		},
-		default: '',
-		displayOptions: {
-			show: {
-				resource: ['Actors'],
-				operation: ['Get last run'],
-			},
-		},
-	},
-	{
 		displayName: 'Actor Source',
 		name: 'actorSource',
 		type: 'hidden',
