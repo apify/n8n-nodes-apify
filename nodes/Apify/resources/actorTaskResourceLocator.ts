@@ -29,7 +29,7 @@ const resourceLocatorProperty: INodeProperties = {
 					properties: {
 						// https://console.apify.com/actors/tasks/WAtmhr6rhfBnwqKDY/input
 						// https://console.apify.com/actors/tasks/WAtmhr6rhfBnwqKDY
-						regex: 'https://console.apify.com/actors/tasks/([a-zA-Z0-9]+)(/input)?',
+						regex: 'https://console.apify.com/actors/tasks/([a-zA-Z0-9]+).*',
 						errorMessage: 'Not a valid Apify Actor Task URL',
 					},
 				},
@@ -38,7 +38,7 @@ const resourceLocatorProperty: INodeProperties = {
 				type: 'regex',
 				// https://console.apify.com/actors/tasks/WAtmhr6rhfBnwqKDY/input -> WAtmhr6rhfBnwqKDY
 				// https://console.apify.com/actors/tasks/WAtmhr6rhfBnwqKDY -> WAtmhr6rhfBnwqKDY
-				regex: 'https://console.apify.com/actors/tasks/([a-zA-Z0-9]+)',
+				regex: 'https://console.apify.com/actors/tasks/([a-zA-Z0-9]+).*',
 			},
 		},
 		{

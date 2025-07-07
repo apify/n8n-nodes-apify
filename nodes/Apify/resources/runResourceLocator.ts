@@ -28,8 +28,7 @@ const resourceLocatorProperty: INodeProperties = {
 					type: 'regex',
 					properties: {
 						// https://console.apify.com/actors/runs/RDfcScrqIYHW0jfNF#output
-						regex:
-							'https://console.apify.com/actors(/[a-zA-Z0-9]+)?/runs/([a-zA-Z0-9]+)(#(output|log))?',
+						regex: 'https://console.apify.com/actors(/[a-zA-Z0-9]+)?/runs/([a-zA-Z0-9]+).*',
 						errorMessage: 'Not a valid Apify Actor Run URL',
 					},
 				},
@@ -37,7 +36,7 @@ const resourceLocatorProperty: INodeProperties = {
 			extractValue: {
 				type: 'regex',
 				// https://console.apify.com/actors/runs/RDfcScrqIYHW0jfNF#output -> RDfcScrqIYHW0jfNF
-				regex: 'https://console.apify.com/actors(?:/[a-zA-Z0-9]+)?/runs/([a-zA-Z0-9]+)',
+				regex: 'https://console.apify.com/actors(?:/[a-zA-Z0-9]+)?/runs/([a-zA-Z0-9]+).*',
 			},
 		},
 		{
