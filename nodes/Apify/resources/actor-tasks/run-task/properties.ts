@@ -47,12 +47,9 @@ export const properties: INodeProperties[] = [
 		displayName: 'Wait for Finish',
 		name: 'waitForFinish',
 		description:
-			"The maximum number of seconds the server waits for the run to finish. By default, the server doesn't wait for the run to finish and returns immediately. The maximum value is 60 seconds.",
-		default: null,
-		type: 'number',
-		typeOptions: {
-			maxValue: 60,
-		},
+			'Whether to wait for the run to finish. If true, the node will poll the run status until it reaches a terminal state (SUCCEEDED, FAILED, TIMED-OUT, ABORTED) or 5 minutes have passed. If false, the node will return immediately after starting the run.',
+		default: true,
+		type: 'boolean',
 		displayOptions: {
 			show: {
 				resource: ['Actor tasks'],
