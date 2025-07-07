@@ -1,5 +1,5 @@
 {
-	"name": "Run task no wait workflow",
+	"name": "Run task and wait for finish workflow",
 	"nodes": [
 		{
 			"parameters": {
@@ -12,7 +12,7 @@
 					"cachedResultName": "Google Search Results Scraper (Task)",
 					"cachedResultUrl": "https://console.apify.com/actors/tasks/PwUDLcG3zMyT8E4vq/input"
 				},
-				"waitForFinish": false
+				"waitForFinish": true
 			},
 			"id": "2ada004c-bc23-435d-a65c-371ebcafb4f5",
 			"name": "Run task",

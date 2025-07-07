@@ -96,12 +96,12 @@ describe('Apify Node', () => {
 
 	describe('actor-tasks', () => {
 		describe('run-task', () => {
-			it('should run the run-task workflow', async () => {
-				const mockRunTask = fixtures.getRunTaskResult();
+			it('should run the run-task workflow (waitForFinish: false)', async () => {
+				const mockRunTask = fixtures.runActorResult();
 
 				const scope = nock('https://api.apify.com')
 					.post('/v2/actor-tasks/PwUDLcG3zMyT8E4vq/runs')
-					.query(true)
+					.query({ waitForFinish: 0 })
 					.reply(200, mockRunTask);
 
 				const runTaskWorkflow = require('./workflows/actor-tasks/run-task.workflow.json');
@@ -118,6 +118,37 @@ describe('Apify Node', () => {
 
 				const data = getTaskData(nodeResult);
 				expect(data).toEqual(mockRunTask.data);
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should run the run-task workflow and wait for finish (waitForFinish: true)', async () => {
+				const mockRunTask = fixtures.runActorResult();
+				const mockFinishedRun = fixtures.getRunTaskResult();
+
+				const scope = nock('https://api.apify.com')
+					.post('/v2/actor-tasks/PwUDLcG3zMyT8E4vq/runs')
+					.query({ waitForFinish: 0 })
+					.reply(200, mockRunTask)
+					.get(`/v2/actor-runs/${mockRunTask.data.id}`)
+					.reply(200, mockFinishedRun);
+
+				const runTaskWorkflow = require('./workflows/actor-tasks/run-task-wait-for-finish.workflow.json');
+				const { waitPromise } = await executeWorkflow({
+					credentialsHelper,
+					workflow: runTaskWorkflow,
+				});
+				const result = await waitPromise.promise();
+
+				const nodeResults = getRunTaskDataByNodeName(result, 'Run task');
+				expect(nodeResults.length).toBe(1);
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+
+				const data = getTaskData(nodeResult);
+				// expect polled terminal run as result
+				expect(data).not.toEqual(mockRunTask.data);
+				expect(data).toEqual(mockFinishedRun.data);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -187,7 +218,7 @@ describe('Apify Node', () => {
 			it('should run the run-actor workflow and wait for finish', async () => {
 				const mockRunActor = fixtures.runActorResult();
 				const mockBuild = fixtures.getBuildResult();
-				const mockFinishedRun = fixtures.getRunResult();
+				const mockFinishedRun = fixtures.getSuccessRunResult();
 
 				const scope = nock('https://api.apify.com')
 					.get('/v2/acts/nFJndFXA5zjCTuudP')
@@ -222,15 +253,18 @@ describe('Apify Node', () => {
 		});
 		describe('scrape-single-url', () => {
 			it('should run the scrape-single-url workflow', async () => {
-				const mockRunResponse = fixtures.runScrapeSingleUrlActorResult();
+				const mockRunActor = fixtures.runActorResult();
+				const mockFinishedRun = fixtures.getSuccessRunResult();
 				const mockItems = fixtures.getScrapeSingleUrlItemsResult();
 
-				const datasetId = mockRunResponse.data.defaultDatasetId;
+				const datasetId = mockFinishedRun.data.defaultDatasetId;
 
 				const scope = nock('https://api.apify.com')
 					.post(`/v2/acts/${helpers.consts.WEB_CONTENT_SCRAPER_ACTOR_ID}/runs`)
-					.query({ waitForFinish: 60 })
-					.reply(200, mockRunResponse)
+					.query({ waitForFinish: 0 })
+					.reply(200, mockRunActor)
+					.get(`/v2/actor-runs/${mockRunActor.data.id}`)
+					.reply(200, mockFinishedRun)
 					.get(`/v2/datasets/${datasetId}/items`)
 					.query({ format: 'json' })
 					.reply(200, mockItems);
