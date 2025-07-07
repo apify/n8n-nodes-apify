@@ -10,7 +10,8 @@
 					"mode": "list",
 					"cachedResultName": "Google Search Results Scraper",
 					"cachedResultUrl": "https://console.com/actors/nFJndFXA5zjCTuudP/input"
-				}
+				},
+				"status": "ABORTED"
 			},
 			"id": "874a4468-0c56-4818-baa0-41967a17550a",
 			"name": "Get last run",

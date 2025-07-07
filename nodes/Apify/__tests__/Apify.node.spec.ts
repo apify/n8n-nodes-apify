@@ -131,6 +131,7 @@ describe('Apify Node', () => {
 
 				const scope = nock('https://api.apify.com')
 					.get('/v2/acts/nFJndFXA5zjCTuudP/runs/last')
+					.query({ status: 'ABORTED' })
 					.reply(200, mockLastRun);
 
 				const getLastRunWorkflow = require('./workflows/actors/get-last-run.workflow.json');
