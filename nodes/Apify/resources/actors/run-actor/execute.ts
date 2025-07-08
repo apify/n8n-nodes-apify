@@ -61,7 +61,7 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	const qs: Record<string, any> = {};
 	if (timeout != null) qs.timeout = timeout;
 	if (memory != null) qs.memory = memory;
-	if (build?.buildTag) qs.build = build.buildTag;
+	if (build?.buildNumber) qs.build = build.buildNumber;
 	qs.waitForFinish = 0; // set initial run actor to not wait for finish
 
 	// 6. Run the actor
