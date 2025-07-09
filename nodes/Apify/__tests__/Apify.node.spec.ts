@@ -161,7 +161,7 @@ describe('Apify Node', () => {
 					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
 					.reply(200, fixtures.getBuildResult())
 					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
-					.query({ waitForFinish: 0 })
+					.query({ waitForFinish: 0, memory: 1024 })
 					.reply(200, mockRunActor);
 
 				const runActorWorkflow = require('./workflows/actors/run-actor.workflow.json');
@@ -192,7 +192,7 @@ describe('Apify Node', () => {
 					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
 					.reply(200, fixtures.getBuildResult())
 					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
-					.query({ waitForFinish: 0 })
+					.query({ waitForFinish: 0, memory: 1024 })
 					.reply(200, mockRunActor)
 					.get('/v2/actor-runs/Icz6E0IHX0c40yEi7')
 					.reply(200, mockFinishedRun);
