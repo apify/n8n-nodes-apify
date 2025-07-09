@@ -4,8 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest } from '../../../resources/genericFunctions';
-import * as helpers from '../../../helpers';
+import { apiRequest, pollRunStatus } from '../../../resources/genericFunctions';
 
 export async function runTask(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorTaskId = this.getNodeParameter('actorTaskId', i, undefined, {
@@ -45,26 +44,6 @@ export async function runTask(this: IExecuteFunctions, i: number): Promise<INode
 	}
 
 	const runId = apiResult.data.id;
-	let lastRunData = apiResult.data;
-	while (true) {
-		try {
-			const pollResult = await apiRequest.call(this, {
-				method: 'GET',
-				uri: `/v2/actor-runs/${runId}`,
-			});
-			const status = pollResult?.data?.status;
-			lastRunData = pollResult?.data;
-			if (helpers.consts.TERMINAL_RUN_STATUSES.includes(status)) {
-				break;
-			}
-		} catch (err) {
-			throw new NodeApiError(this.getNode(), {
-				message: `Error polling run status: ${err}`,
-			});
-		}
-		await new Promise((resolve) =>
-			setTimeout(resolve, helpers.consts.WAIT_FOR_FINISH_POLL_INTERVAL),
-		);
-	}
+	const lastRunData = await pollRunStatus.call(this, runId);
 	return { json: { ...lastRunData } };
 }

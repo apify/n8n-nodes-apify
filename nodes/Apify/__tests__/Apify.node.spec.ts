@@ -101,7 +101,7 @@ describe('Apify Node', () => {
 
 				const scope = nock('https://api.apify.com')
 					.post('/v2/actor-tasks/PwUDLcG3zMyT8E4vq/runs')
-					.query({ waitForFinish: 0 })
+					.query({ waitForFinish: 0, memory: 1024 })
 					.reply(200, mockRunTask);
 
 				const runTaskWorkflow = require('./workflows/actor-tasks/run-task.workflow.json');
@@ -128,7 +128,7 @@ describe('Apify Node', () => {
 
 				const scope = nock('https://api.apify.com')
 					.post('/v2/actor-tasks/PwUDLcG3zMyT8E4vq/runs')
-					.query({ waitForFinish: 0 })
+					.query({ waitForFinish: 0, memory: 1024 })
 					.reply(200, mockRunTask)
 					.get(`/v2/actor-runs/${mockRunTask.data.id}`)
 					.reply(200, mockFinishedRun);

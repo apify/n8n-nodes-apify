@@ -4,8 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest } from '../../genericFunctions';
-import * as helpers from '../../../helpers';
+import { apiRequest, pollRunStatus } from '../../genericFunctions';
 
 export async function runActor(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorId = this.getNodeParameter('actorId', i, undefined, {
@@ -83,27 +82,7 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	// This loop is infinite and will only stop when a terminal status is reached,
 	// or when the workflow maximum timeout is hit, as set in your n8n configuration.
 	const runId = run.data.id;
-	let lastRunData = run.data;
-	while (true) {
-		try {
-			const pollResult = await apiRequest.call(this, {
-				method: 'GET',
-				uri: `/v2/actor-runs/${runId}`,
-			});
-			const status = pollResult?.data?.status;
-			lastRunData = pollResult?.data;
-			if (helpers.consts.TERMINAL_RUN_STATUSES.includes(status)) {
-				break;
-			}
-		} catch (err) {
-			throw new NodeApiError(this.getNode(), {
-				message: `Error polling run status: ${err}`,
-			});
-		}
-		await new Promise((resolve) =>
-			setTimeout(resolve, helpers.consts.WAIT_FOR_FINISH_POLL_INTERVAL),
-		);
-	}
+	const lastRunData = await pollRunStatus.call(this, runId);
 	return {
 		json: { ...lastRunData },
 	};

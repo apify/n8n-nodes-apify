@@ -118,6 +118,34 @@ export async function apiRequestAllItems(
 	return combinedData;
 }
 
+export async function pollRunStatus(
+	this: IHookFunctions | IExecuteFunctions | ILoadOptionsFunctions,
+	runId: string,
+): Promise<any> {
+	let lastRunData: any;
+	while (true) {
+		try {
+			const pollResult = await apiRequest.call(this, {
+				method: 'GET',
+				uri: `/v2/actor-runs/${runId}`,
+			});
+			const status = pollResult?.data?.status;
+			lastRunData = pollResult?.data;
+			if (['SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'].includes(status)) {
+				break;
+			}
+		} catch (err) {
+			throw new NodeApiError(this.getNode(), {
+				message: `Error polling run status: ${err}`,
+			});
+		}
+		await new Promise(
+			(resolve) => setTimeout(resolve, 1000), // 1 second polling interval
+		);
+	}
+	return lastRunData;
+}
+
 export function getActorOrTaskId(this: IHookFunctions): string {
 	const resource = this.getNodeParameter('resource', '') as string;
 	const actorId = this.getNodeParameter('actorId', '') as { value: string };
