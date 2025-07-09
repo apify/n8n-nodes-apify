@@ -58,11 +58,22 @@ timeout specified in the default run configuration for the Actor.`,
 	{
 		displayName: 'Memory',
 		name: 'memory',
-		description: `Memory limit for the run, in megabytes. The amount of memory can be set
-to a power of 2 with a minimum of 128. By default, the run uses a memory
-limit specified in the default run configuration for the Actor.`,
-		default: null,
-		type: 'number',
+		description:
+			'Memory limit for the run, in megabytes. The amount of memory can be set to one of the available options. By default, the run uses a memory limit specified in the default run configuration for the Actor.',
+		default: 1024,
+		type: 'options',
+		options: [
+			{ name: '128 MB', value: 128 },
+			{ name: '256 MB', value: 256 },
+			{ name: '512 MB', value: 512 },
+			{ name: '1024 MB (1 GB)', value: 1024 },
+			{ name: '2048 MB (2 GB)', value: 2048 },
+			{ name: '4096 MB (4 GB)', value: 4096 },
+			{ name: '8192 MB (8 GB)', value: 8192 },
+			{ name: '16384 MB (16 GB)', value: 16384 },
+			{ name: '32768 MB (32 GB)', value: 32768 },
+			{ name: '65536 MB (64 GB)', value: 65536 },
+		],
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
