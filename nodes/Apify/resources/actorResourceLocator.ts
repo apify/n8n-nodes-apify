@@ -115,7 +115,7 @@ export async function listActors(
 	const actorSource = this.getNodeParameter('actorSource', 'recentlyUsed') as string;
 
 	const mapToN8nResult = (actor: any) => ({
-		name: actor.title || actor.name,
+		name: `${actor.title} (${actor.name})`,
 		value: actor.id,
 		url: `https://console.apify.com/actors/${actor.id}/input`,
 		description: actor.description || actor.name,
@@ -159,10 +159,7 @@ export async function listActors(
 		},
 	});
 
-	const recentIds = recentActors.map((actor: any) => actor.id);
-	const filtered = storeActors.filter((actor: any) => !recentIds.includes(actor.id));
-
 	return {
-		results: filtered.map(mapToN8nResult),
+		results: storeActors.map(mapToN8nResult),
 	};
 }
