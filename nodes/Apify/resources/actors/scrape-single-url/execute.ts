@@ -1,5 +1,5 @@
 import { IExecuteFunctions, INodeExecutionData, NodeApiError } from 'n8n-workflow';
-import { apiRequest } from '../../../resources/genericFunctions';
+import { apiRequest, pollRunStatus } from '../../../resources/genericFunctions';
 import { consts } from '../../../helpers';
 
 export async function scrapeSingleUrl(
@@ -24,15 +24,27 @@ export async function scrapeSingleUrl(
 			saveMarkdown: true,
 		};
 
-		// Run the actor and wait for it to finish
+		// Run the actor and do not wait for finish
+
 		const run = await apiRequest.call(this, {
 			method: 'POST',
 			uri: `/v2/acts/${consts.WEB_CONTENT_SCRAPER_ACTOR_ID}/runs`,
 			body: input,
-			qs: { waitForFinish: 60 },
+			qs: { waitForFinish: 0 },
 		});
 
-		const defaultDatasetId = run?.data?.defaultDatasetId || run?.defaultDatasetId;
+		const runId = run?.data?.id || run?.id;
+
+		if (!runId) {
+			throw new NodeApiError(this.getNode(), {
+				message: 'No run ID returned from actor run',
+			});
+		}
+
+		// Poll for terminal status
+		const lastRunData = await pollRunStatus.call(this, runId);
+
+		const defaultDatasetId = lastRunData?.defaultDatasetId;
 
 		if (!defaultDatasetId) {
 			throw new NodeApiError(this.getNode(), {

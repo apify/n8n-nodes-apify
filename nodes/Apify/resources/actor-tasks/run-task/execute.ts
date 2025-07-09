@@ -4,14 +4,14 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest } from '../../../resources/genericFunctions';
+import { apiRequest, pollRunStatus } from '../../../resources/genericFunctions';
 
 export async function runTask(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorTaskId = this.getNodeParameter('actorTaskId', i, undefined, {
 		extractValue: true,
 	}) as string;
 	const input = this.getNodeParameter('input', i, {}) as object;
-	const waitForFinish = this.getNodeParameter('waitForFinish', i, null) as number | null;
+	const waitForFinish = this.getNodeParameter('waitForFinish', i) as boolean;
 	const timeout = this.getNodeParameter('timeout', i, null) as number | null;
 	const memory = this.getNodeParameter('memory', i, null) as number | null;
 	const build = this.getNodeParameter('build', i, '') as string;
@@ -21,27 +21,29 @@ export async function runTask(this: IExecuteFunctions, i: number): Promise<INode
 	}
 
 	const qs: Record<string, any> = {};
-	if (waitForFinish != null) qs.waitForFinish = waitForFinish;
 	if (timeout != null) qs.timeout = timeout;
 	if (memory != null) qs.memory = memory;
 	if (build) qs.build = build;
+	qs.waitForFinish = 0; // always start run without waiting
 
-	try {
-		const apiResult = await apiRequest.call(this, {
-			method: 'POST',
-			uri: `/v2/actor-tasks/${actorTaskId}/runs`,
-			body: input,
-			qs,
+	const apiResult = await apiRequest.call(this, {
+		method: 'POST',
+		uri: `/v2/actor-tasks/${actorTaskId}/runs`,
+		body: input,
+		qs,
+	});
+
+	if (!apiResult?.data?.id) {
+		throw new NodeApiError(this.getNode(), {
+			message: `Run ID not found after running the task`,
 		});
-
-		if (!apiResult) {
-			throw new NodeApiError(this.getNode(), {
-				message: `Task run for ${actorTaskId} not found`,
-			});
-		}
-
-		return { json: { ...apiResult.data } };
-	} catch (error) {
-		throw new NodeApiError(this.getNode(), error);
 	}
+
+	if (!waitForFinish) {
+		return { json: { ...apiResult.data } };
+	}
+
+	const runId = apiResult.data.id;
+	const lastRunData = await pollRunStatus.call(this, runId);
+	return { json: { ...lastRunData } };
 }
