@@ -114,12 +114,16 @@ export async function listActors(
 ): Promise<INodeListSearchResult> {
 	const actorSource = this.getNodeParameter('actorSource', 'recentlyUsed') as string;
 
-	const mapToN8nResult = (actor: any) => ({
-		name: `${actor.title} (${actor.name})`,
-		value: actor.id,
-		url: `https://console.apify.com/actors/${actor.id}/input`,
-		description: actor.description || actor.name,
-	});
+	const mapToN8nSelectOption = (actor: any) => {
+		const optionName = actor.title ? `${actor.title} (${actor.name})` : actor.name;
+
+		return {
+			name: optionName,
+			value: actor.id,
+			url: `https://console.apify.com/actors/${actor.id}/input`,
+			description: actor.description || actor.name,
+		};
+	};
 
 	const {
 		data: { items: recentActors },
@@ -139,11 +143,11 @@ export async function listActors(
 				(actor: any) => regex.test(actor.title || '') || regex.test(actor.name || ''),
 			);
 			return {
-				results: filteredActors.map(mapToN8nResult),
+				results: filteredActors.map(mapToN8nSelectOption),
 			};
 		}
 		return {
-			results: recentActors.map(mapToN8nResult),
+			results: recentActors.map(mapToN8nSelectOption),
 		};
 	}
 
@@ -160,6 +164,6 @@ export async function listActors(
 	});
 
 	return {
-		results: storeActors.map(mapToN8nResult),
+		results: storeActors.map(mapToN8nSelectOption),
 	};
 }
