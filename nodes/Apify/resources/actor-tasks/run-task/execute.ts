@@ -10,7 +10,7 @@ export async function runTask(this: IExecuteFunctions, i: number): Promise<INode
 	const actorTaskId = this.getNodeParameter('actorTaskId', i, undefined, {
 		extractValue: true,
 	}) as string;
-	const input = this.getNodeParameter('input', i, {}) as object;
+	const input = this.getNodeParameter('customBody', i, {}) as object;
 	const waitForFinish = this.getNodeParameter('waitForFinish', i, null) as number | null;
 	const timeout = this.getNodeParameter('timeout', i, null) as number | null;
 	const memory = this.getNodeParameter('memory', i, null) as number | null;
