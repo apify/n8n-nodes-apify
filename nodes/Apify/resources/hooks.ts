@@ -36,7 +36,7 @@ export function runHooks(properties: INodeProperties[]): {
 				listRuns,
 				listKeyValueStores,
 				listKeyValueStoreRecordKeys,
-				listUserActors
+				listUserActors,
 			},
 		},
 	};
