@@ -10,6 +10,53 @@ export const getRunResult = () => {
 	};
 };
 
+export const getActorRunsResult = () => {
+	return {
+		data: {
+			items: [
+				{
+					id: "E1M4YV9QF0WW59PbD",
+					actId: "nFJndFXA5zjCTuudP",
+					actorTaskId: "PwUDLcG3zMyT8E4vq",
+					status: "SUCCEEDED",
+					startedAt: "2025-07-15T13:05:17.019Z",
+					finishedAt: "2025-07-15T13:05:23.396Z",
+					buildId: "DgGC7ZxWmZ0cnuNIy",
+					buildNumber: "0.0.166",
+					buildNumberInt: 166,
+					meta: {
+						origin: "API"
+					},
+					defaultKeyValueStoreId: "wJfJx4rOTz66PLdWI",
+					defaultDatasetId: "7c5B6J2Bt8WC7BUWH",
+					defaultRequestQueueId: "6NPwTrfqfjrG58BNp",
+					usageTotalUsd: 0.004014751284706923,
+					userId: 'A9zwKYff2yyRmaqc9',
+				},
+				{
+					id: "U4qgHVr1mZcj3Zt03",
+					actId: "nFJndFXA5zjCTuudP",
+					actorTaskId: "PwUDLcG3zMyT8E4vq",
+					status: "SUCCEEDED",
+					startedAt: "2025-07-15T13:00:09.055Z",
+					finishedAt: "2025-07-15T13:00:19.796Z",
+					buildId: "DgGC7ZxWmZ0cnuNIy",
+					buildNumber: "0.0.166",
+					buildNumberInt: 166,
+					meta: {
+						origin: "API"
+					},
+					defaultKeyValueStoreId: "aNhtk7UPo2aNRNXhA",
+					defaultDatasetId: "HbgM0xciN3WV6UdNC",
+					defaultRequestQueueId: "I3t9FpFGjvogdj5ui",
+					usageTotalUsd: 0.009828075803760026,
+					userId: "A9zwKYff2yyRmaqc9",
+				}
+			],
+		},
+	};
+};
+
 export const getUserRunsListResult = () => {
 	return {
 		data: {

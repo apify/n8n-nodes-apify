@@ -2,20 +2,8 @@ import { INodeProperties } from 'n8n-workflow';
 
 export const properties: INodeProperties[] = [
 	{
-		displayName: 'Actor Source',
-		name: 'actorSource',
-		type: 'hidden',
-		default: 'recentlyUsed',
-		displayOptions: {
-			show: {
-				resource: ['Actors'],
-				operation: ['Get last run'],
-			},
-		},
-	},
-	{
 		displayName: 'Actor',
-		name: 'actorId',
+		name: 'userActorId',
 		required: true,
 		description: 'Actor ID or a tilde-separated username and Actor name',
 		default: 'janedoe~my-actor',

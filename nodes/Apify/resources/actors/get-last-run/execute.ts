@@ -7,7 +7,7 @@ import {
 import { apiRequest } from '../../../resources/genericFunctions';
 
 export async function getLastRun(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
-	const actorId = this.getNodeParameter('actorId', i) as { value: string };
+	const actorId = this.getNodeParameter('userActorId', i) as { value: string };
 	const status = this.getNodeParameter('status', i) as string;
 
 	if (!actorId) {
