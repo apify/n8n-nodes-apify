@@ -91,7 +91,6 @@ timeout specified in the task settings.`,
 			{ name: '8192 MB (8 GB)', value: 8192 },
 			{ name: '16384 MB (16 GB)', value: 16384 },
 			{ name: '32768 MB (32 GB)', value: 32768 },
-			{ name: '65536 MB (64 GB)', value: 65536 },
 		],
 		displayOptions: {
 			show: {
