@@ -9,9 +9,6 @@ export class ApifyOAuth2Api implements ICredentialType {
 
 	displayName = 'Apify OAuth2 API';
 
-	// TODO: documentation URL for Apify OAuth2 API missing
-	documentationUrl = 'https://docs.apify.com/api/v2';
-
 	properties: INodeProperties[] = [
 		{
 			displayName: 'Grant Type',
@@ -32,10 +29,14 @@ export class ApifyOAuth2Api implements ICredentialType {
 			default: 'https://console-backend.apify.com/oauth/apps/token',
 		},
 		{
-			displayName: 'Scope',
+			displayName: 'Scope (do not change)',
 			name: 'scope',
-			type: 'hidden',
+			type: 'string',
 			default: `${scopes.join(' ')}`,
+			noDataExpression: true,
+			displayOptions: {
+				hideOnCloud: true,
+			},
 		},
 		{
 			displayName: 'Auth URI Query Parameters',
@@ -60,6 +61,16 @@ export class ApifyOAuth2Api implements ICredentialType {
 			name: 'clientSecret',
 			type: 'hidden',
 			default: '',
+		},
+		{
+			displayName:
+				'This credential type is not available on self hosted n8n instances, please use an API key instead.',
+			name: 'notice',
+			type: 'notice',
+			default: '',
+			displayOptions: {
+				hideOnCloud: true,
+			},
 		},
 	];
 }
