@@ -115,7 +115,9 @@ export async function listActors(
 	const actorSource = this.getNodeParameter('actorSource', 'recentlyUsed') as string;
 
 	const mapToN8nSelectOption = (actor: any) => {
-		const optionName = actor.title ? `${actor.title} (${actor.name})` : actor.name;
+		const optionName = actor.title
+			? `${actor.title} (${actor.username}/${actor.name})`
+			: `${actor.username}/${actor.name}`;
 
 		return {
 			name: optionName,

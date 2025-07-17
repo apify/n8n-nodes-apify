@@ -86,7 +86,9 @@ export async function listUserActors(
 	searchTerm?: string,
 ): Promise<INodeListSearchResult> {
 	const mapToN8nResult = (actor: any) => ({
-		name: actor.title || actor.name,
+		name: actor.title
+			? `${actor.title} (${actor.username}/${actor.name})`
+			: `${actor.username}/${actor.name}`,
 		value: actor.id,
 		url: `https://console.apify.com/actors/${actor.id}/input`,
 		description: actor.description || actor.name,
