@@ -3,7 +3,7 @@ import { apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
 	displayName: 'Actor',
-	name: 'actorId',
+	name: 'userActorId',
 	type: 'resourceLocator',
 	default: { mode: 'list', value: '' },
 	modes: [
@@ -13,7 +13,7 @@ const resourceLocatorProperty: INodeProperties = {
 			type: 'list',
 			placeholder: 'Choose...',
 			typeOptions: {
-				searchListMethod: 'listActors',
+				searchListMethod: 'listUserActors',
 				searchFilterRequired: false,
 				searchable: true,
 			},
@@ -60,25 +60,6 @@ const resourceLocatorProperty: INodeProperties = {
 	],
 };
 
-const actorSourceProperty: INodeProperties = {
-	displayName: 'Actor Source',
-	name: 'actorSource',
-	type: 'options',
-	options: [
-		{
-			name: 'Recently Used Actors',
-			value: 'recentlyUsed',
-		},
-		{
-			name: 'Apify Store Actors',
-			value: 'store',
-		},
-	],
-	default: 'recentlyUsed',
-	description: 'Choose whether to select from your recently used Actors or browse Apify Store',
-	displayOptions: { show: { resource: ['actor'] } },
-};
-
 function mapProperty(property: INodeProperties): INodeProperties {
 	return {
 		...property,
@@ -86,19 +67,11 @@ function mapProperty(property: INodeProperties): INodeProperties {
 	};
 }
 
-function createActorSourceProperty(displayOptions: any): INodeProperties {
-	return {
-		...actorSourceProperty,
-		displayOptions,
-	};
-}
-
-export function overrideActorProperties(properties: INodeProperties[]): INodeProperties[] {
+export function overrideUserActorProperties(properties: INodeProperties[]): INodeProperties[] {
 	const result: INodeProperties[] = [];
 
 	for (const property of properties) {
-		if (property.name === 'actorId') {
-			result.push(createActorSourceProperty(property.displayOptions));
+		if (property.name === 'userActorId') {
 			result.push(mapProperty(property));
 		} else {
 			result.push(property);
@@ -108,24 +81,18 @@ export function overrideActorProperties(properties: INodeProperties[]): INodePro
 	return result;
 }
 
-export async function listActors(
+export async function listUserActors(
 	this: ILoadOptionsFunctions,
 	searchTerm?: string,
 ): Promise<INodeListSearchResult> {
-	const actorSource = this.getNodeParameter('actorSource', 'recentlyUsed') as string;
-
-	const mapToN8nSelectOption = (actor: any) => {
-		const optionName = actor.title
+	const mapToN8nResult = (actor: any) => ({
+		name: actor.title
 			? `${actor.title} (${actor.username}/${actor.name})`
-			: `${actor.username}/${actor.name}`;
-
-		return {
-			name: optionName,
-			value: actor.id,
-			url: `https://console.apify.com/actors/${actor.id}/input`,
-			description: actor.description || actor.name,
-		};
-	};
+			: `${actor.username}/${actor.name}`,
+		value: actor.id,
+		url: `https://console.apify.com/actors/${actor.id}/input`,
+		description: actor.description || actor.name,
+	});
 
 	const {
 		data: { items: recentActors },
@@ -138,34 +105,16 @@ export async function listActors(
 		},
 	});
 
-	if (actorSource === 'recentlyUsed') {
-		if (searchTerm) {
-			const regex = new RegExp(searchTerm, 'i');
-			const filteredActors = recentActors.filter(
-				(actor: any) => regex.test(actor.title || '') || regex.test(actor.name || ''),
-			);
-			return {
-				results: filteredActors.map(mapToN8nSelectOption),
-			};
-		}
+	if (searchTerm) {
+		const regex = new RegExp(searchTerm, 'i');
+		const filteredActors = recentActors.filter(
+			(actor: any) => regex.test(actor.title || '') || regex.test(actor.name || ''),
+		);
 		return {
-			results: recentActors.map(mapToN8nSelectOption),
+			results: filteredActors.map(mapToN8nResult),
 		};
 	}
-
-	const {
-		data: { items: storeActors },
-	} = await apiRequestAllItems.call(this, {
-		method: 'GET',
-		uri: '/v2/store',
-		qs: {
-			limit: 200,
-			offset: 0,
-			search: searchTerm,
-		},
-	});
-
 	return {
-		results: storeActors.map(mapToN8nSelectOption),
+		results: recentActors.map(mapToN8nResult),
 	};
 }

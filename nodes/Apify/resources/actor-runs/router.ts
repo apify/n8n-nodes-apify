@@ -3,8 +3,10 @@ import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-w
 import { name as actorRunResourceName } from './index';
 import { name as getRunOperationName } from './get-run';
 import { name as getUserRunsListOperationName } from './get-user-runs-list';
+import { name as getActorRunsOperationName } from './get-actor-runs';
 import { getRun } from './get-run/execute';
 import { getUserRunsList } from './get-user-runs-list/execute';
+import { getActorRuns } from './get-actor-runs/execute';
 
 export async function actorRunsRouter(
 	this: IExecuteFunctions,
@@ -26,6 +28,9 @@ export async function actorRunsRouter(
 
 		case getUserRunsListOperationName:
 			return await getUserRunsList.call(this, i);
+
+		case getActorRunsOperationName:
+			return await getActorRuns.call(this, i);
 
 		default:
 			throw new NodeOperationError(

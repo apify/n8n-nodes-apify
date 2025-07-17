@@ -2,6 +2,7 @@ import { INodeProperties, INodeType } from 'n8n-workflow';
 
 import { overrideActorProperties, listActors } from './actorResourceLocator';
 import { overrideActorTaskProperties, listActorTasks } from './actorTaskResourceLocator';
+import { overrideUserActorProperties, listUserActors } from './userActorResourceLocator';
 import { overrideRunProperties, listRuns } from './runResourceLocator';
 import {
 	listKeyValueStores,
@@ -23,6 +24,7 @@ export function runHooks(properties: INodeProperties[]): {
 		overrideRunProperties,
 		overrideKeyValueStoreProperties,
 		overrideKeyValueStoreRecordKeyProperties,
+		overrideUserActorProperties,
 	);
 
 	return {
@@ -34,6 +36,7 @@ export function runHooks(properties: INodeProperties[]): {
 				listRuns,
 				listKeyValueStores,
 				listKeyValueStoreRecordKeys,
+				listUserActors,
 			},
 		},
 	};
