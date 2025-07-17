@@ -6,7 +6,9 @@ This is an n8n community node that integrates [Apify](https://apify.com) with yo
 
 ## Table of contents
 
-- [Installation](#installation)
+- [Installation on self hosted instance](#installation-self-hosted)
+- [Installation on n8n cloud](#installation-n8n-cloud)
+- [Installation for development and contributing](#installation-development-and-contributing)
 - [Operations](#operations)
 - [Credentials](#credentials)
 - [Compatibility](#compatibility)
@@ -16,7 +18,31 @@ This is an n8n community node that integrates [Apify](https://apify.com) with yo
 - [Version History](#version-history)
 - [Troubleshooting](#troubleshooting)
 
-## Installation
+## Installation (self-hosted)
+
+To install the Apify community node directly from the n8n Editor UI:
+
+1. Open your n8n instance.
+2. Go to **Settings > Community Nodes**
+3. Select **Install**.
+4. Enter the npm package name: `@apify/n8n-nodes-apify` to install the latest version. To install a specific version (e.g 0.4.4) enter `@apify/n8n-nodes-apify@0.4.4`. All versions are available [here](https://www.npmjs.com/package/@apify/n8n-nodes-apify?activeTab=versions)
+5. Agree to the [risks](https://docs.n8n.io/integrations/community-nodes/risks/) of using community nodes and select **Install**
+6. The node is now available to use in your workflows.
+
+## Installation (n8n Cloud)
+
+If you’re using n8n Cloud, installing community nodes is even simpler:
+
+1. Go to the **Canvas** and open the **nodes panel**.
+2. Search for **Apify** in the community node registry.
+3. Click **Install node** to add the Apify node to your instance.
+
+
+ > On n8n cloud users can choose not to show verified community nodes. Instance owners can toggle this in the Cloud Admin Panel. To install the Apify node, make sure the installation of verified community nodes is enabled. 
+
+
+## Installation (development and contributing) 
+To contribute to our Apify node, you can install the node and link it to your n8n instance. Follow the steps below:
 
 ### ⚙️ Prerequisites
 
