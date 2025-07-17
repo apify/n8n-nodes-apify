@@ -62,13 +62,14 @@ descending order. By default, they are sorted in ascending order.`,
 	{
 		displayName: 'Status',
 		name: 'status',
-		description: `Return only runs with the provided terminal status, available
+		description: `Return only runs with the provided status, available
 statuses: https://docs.apify.com/platform/actors/running/runs-and-builds#lifecycle`,
-		default: 'SUCCEEDED',
+		default: '',
 		type: 'options',
 		options: [
 			{ name: 'ABORTED', value: 'ABORTED' },
 			{ name: 'ABORTING', value: 'ABORTING' },
+			{ name: 'All', value: '' },
 			{ name: 'FAILED', value: 'FAILED' },
 			{ name: 'READY', value: 'READY' },
 			{ name: 'RUNNING', value: 'RUNNING' },

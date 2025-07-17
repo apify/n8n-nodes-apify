@@ -14,6 +14,7 @@ export async function getActorRuns(
 	const limit = this.getNodeParameter('limit', i, 50) as number;
 	const desc = this.getNodeParameter('desc', i) as boolean;
 	const status = this.getNodeParameter('status', i) as string;
+	const statusFilter = status === '' ? undefined : status;
 
 	const actorId = this.getNodeParameter('userActorId', i, undefined, {
 		extractValue: true,
@@ -27,7 +28,7 @@ export async function getActorRuns(
 		const apiResult = await apiRequest.call(this, {
 			method: 'GET',
 			uri: `/v2/acts/${actorId}/runs`,
-			qs: { limit, offset, desc, status },
+			qs: { limit, offset, desc, status: statusFilter },
 		});
 
 		return this.helpers.returnJsonArray(apiResult.data?.items ?? []);
