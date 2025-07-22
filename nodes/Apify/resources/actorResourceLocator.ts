@@ -136,7 +136,7 @@ export async function listActors(
 			limit: 1000,
 			offset: 0,
 			sortBy: 'stats.lastRunStartedAt',
-			desc: true
+			desc: true,
 		},
 	});
 

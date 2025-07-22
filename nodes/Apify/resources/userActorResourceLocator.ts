@@ -103,7 +103,7 @@ export async function listUserActors(
 			limit: 1000,
 			offset: 0,
 			sortBy: 'stats.lastRunStartedAt',
-			desc: true
+			desc: true,
 		},
 	});
 
