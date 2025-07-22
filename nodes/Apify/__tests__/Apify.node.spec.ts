@@ -1,13 +1,14 @@
 import { Apify } from '../Apify.node';
 import { executeWorkflow } from './utils/executeWorkflow';
 import { CredentialsHelper } from './utils/credentialHelper';
-import { getRunTaskDataByNodeName, getTaskArrayData, getTaskData } from './utils/getNodeResultData';
+import { getRunTaskDataByNodeName, getTaskData } from './utils/getNodeResultData';
 import getRunWorkflow from './workflows/actor-runs/get-run.workflow.json';
+import getUserRunsListWorkflow from './workflows/actor-runs/get-user-runs-list.workflow.json';
 import getRunsWorkflow from './workflows/actor-runs/get-runs.workflow.json';
 import nock from 'nock';
-import getUserRunsListWorkflow from './workflows/actor-runs/get-user-runs-list.workflow.json';
 import * as fixtures from './utils/fixtures';
 import * as helpers from '../helpers';
+import { getTaskArrayData } from './utils/getNodeResultData';
 
 describe('Apify Node', () => {
 	let apifyNode: Apify;
@@ -48,13 +49,12 @@ describe('Apify Node', () => {
 					.get(`/v2/actor-runs/${runId}`)
 					.reply(200, mockRun);
 
-				const { waitPromise } = await executeWorkflow({
+				const { executionData } = await executeWorkflow({
 					credentialsHelper,
 					workflow: getRunWorkflow,
 				});
-				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Get run');
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Get run');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
@@ -75,13 +75,12 @@ describe('Apify Node', () => {
 					.query(true)
 					.reply(200, mockRunsList);
 
-				const { waitPromise } = await executeWorkflow({
+				const { executionData } = await executeWorkflow({
 					credentialsHelper,
 					workflow: getUserRunsListWorkflow,
 				});
-				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Get user runs list');
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Get user runs list');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
@@ -103,13 +102,12 @@ describe('Apify Node', () => {
 					.query(true)
 					.reply(200, mockRunsList);
 
-				const { waitPromise } = await executeWorkflow({
+				const { executionData } = await executeWorkflow({
 					credentialsHelper,
 					workflow: getRunsWorkflow,
 				});
-				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Get runs');
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Get runs');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
@@ -134,13 +132,12 @@ describe('Apify Node', () => {
 					.reply(200, mockRunTask);
 
 				const runTaskWorkflow = require('./workflows/actor-tasks/run-task.workflow.json');
-				const { waitPromise } = await executeWorkflow({
+				const { executionData } = await executeWorkflow({
 					credentialsHelper,
 					workflow: runTaskWorkflow,
 				});
-				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Run task');
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run task');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
@@ -163,13 +160,12 @@ describe('Apify Node', () => {
 					.reply(200, mockFinishedRun);
 
 				const runTaskWorkflow = require('./workflows/actor-tasks/run-task-wait-for-finish.workflow.json');
-				const { waitPromise } = await executeWorkflow({
+				const { executionData } = await executeWorkflow({
 					credentialsHelper,
 					workflow: runTaskWorkflow,
 				});
-				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Run task');
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run task');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
@@ -195,13 +191,12 @@ describe('Apify Node', () => {
 					.reply(200, mockLastRun);
 
 				const getLastRunWorkflow = require('./workflows/actors/get-last-run.workflow.json');
-				const { waitPromise } = await executeWorkflow({
+				const { executionData } = await executeWorkflow({
 					credentialsHelper,
 					workflow: getLastRunWorkflow,
 				});
-				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Get last run');
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Get last run');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
@@ -227,13 +222,12 @@ describe('Apify Node', () => {
 					.reply(200, mockRunActor);
 
 				const runActorWorkflow = require('./workflows/actors/run-actor.workflow.json');
-				const { waitPromise } = await executeWorkflow({
+				const { executionData } = await executeWorkflow({
 					credentialsHelper,
 					workflow: runActorWorkflow,
 				});
-				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Run actor');
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run actor');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
@@ -261,13 +255,12 @@ describe('Apify Node', () => {
 					.reply(200, mockFinishedRun);
 
 				const runActorWorkflow = require('./workflows/actors/run-actor-wait-for-finish.workflow.json');
-				const { waitPromise } = await executeWorkflow({
+				const { executionData } = await executeWorkflow({
 					credentialsHelper,
 					workflow: runActorWorkflow,
 				});
-				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Run actor');
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run actor');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
@@ -299,13 +292,12 @@ describe('Apify Node', () => {
 					.reply(200, mockItems);
 
 				const scrapeSingleUrlWorkflow = require('./workflows/actors/scrape-single-url.workflow.json');
-				const { waitPromise } = await executeWorkflow({
+				const { executionData } = await executeWorkflow({
 					credentialsHelper,
 					workflow: scrapeSingleUrlWorkflow,
 				});
-				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Scrape single URL');
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Scrape single URL');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
@@ -331,13 +323,12 @@ describe('Apify Node', () => {
 					.reply(200, mockItems);
 
 				const getItemsWorkflow = require('./workflows/datasets/get-items.workflow.json');
-				const { waitPromise } = await executeWorkflow({
+				const { executionData } = await executeWorkflow({
 					credentialsHelper,
 					workflow: getItemsWorkflow,
 				});
-				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Get items');
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Get items');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
@@ -363,13 +354,12 @@ describe('Apify Node', () => {
 					.reply(200, mockRecord);
 
 				const getKeyValueStoreRecordWorkflow = require('./workflows/key-value-stores/get-key-value-store-record.workflow.json');
-				const { waitPromise } = await executeWorkflow({
+				const { executionData } = await executeWorkflow({
 					credentialsHelper,
 					workflow: getKeyValueStoreRecordWorkflow,
 				});
-				const result = await waitPromise.promise();
 
-				const nodeResults = getRunTaskDataByNodeName(result, 'Get Key-Value Store Record');
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Get Key-Value Store Record');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');

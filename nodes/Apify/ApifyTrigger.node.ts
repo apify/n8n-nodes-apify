@@ -1,3 +1,5 @@
+/* eslint-disable n8n-nodes-base/node-class-description-outputs-wrong */
+
 import {
 	IDataObject,
 	IHookFunctions,
@@ -5,6 +7,7 @@ import {
 	INodeTypeDescription,
 	IWebhookFunctions,
 	IWebhookResponseData,
+	NodeConnectionType,
 } from 'n8n-workflow';
 import {
 	apiRequest,
@@ -29,7 +32,7 @@ export class ApifyTrigger implements INodeType {
 		description: 'Triggers workflow on Apify Actor or task run events',
 		defaults: { name: 'Apify Trigger' },
 		inputs: [],
-		outputs: ['main'],
+		outputs: [NodeConnectionType.Main],
 		credentials: [
 			{
 				displayName: 'Apify API key connection',
