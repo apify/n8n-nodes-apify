@@ -1,8 +1,12 @@
+/* eslint-disable n8n-nodes-base/node-class-description-outputs-wrong */
+/* eslint-disable n8n-nodes-base/node-class-description-inputs-wrong-regular-node */
+
 import {
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
+	NodeConnectionType,
 } from 'n8n-workflow';
 import { properties } from './Apify.properties';
 import { methods } from './Apify.methods';
@@ -21,8 +25,9 @@ export class Apify implements INodeType {
 		defaults: {
 			name: 'Apify',
 		},
-		inputs: ['main'],
-		outputs: ['main'],
+		inputs: [NodeConnectionType.Main],
+		outputs: [NodeConnectionType.Main],
+		usableAsTool: true,
 		credentials: [
 			{
 				displayName: 'Apify API key connection',
