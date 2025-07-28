@@ -1,7 +1,6 @@
 import apifyTriggerWorkflow from './workflows/webhook/webhook.workflow.json';
 import { executeWorkflow } from './utils/executeWorkflow';
 import { CredentialsHelper } from './utils/credentialHelper';
-// import { runWebhookMethod } from './utils/runWebhookMethod';
 import * as fixtures from './utils/fixtures';
 import * as genericFunctions from '../resources/genericFunctions';
 import { Workflow } from 'n8n-workflow';

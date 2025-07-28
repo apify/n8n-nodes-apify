@@ -3,10 +3,8 @@ import {
 	ICredentialsHelper,
 	IExecuteWorkflowInfo,
 	IRun,
-	// ITaskData,
 	IWorkflowBase,
 	IWorkflowExecuteAdditionalData,
-	// IWorkflowExecuteHooks,
 	LoggerProxy,
 	Workflow,
 } from 'n8n-workflow';
