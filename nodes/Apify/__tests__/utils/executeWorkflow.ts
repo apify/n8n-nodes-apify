@@ -3,15 +3,12 @@ import {
 	ICredentialsHelper,
 	IExecuteWorkflowInfo,
 	IRun,
-	ITaskData,
 	IWorkflowBase,
 	IWorkflowExecuteAdditionalData,
-	IWorkflowExecuteHooks,
 	LoggerProxy,
 	Workflow,
-	WorkflowHooks,
 } from 'n8n-workflow';
-import { WorkflowExecute } from 'n8n-core';
+import { WorkflowExecute, ExecutionLifecycleHooks } from 'n8n-core';
 import { nodeTypes } from './nodeTypesClass';
 
 export type ExecuteWorkflowArgs = {
@@ -24,7 +21,6 @@ export const executeWorkflow = async ({ credentialsHelper, ...args }: ExecuteWor
 		debug() {},
 		error() {},
 		info() {},
-		verbose() {},
 		warn() {},
 	});
 
@@ -36,21 +32,7 @@ export const executeWorkflow = async ({ credentialsHelper, ...args }: ExecuteWor
 		nodeTypes,
 	});
 
-	const waitPromise = await createDeferredPromise<IRun>();
-	const nodeExecutionOrder: string[] = [];
-
-	const hookFunctions = {
-		nodeExecuteAfter: [
-			async (nodeName: string, data: ITaskData): Promise<void> => {
-				nodeExecutionOrder.push(nodeName);
-			},
-		],
-		workflowExecuteAfter: [
-			async (fullRunData: IRun): Promise<void> => {
-				waitPromise.resolve(fullRunData);
-			},
-		],
-	} satisfies IWorkflowExecuteHooks;
+	const waitPromise = createDeferredPromise<IRun>();
 
 	const workflowData: IWorkflowBase = {
 		id: 'test',
@@ -64,7 +46,7 @@ export const executeWorkflow = async ({ credentialsHelper, ...args }: ExecuteWor
 
 	const additionalData: IWorkflowExecuteAdditionalData = {
 		credentialsHelper,
-		hooks: new WorkflowHooks(hookFunctions, 'trigger', '1', workflowData),
+		hooks: new ExecutionLifecycleHooks('trigger', '1', workflowData),
 		executeWorkflow: async (workflowInfo: IExecuteWorkflowInfo): Promise<any> => {},
 		restApiUrl: 'http://localhost:5678',
 		webhookBaseUrl: 'http://localhost:5678',
@@ -76,6 +58,7 @@ export const executeWorkflow = async ({ credentialsHelper, ...args }: ExecuteWor
 		variables: {},
 		secretsHelpers: {} as any,
 		logAiEvent: async () => {},
+		startRunnerTask: (async () => {}) as any,
 	};
 
 	const workflowExecute = new WorkflowExecute(additionalData, 'cli');

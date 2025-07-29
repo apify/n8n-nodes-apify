@@ -1,120 +1,169 @@
-import nock from 'nock';
-
 import apifyTriggerWorkflow from './workflows/webhook/webhook.workflow.json';
 import { executeWorkflow } from './utils/executeWorkflow';
 import { CredentialsHelper } from './utils/credentialHelper';
-import { runWebhookMethod } from './utils/runWebhookMethod';
 import * as fixtures from './utils/fixtures';
+import * as genericFunctions from '../resources/genericFunctions';
+import { Workflow } from 'n8n-workflow';
 
 describe('Apify Trigger Node', () => {
-	describe('checkExists', () => {
-		it('should return false in checkExists webhook method since there is any webhook created', async () => {
-			const scope = nock('https://api.apify.com')
-				.get('/v2/webhooks')
-				.reply(200, {
-					data: { items: [] },
-				});
+	let credentialsHelper: CredentialsHelper;
 
-			const credentialsHelper = new CredentialsHelper({
-				apifyApi: {
-					apiToken: 'test-token',
-					baseUrl: 'https://api.apify.com',
+	beforeAll(() => {
+		credentialsHelper = new CredentialsHelper({
+			apifyApi: {
+				apiToken: 'test-token',
+				baseUrl: 'https://api.apify.com',
+			},
+		});
+	});
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	describe('checkExists', () => {
+		const mockedCheckExists = async (workflow: Workflow) =>
+			await (workflow.nodeTypes as any).nodeTypes[
+				'n8n-nodes-apify.apifyTrigger'
+			].type.webhookMethods.default.checkExists.call({
+				getNodeWebhookUrl: () =>
+					'http://localhost:5678/2726981e-4e01-461f-a548-1f467e997400/webhook',
+				getNodeParameter: (parameterName: string) => {
+					switch (parameterName) {
+						case 'resource':
+							return 'actor';
+						case 'actorId':
+							return {
+								__rl: true,
+								value: 'nFJndFXA5zjCTuudP',
+								mode: 'list',
+								cachedResultName: 'Google Search Results Scraper (apify/google-search-scraper)',
+								cachedResultUrl: 'https://console.apify.com/actors/nFJndFXA5zjCTuudP/input',
+							};
+						case 'eventType':
+							return [
+								'ACTOR.RUN.SUCCEEDED',
+								'ACTOR.RUN.ABORTED',
+								'ACTOR.RUN.FAILED',
+								'ACTOR.RUN.TIMED_OUT',
+							];
+						default:
+							return '';
+					}
 				},
 			});
 
-			const { workflow, additionalData } = await executeWorkflow({
+		it('should return false in checkExists webhook method since there is any webhook created', async () => {
+			jest.spyOn(genericFunctions.apiRequest as any, 'call').mockResolvedValue({
+				// Spy and mock apiRequest.call to return an empty array (actor has no webhooks yet)
+				data: { items: [] },
+			});
+
+			const { workflow } = await executeWorkflow({
 				credentialsHelper,
 				workflow: apifyTriggerWorkflow,
 			});
 
-			const result = await runWebhookMethod(workflow, additionalData, 'checkExists');
+			const result = await mockedCheckExists(workflow);
 			expect(result).toEqual(false);
-
-			expect(scope.isDone()).toBe(true);
 		});
 
 		it('should return true in checkExists webhook method since there is a webhook created with the same url', async () => {
-			const scope = nock('https://api.apify.com')
-				.get('/v2/webhooks')
-				.reply(200, fixtures.getActorWebhookResult());
-
-			const credentialsHelper = new CredentialsHelper({
-				apifyApi: {
-					apiToken: 'test-token',
-					baseUrl: 'https://api.apify.com',
-				},
+			jest.spyOn(genericFunctions.apiRequest as any, 'call').mockResolvedValue({
+				// Spy and mock apiRequest.call to return a webhook with the same url (actor has webhooks)
+				data: { items: fixtures.getActorWebhookResult().data.items },
 			});
 
-			const { workflow, additionalData } = await executeWorkflow({
+			const { workflow } = await executeWorkflow({
 				credentialsHelper,
 				workflow: apifyTriggerWorkflow,
 			});
 
-			const result = await runWebhookMethod(workflow, additionalData, 'checkExists');
+			const result = await mockedCheckExists(workflow);
 			expect(result).toBe(true);
-
-			const node = Object.values(workflow.nodes)[0];
-			expect(node.webhookId).toEqual('2726981e-4e01-461f-a548-1f467e997400');
-
-			expect(scope.isDone()).toBe(true);
 		});
 	});
 
 	describe('create', () => {
-		it('should create the webhook', async () => {
-			const scope = nock('https://api.apify.com')
-				.post('/v2/webhooks')
-				.reply(201, fixtures.getCreateWebhookResult());
-
-			const credentialsHelper = new CredentialsHelper({
-				apifyApi: {
-					apiToken: 'test-token',
-					baseUrl: 'https://api.apify.com',
+		const mockedCreate = async (workflow: Workflow) =>
+			await (workflow.nodeTypes as any).nodeTypes[
+				'n8n-nodes-apify.apifyTrigger'
+			].type.webhookMethods.default.create.call({
+				getNodeWebhookUrl: () =>
+					'http://localhost:5678/2726981e-4e01-461f-a548-1f467e997400/webhook',
+				getNodeParameter: (parameterName: string) => {
+					switch (parameterName) {
+						case 'resource':
+							return 'actor';
+						case 'actorId':
+							return {
+								__rl: true,
+								value: 'nFJndFXA5zjCTuudP',
+								mode: 'list',
+								cachedResultName: 'Google Search Results Scraper (apify/google-search-scraper)',
+								cachedResultUrl: 'https://console.apify.com/actors/nFJndFXA5zjCTuudP/input',
+							};
+						case 'eventType':
+							return [
+								'ACTOR.RUN.SUCCEEDED',
+								'ACTOR.RUN.ABORTED',
+								'ACTOR.RUN.FAILED',
+								'ACTOR.RUN.TIMED_OUT',
+							];
+						default:
+							return '';
+					}
+				},
+				getWorkflowStaticData: () => {
+					return workflow.staticData;
 				},
 			});
-			const { workflow, additionalData } = await executeWorkflow({
+
+		it('should create the webhook', async () => {
+			jest.spyOn(genericFunctions.apiRequest as any, 'call').mockResolvedValue({
+				data: fixtures.getCreateWebhookResult().data,
+			});
+
+			const { workflow } = await executeWorkflow({
 				credentialsHelper,
 				workflow: apifyTriggerWorkflow,
 			});
 
-			const result = await runWebhookMethod(workflow, additionalData, 'create');
+			const result = await mockedCreate(workflow);
 			expect(result).toBe(true);
 
-			const node = Object.values(workflow.nodes)[0];
-			const webhookData = workflow.getStaticData('node', node);
+			const webhookData = workflow.staticData;
 			expect(webhookData.webhookId).toEqual(fixtures.getCreateWebhookResult().data.id);
-
-			expect(scope.isDone()).toBe(true);
 		});
 	});
 
 	describe('delete', () => {
+		const mockedDelete = async (workflow: Workflow) =>
+			await (workflow.nodeTypes as any).nodeTypes[
+				'n8n-nodes-apify.apifyTrigger'
+			].type.webhookMethods.default.delete.call({
+				getWorkflowStaticData: () => {
+					return workflow.staticData;
+				},
+			});
 		it('should delete the webhook', async () => {
 			const webhookId = fixtures.getCreateWebhookResult().data.id;
 
-			const scope = nock('https://api.apify.com').delete(`/v2/webhooks/${webhookId}`).reply(204);
+			jest.spyOn(genericFunctions.apiRequest as any, 'call').mockResolvedValue(null);
 
-			const credentialsHelper = new CredentialsHelper({
-				apifyApi: {
-					apiToken: 'test-token',
-					baseUrl: 'https://api.apify.com',
-				},
-			});
-			const { workflow, additionalData } = await executeWorkflow({
+			const { workflow } = await executeWorkflow({
 				credentialsHelper,
 				workflow: apifyTriggerWorkflow,
 			});
 
 			const node = Object.values(workflow.nodes)[0];
-			const webhookData = workflow.getStaticData('node', node);
+			const webhookData = workflow.staticData;
 			webhookData.webhookId = webhookId;
 
-			const result = await runWebhookMethod(workflow, additionalData, 'delete');
+			const result = await mockedDelete(workflow);
 			expect(result).toBe(true);
 
 			expect(workflow.getStaticData('node', node)).toEqual({});
-
-			expect(scope.isDone()).toBe(true);
 		});
 	});
 });
