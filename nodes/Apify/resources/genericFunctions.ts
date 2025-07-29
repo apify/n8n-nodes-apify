@@ -1,4 +1,5 @@
 import {
+	sleep,
 	NodeApiError,
 	NodeOperationError,
 	type IDataObject,
@@ -139,9 +140,7 @@ export async function pollRunStatus(
 				message: `Error polling run status: ${err}`,
 			});
 		}
-		await new Promise(
-			(resolve) => setTimeout(resolve, 1000), // 1 second polling interval
-		);
+		await sleep(1000); // 1 second polling interval
 	}
 	return lastRunData;
 }
