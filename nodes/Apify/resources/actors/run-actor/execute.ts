@@ -16,9 +16,9 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	const waitForFinish = this.getNodeParameter('waitForFinish', i) as boolean;
 	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
 
-	let userInput: any
+	let userInput: any;
 	try {
-		userInput = customBodyParser(rawStringifiedInput)
+		userInput = customBodyParser(rawStringifiedInput);
 	} catch (err) {
 		throw new NodeOperationError(
 			this.getNode(),

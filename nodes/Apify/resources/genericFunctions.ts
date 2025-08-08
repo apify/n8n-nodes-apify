@@ -182,9 +182,9 @@ export function compose(...fns: Function[]) {
 	return (x: any) => fns.reduce((v, f) => f(v), x);
 }
 
-export function customBodyParser(input: string | object){
-	if (!input){
-		return {}
+export function customBodyParser(input: string | object) {
+	if (!input) {
+		return {};
 	}
 
 	if (typeof input === 'string') {
