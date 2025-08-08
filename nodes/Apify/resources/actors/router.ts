@@ -2,11 +2,13 @@ import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-w
 
 import { name as actorResourceName } from './index';
 import { name as runActorOperationName } from './run-actor';
+import { name as runActorAndGetDatasetOperationName } from './run-actor-and-get-dataset';
 import { scrapeSingleUrlName as scrapeSingleUrlOperationName } from './scrape-single-url';
 import { name as getLastRunOperationName } from './get-last-run';
 import { runActor } from './run-actor/execute';
 import { scrapeSingleUrl } from './scrape-single-url/execute';
 import { getLastRun } from './get-last-run/execute';
+import { runActorAndGetDataset } from './run-actor-and-get-dataset/execute';
 
 export async function actorsRouter(
 	this: IExecuteFunctions,
@@ -25,6 +27,8 @@ export async function actorsRouter(
 	switch (operation) {
 		case runActorOperationName:
 			return await runActor.call(this, i);
+		case runActorAndGetDatasetOperationName:
+			return await runActorAndGetDataset.call(this, i);
 		case scrapeSingleUrlOperationName:
 			return await scrapeSingleUrl.call(this, i);
 		case getLastRunOperationName:
