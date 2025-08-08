@@ -181,3 +181,8 @@ export function generateIdempotencyKey(
 export function compose(...fns: Function[]) {
 	return (x: any) => fns.reduce((v, f) => f(v), x);
 }
+
+export function isUsedAsAiTool(nodeType: string): boolean {
+	const parts = nodeType.split('.');
+	return parts[parts.length - 1] === 'apifyTool';
+}

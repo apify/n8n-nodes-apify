@@ -2,8 +2,9 @@ import { INodeProperties, INodePropertyOptions } from 'n8n-workflow';
 import { runHooks } from './hooks';
 
 import * as runTask from './run-task';
+import * as runTaskAndGetDataset from './run-task-and-get-dataset';
 
-const operations: INodePropertyOptions[] = [runTask.option];
+const operations: INodePropertyOptions[] = [runTask.option, runTaskAndGetDataset.option];
 
 export const name = 'Actor tasks';
 
@@ -26,7 +27,11 @@ operationSelect.options = operations;
 // set the default operation
 operationSelect.default = operations.length > 0 ? operations[0].value : '';
 
-export const rawProperties: INodeProperties[] = [operationSelect, ...runTask.properties];
+export const rawProperties: INodeProperties[] = [
+	operationSelect,
+	...runTask.properties,
+	...runTaskAndGetDataset.properties,
+];
 
 const { properties, methods } = runHooks(rawProperties);
 
