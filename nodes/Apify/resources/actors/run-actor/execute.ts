@@ -14,12 +14,21 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	const memory = this.getNodeParameter('memory', i) as number | null;
 	const buildParam = this.getNodeParameter('build', i) as string | null;
 	const waitForFinish = this.getNodeParameter('waitForFinish', i) as boolean;
-	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string;
+	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
 
 	let userInput: any;
 	try {
-		userInput = rawStringifiedInput ? JSON.parse(rawStringifiedInput) : {};
+		console.log(typeof rawStringifiedInput);
+		console.log(rawStringifiedInput);
+		if (typeof rawStringifiedInput === 'string') {
+			userInput = rawStringifiedInput ? JSON.parse(rawStringifiedInput) : {};
+		} else {
+			// When an AI Agent Tool calls the node
+			// It sometimes sends an object instead of a string
+			userInput = rawStringifiedInput ?? {};
+		}
 	} catch (err) {
+		console.error(err)
 		throw new NodeOperationError(
 			this.getNode(),
 			`Could not parse custom body: ${rawStringifiedInput}`,
