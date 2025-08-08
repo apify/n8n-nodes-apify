@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, pollRunStatus } from '../../genericFunctions';
+import { apiRequest, customBodyParser, pollRunStatus } from '../../genericFunctions';
 
 export async function runActor(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorId = this.getNodeParameter('actorId', i, undefined, {
@@ -16,19 +16,10 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	const waitForFinish = this.getNodeParameter('waitForFinish', i) as boolean;
 	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
 
-	let userInput: any;
+	let userInput: any
 	try {
-		console.log(typeof rawStringifiedInput);
-		console.log(rawStringifiedInput);
-		if (typeof rawStringifiedInput === 'string') {
-			userInput = rawStringifiedInput ? JSON.parse(rawStringifiedInput) : {};
-		} else {
-			// When an AI Agent Tool calls the node
-			// It sometimes sends an object instead of a string
-			userInput = rawStringifiedInput ?? {};
-		}
+		userInput = customBodyParser(rawStringifiedInput)
 	} catch (err) {
-		console.error(err)
 		throw new NodeOperationError(
 			this.getNode(),
 			`Could not parse custom body: ${rawStringifiedInput}`,

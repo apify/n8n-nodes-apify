@@ -181,3 +181,17 @@ export function generateIdempotencyKey(
 export function compose(...fns: Function[]) {
 	return (x: any) => fns.reduce((v, f) => f(v), x);
 }
+
+export function customBodyParser(input: string | object){
+	if (!input){
+		return {}
+	}
+
+	if (typeof input === 'string') {
+		return input ? JSON.parse(input) : {};
+	} else {
+		// When an AI Agent Tool calls the node
+		// It sometimes sends an object instead of a string
+		return input;
+	}
+}
