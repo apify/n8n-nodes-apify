@@ -2,7 +2,9 @@ import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-w
 
 import { name as actorTaskResourceName } from './index';
 import { name as runTaskOperationName } from './run-task';
+import { name as runTaskAndGetDatasetOperationName } from './run-task-and-get-dataset';
 import { runTask } from './run-task/execute';
+import { runTaskAndGetDataset } from './run-task-and-get-dataset/execute';
 
 export async function actorTasksRouter(
 	this: IExecuteFunctions,
@@ -21,6 +23,9 @@ export async function actorTasksRouter(
 	switch (operation) {
 		case runTaskOperationName:
 			return await runTask.call(this, i);
+
+		case runTaskAndGetDatasetOperationName:
+			return await runTaskAndGetDataset.call(this, i);
 
 		default:
 			throw new NodeOperationError(

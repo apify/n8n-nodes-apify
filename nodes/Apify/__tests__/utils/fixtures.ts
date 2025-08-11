@@ -193,7 +193,11 @@ export const getRunTaskResult = () => {
 	};
 };
 
-export const getLastRunResult = () => {
+type GetLastRunOverrides = {
+	status?: 'SUCCEEDED' | 'FAILED' | 'ABORTED' | 'TIMED-OUT';
+};
+
+export const getLastRunResult = (overrides: GetLastRunOverrides = {}) => {
 	return {
 		data: {
 			id: '8Ai57jgykDRefjXZ2',
@@ -202,7 +206,7 @@ export const getLastRunResult = () => {
 			actorTaskId: 'PwUDLcG3zMyT8E4vq',
 			startedAt: '2025-06-16T15:25:16.265Z',
 			finishedAt: '2025-06-16T15:25:27.109Z',
-			status: 'SUCCEEDED',
+			status: overrides.status || 'SUCCEEDED',
 			statusMessage: 'Finished! Total 3 requests: 3 succeeded, 0 failed.',
 			isStatusMessageTerminal: true,
 			meta: {
