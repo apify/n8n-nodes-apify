@@ -42,6 +42,20 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
+		displayName: 'Wait for Finish',
+		name: 'waitForFinish',
+		description:
+			'Whether to wait for the run to finish before continuing. If true, the node will wait for the run to complete (successfully or not) before moving to the next node. Note: The maximum time the workflow will wait is limited by the workflow timeout setting in your n8n configuration.',
+		default: true,
+		type: 'boolean',
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Run actor'],
+			},
+		},
+	},
+	{
 		displayName: 'Timeout',
 		name: 'timeout',
 		description: `Optional timeout for the run, in seconds. By default, the run uses a
@@ -87,20 +101,6 @@ timeout specified in the default run configuration for the Actor.`,
 configuration for the Actor (typically \`latest\`).`,
 		default: '',
 		type: 'string',
-		displayOptions: {
-			show: {
-				resource: ['Actors'],
-				operation: ['Run actor'],
-			},
-		},
-	},
-	{
-		displayName: 'Wait for Finish',
-		name: 'waitForFinish',
-		description:
-			'Whether to wait for the run to finish before continuing. If true, the node will wait for the run to complete (successfully or not) before moving to the next node. Note: The maximum time the workflow will wait is limited by the workflow timeout setting in your n8n configuration.',
-		default: true,
-		type: 'boolean',
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
