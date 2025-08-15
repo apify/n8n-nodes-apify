@@ -58,6 +58,8 @@ export async function scrapeSingleUrl(
 			qs: { format: 'json' },
 		});
 
+		delete item.text;
+
 		return { json: { ...item } };
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
