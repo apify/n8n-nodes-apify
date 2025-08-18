@@ -1,5 +1,7 @@
 import { INodeProperties } from 'n8n-workflow';
 
+import * as helpers from '../../../helpers';
+
 export const properties: INodeProperties[] = [
 	{
 		displayName: 'Actor Task',
@@ -64,17 +66,7 @@ timeout specified in the task settings.`,
 			'Memory limit for the run, in megabytes. The amount of memory can be set to one of the available options. By default, the run uses a memory limit specified in the task settings.',
 		default: 1024,
 		type: 'options',
-		options: [
-			{ name: '128 MB', value: 128 },
-			{ name: '256 MB', value: 256 },
-			{ name: '512 MB', value: 512 },
-			{ name: '1024 MB (1 GB)', value: 1024 },
-			{ name: '2048 MB (2 GB)', value: 2048 },
-			{ name: '4096 MB (4 GB)', value: 4096 },
-			{ name: '8192 MB (8 GB)', value: 8192 },
-			{ name: '16384 MB (16 GB)', value: 16384 },
-			{ name: '32768 MB (32 GB)', value: 32768 },
-		],
+		options: helpers.consts.memoryOptions,
 		displayOptions: {
 			show: {
 				resource: ['Actor tasks'],
