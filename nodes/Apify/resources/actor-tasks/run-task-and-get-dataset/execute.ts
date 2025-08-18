@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, isUsedAsAiTool, pollRunStatus } from '../../genericFunctions';
+import { apiRequest, pollRunStatus } from '../../genericFunctions';
 
 export async function runTaskAndGetDataset(
 	this: IExecuteFunctions,
@@ -63,14 +63,6 @@ export async function runTaskAndGetDataset(
 		uri: `/v2/datasets/${lastRunData.defaultDatasetId}/items`,
 		qs: { format: 'json' },
 	});
-
-	if (isUsedAsAiTool(this.getNode().type)) {
-		return {
-			json: {
-				...datasetItems,
-			},
-		};
-	}
 
 	return {
 		json: {

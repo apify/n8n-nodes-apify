@@ -195,8 +195,3 @@ export function customBodyParser(input: string | object) {
 		return input;
 	}
 }
-
-export function isUsedAsAiTool(nodeType: string): boolean {
-	const parts = nodeType.split('.');
-	return parts[parts.length - 1] === 'apifyTool';
-}
