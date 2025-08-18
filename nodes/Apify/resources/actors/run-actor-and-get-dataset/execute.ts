@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, pollRunStatus } from '../../genericFunctions';
+import { apiRequest, customBodyParser, pollRunStatus } from '../../genericFunctions';
 
 export async function runActorAndGetDataset(
 	this: IExecuteFunctions,
@@ -16,11 +16,11 @@ export async function runActorAndGetDataset(
 	const timeout = this.getNodeParameter('timeout', i) as number | null;
 	const memory = this.getNodeParameter('memory', i) as number | null;
 	const buildParam = this.getNodeParameter('build', i) as string | null;
-	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string;
+	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
 
 	let userInput: any;
 	try {
-		userInput = rawStringifiedInput ? JSON.parse(rawStringifiedInput) : {};
+		userInput = customBodyParser(rawStringifiedInput);
 	} catch (err) {
 		throw new NodeOperationError(
 			this.getNode(),

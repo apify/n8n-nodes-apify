@@ -4,17 +4,27 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, pollRunStatus } from '../../../resources/genericFunctions';
+import { apiRequest, customBodyParser, pollRunStatus } from '../../../resources/genericFunctions';
 
 export async function runTask(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorTaskId = this.getNodeParameter('actorTaskId', i, undefined, {
 		extractValue: true,
 	}) as string;
-	const input = this.getNodeParameter('customBody', i, {}) as object;
+	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
 	const waitForFinish = this.getNodeParameter('waitForFinish', i) as boolean;
 	const timeout = this.getNodeParameter('timeout', i, null) as number | null;
 	const memory = this.getNodeParameter('memory', i, null) as number | null;
 	const build = this.getNodeParameter('build', i, '') as string;
+
+	let input: any;
+	try {
+		input = customBodyParser(rawStringifiedInput);
+	} catch (err) {
+		throw new NodeOperationError(
+			this.getNode(),
+			`Could not parse custom body: ${rawStringifiedInput}`,
+		);
+	}
 
 	if (!actorTaskId) {
 		throw new NodeOperationError(this.getNode(), 'Task ID is required');
