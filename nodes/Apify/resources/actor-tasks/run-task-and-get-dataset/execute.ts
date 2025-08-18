@@ -9,7 +9,7 @@ import { apiRequest, customBodyParser, pollRunStatus } from '../../genericFuncti
 export async function runTaskAndGetDataset(
 	this: IExecuteFunctions,
 	i: number,
-): Promise<INodeExecutionData> {
+): Promise<INodeExecutionData[]> {
 	const actorTaskId = this.getNodeParameter('actorTaskId', i, undefined, {
 		extractValue: true,
 	}) as string;
@@ -72,10 +72,5 @@ export async function runTaskAndGetDataset(
 		qs: { format: 'json' },
 	});
 
-	return {
-		json: {
-			runResult: lastRunData,
-			datasetItems: datasetItems,
-		},
-	};
+	return this.helpers.returnJsonArray(datasetItems);
 }

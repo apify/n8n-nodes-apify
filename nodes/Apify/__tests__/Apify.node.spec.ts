@@ -209,18 +209,14 @@ describe('Apify Node', () => {
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
 
-				const data = getTaskData(nodeResult);
-				expect(typeof data).toBe('object');
-				expect(data).toBeDefined();
-				expect(data).toHaveProperty('runResult');
-				expect(data).toHaveProperty('datasetItems');
-				expect(data!.runResult).toEqual(mockFinishedRun.data);
-				expect(data!.datasetItems).toEqual(mockItems);
+				const data = getTaskArrayData(nodeResult);
+				expect(Array.isArray(data)).toBe(true);
+				expect(data?.map((item) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});
 
-			it('should run the run-task-and-get-dataset workflow with ABORTED status', async () => {
+			it('should throw if the run-task-and-get-dataset workflow ends with ABORTED status', async () => {
 				const mockRunTask = fixtures.runActorResult();
 				const mockAbortedRun = fixtures.getLastRunResult({ status: 'ABORTED' });
 
@@ -239,14 +235,7 @@ describe('Apify Node', () => {
 				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run task and get dataset');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
-				expect(nodeResult.executionStatus).toBe('success');
-
-				const data = getTaskData(nodeResult);
-				expect(typeof data).toBe('object');
-				expect(data).toBeDefined();
-				expect(data).toHaveProperty('runResult');
-				expect(data).not.toHaveProperty('datasetItems');
-				expect(data!.runResult).toEqual(mockAbortedRun.data);
+				expect(nodeResult.executionStatus).toBe('error');
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -379,18 +368,14 @@ describe('Apify Node', () => {
 				const [nodeResult] = nodeResults;
 				expect(nodeResult.executionStatus).toBe('success');
 
-				const data = getTaskData(nodeResult);
-				expect(typeof data).toBe('object');
-				expect(data).toBeDefined();
-				expect(data).toHaveProperty('runResult');
-				expect(data).toHaveProperty('datasetItems');
-				expect(data!.runResult).toEqual(mockFinishedRun.data);
-				expect(data!.datasetItems).toEqual(mockItems);
+				const data = getTaskArrayData(nodeResult);
+				expect(Array.isArray(data)).toBe(true);
+				expect(data?.map((item) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});
 
-			it('should run the run-actor-and-get-dataset workflow with ABORTED status', async () => {
+			it('should throw if the run-actor-and-get-dataset workflow ends with ABORTED status', async () => {
 				const mockRunActor = fixtures.runActorResult();
 				const mockBuild = fixtures.getBuildResult();
 				const mockAbortedRun = fixtures.getLastRunResult({ status: 'ABORTED' });
@@ -414,18 +399,12 @@ describe('Apify Node', () => {
 				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run actor and get dataset');
 				expect(nodeResults.length).toBe(1);
 				const [nodeResult] = nodeResults;
-				expect(nodeResult.executionStatus).toBe('success');
-
-				const data = getTaskData(nodeResult);
-				expect(typeof data).toBe('object');
-				expect(data).toBeDefined();
-				expect(data).toHaveProperty('runResult');
-				expect(data).not.toHaveProperty('datasetItems');
-				expect(data!.runResult).toEqual(mockAbortedRun.data);
+				expect(nodeResult.executionStatus).toBe('error');
 
 				expect(scope.isDone()).toBe(true);
 			});
 		});
+
 		describe('scrape-single-url', () => {
 			it('should run the scrape-single-url workflow', async () => {
 				const mockRunActor = fixtures.runActorResult();
