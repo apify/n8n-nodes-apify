@@ -86,11 +86,9 @@ export async function runActorAndGetDataset(
 	}
 
 	if (lastRunData?.status !== 'SUCCEEDED') {
-		return {
-			json: {
-				runResult: lastRunData,
-			},
-		};
+		throw new NodeApiError(this.getNode(), {
+			message: `Run ${runId} did not finish with status SUCCEEDED. Run status: ${lastRunData?.status}`,
+		});
 	}
 
 	const datasetItems = await apiRequest.call(this, {
