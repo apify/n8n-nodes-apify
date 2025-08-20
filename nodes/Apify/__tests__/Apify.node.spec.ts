@@ -436,7 +436,8 @@ describe('Apify Node', () => {
 
 				const data = getTaskData(nodeResult);
 				expect(typeof data).toBe('object');
-				expect(data).toEqual(mockItems[0]);
+				const { text, ...mockedItemWithoutText } = mockItems[0];
+				expect(data).toEqual(mockedItemWithoutText);
 
 				expect(scope.isDone()).toBe(true);
 			});
