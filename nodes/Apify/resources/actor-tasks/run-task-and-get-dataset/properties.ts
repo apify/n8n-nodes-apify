@@ -13,7 +13,7 @@ export const properties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['Actor tasks'],
-				operation: ['Run task'],
+				operation: ['Run task and get dataset'],
 			},
 		},
 	},
@@ -27,7 +27,7 @@ export const properties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['Actor tasks'],
-				operation: ['Run task'],
+				operation: ['Run task and get dataset'],
 			},
 		},
 	},
@@ -41,21 +41,7 @@ export const properties: INodeProperties[] = [
 			show: {
 				useCustomBody: [true],
 				resource: ['Actor tasks'],
-				operation: ['Run task'],
-			},
-		},
-	},
-	{
-		displayName: 'Wait for Finish',
-		name: 'waitForFinish',
-		description:
-			'Whether to wait for the run to finish. If true, the node will poll the run status until it reaches a terminal state (SUCCEEDED, FAILED, TIMED-OUT, ABORTED) or 5 minutes have passed. If false, the node will return immediately after starting the run.',
-		default: true,
-		type: 'boolean',
-		displayOptions: {
-			show: {
-				resource: ['Actor tasks'],
-				operation: ['Run task'],
+				operation: ['Run task and get dataset'],
 			},
 		},
 	},
@@ -69,7 +55,7 @@ timeout specified in the task settings.`,
 		displayOptions: {
 			show: {
 				resource: ['Actor tasks'],
-				operation: ['Run task'],
+				operation: ['Run task and get dataset'],
 			},
 		},
 	},
@@ -84,7 +70,7 @@ timeout specified in the task settings.`,
 		displayOptions: {
 			show: {
 				resource: ['Actor tasks'],
-				operation: ['Run task'],
+				operation: ['Run task and get dataset'],
 			},
 		},
 	},
@@ -99,7 +85,7 @@ settings (typically \`latest\`).`,
 		displayOptions: {
 			show: {
 				resource: ['Actor tasks'],
-				operation: ['Run task'],
+				operation: ['Run task and get dataset'],
 			},
 		},
 	},

@@ -11,7 +11,7 @@ export const properties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
-				operation: ['Run actor'],
+				operation: ['Run actor and get dataset'],
 			},
 		},
 	},
@@ -25,7 +25,7 @@ export const properties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
-				operation: ['Run actor'],
+				operation: ['Run actor and get dataset'],
 			},
 		},
 	},
@@ -39,21 +39,7 @@ export const properties: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
-				operation: ['Run actor'],
-			},
-		},
-	},
-	{
-		displayName: 'Wait for Finish',
-		name: 'waitForFinish',
-		description:
-			'Whether to wait for the run to finish before continuing. If true, the node will wait for the run to complete (successfully or not) before moving to the next node. Note: The maximum time the workflow will wait is limited by the workflow timeout setting in your n8n configuration.',
-		default: true,
-		type: 'boolean',
-		displayOptions: {
-			show: {
-				resource: ['Actors'],
-				operation: ['Run actor'],
+				operation: ['Run actor and get dataset'],
 			},
 		},
 	},
@@ -67,7 +53,7 @@ timeout specified in the default run configuration for the Actor.`,
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
-				operation: ['Run actor'],
+				operation: ['Run actor and get dataset'],
 			},
 		},
 	},
@@ -82,7 +68,7 @@ timeout specified in the default run configuration for the Actor.`,
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
-				operation: ['Run actor'],
+				operation: ['Run actor and get dataset'],
 			},
 		},
 	},
@@ -96,7 +82,7 @@ configuration for the Actor (typically \`latest\`).`,
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
-				operation: ['Run actor'],
+				operation: ['Run actor and get dataset'],
 			},
 		},
 	},

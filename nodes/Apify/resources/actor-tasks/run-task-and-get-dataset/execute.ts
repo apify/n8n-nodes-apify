@@ -4,14 +4,16 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, customBodyParser, pollRunStatus } from '../../../resources/genericFunctions';
+import { apiRequest, customBodyParser, pollRunStatus } from '../../genericFunctions';
 
-export async function runTask(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
+export async function runTaskAndGetDataset(
+	this: IExecuteFunctions,
+	i: number,
+): Promise<INodeExecutionData[]> {
 	const actorTaskId = this.getNodeParameter('actorTaskId', i, undefined, {
 		extractValue: true,
 	}) as string;
 	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
-	const waitForFinish = this.getNodeParameter('waitForFinish', i) as boolean;
 	const timeout = this.getNodeParameter('timeout', i, null) as number | null;
 	const memory = this.getNodeParameter('memory', i, null) as number | null;
 	const build = this.getNodeParameter('build', i, '') as string;
@@ -49,11 +51,26 @@ export async function runTask(this: IExecuteFunctions, i: number): Promise<INode
 		});
 	}
 
-	if (!waitForFinish) {
-		return { json: { ...apiResult.data } };
-	}
-
 	const runId = apiResult.data.id;
 	const lastRunData = await pollRunStatus.call(this, runId);
-	return { json: { ...lastRunData } };
+
+	if (!lastRunData?.defaultDatasetId) {
+		throw new NodeApiError(this.getNode(), {
+			message: `Run ${runId} did not create a dataset`,
+		});
+	}
+
+	if (lastRunData?.status !== 'SUCCEEDED') {
+		throw new NodeApiError(this.getNode(), {
+			message: `Run ${runId} did not finish with status SUCCEEDED. Run status: ${lastRunData?.status}`,
+		});
+	}
+
+	const datasetItems = await apiRequest.call(this, {
+		method: 'GET',
+		uri: `/v2/datasets/${lastRunData.defaultDatasetId}/items`,
+		qs: { format: 'json' },
+	});
+
+	return this.helpers.returnJsonArray(datasetItems);
 }

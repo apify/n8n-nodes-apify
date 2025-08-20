@@ -1,3 +1,4 @@
+import nock from 'nock';
 import { Apify } from '../Apify.node';
 import { executeWorkflow } from './utils/executeWorkflow';
 import { CredentialsHelper } from './utils/credentialHelper';
@@ -5,7 +6,8 @@ import { getRunTaskDataByNodeName, getTaskData } from './utils/getNodeResultData
 import getRunWorkflow from './workflows/actor-runs/get-run.workflow.json';
 import getUserRunsListWorkflow from './workflows/actor-runs/get-user-runs-list.workflow.json';
 import getRunsWorkflow from './workflows/actor-runs/get-runs.workflow.json';
-import nock from 'nock';
+import runActorAndGetDatasetWorkflow from './workflows/actors/run-actor-and-get-dataset.workflow.json';
+import runTaskAndGetDatasetWorkflow from './workflows/actor-tasks/run-task-and-get-dataset.workflow.json';
 import * as fixtures from './utils/fixtures';
 import * as helpers from '../helpers';
 import { getTaskArrayData } from './utils/getNodeResultData';
@@ -178,6 +180,66 @@ describe('Apify Node', () => {
 				expect(scope.isDone()).toBe(true);
 			});
 		});
+
+		describe('run-task-and-get-dataset', () => {
+			it('should run the run-task-and-get-dataset workflow', async () => {
+				const mockRunTask = fixtures.runActorResult();
+				const mockFinishedRun = fixtures.getSuccessRunResult();
+				const mockItems = fixtures.getItemsResult();
+
+				const datasetId = mockFinishedRun.data.defaultDatasetId;
+
+				const scope = nock('https://api.apify.com')
+					.post('/v2/actor-tasks/PwUDLcG3zMyT8E4vq/runs')
+					.query({ waitForFinish: 0, memory: 1024 })
+					.reply(200, mockRunTask)
+					.get(`/v2/actor-runs/${mockRunTask.data.id}`)
+					.reply(200, mockFinishedRun)
+					.get(`/v2/datasets/${datasetId}/items`)
+					.query({ format: 'json' })
+					.reply(200, mockItems);
+
+				const { executionData } = await executeWorkflow({
+					credentialsHelper,
+					workflow: runTaskAndGetDatasetWorkflow,
+				});
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run task and get dataset');
+				expect(nodeResults.length).toBe(1);
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+
+				const data = getTaskArrayData(nodeResult);
+				expect(Array.isArray(data)).toBe(true);
+				expect(data?.map((item) => item.json)).toEqual(mockItems);
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should throw if the run-task-and-get-dataset workflow ends with ABORTED status', async () => {
+				const mockRunTask = fixtures.runActorResult();
+				const mockAbortedRun = fixtures.getLastRunResult({ status: 'ABORTED' });
+
+				const scope = nock('https://api.apify.com')
+					.post('/v2/actor-tasks/PwUDLcG3zMyT8E4vq/runs')
+					.query({ waitForFinish: 0, memory: 1024 })
+					.reply(200, mockRunTask)
+					.get(`/v2/actor-runs/${mockRunTask.data.id}`)
+					.reply(200, mockAbortedRun);
+
+				const { executionData } = await executeWorkflow({
+					credentialsHelper,
+					workflow: runTaskAndGetDatasetWorkflow,
+				});
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run task and get dataset');
+				expect(nodeResults.length).toBe(1);
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('error');
+
+				expect(scope.isDone()).toBe(true);
+			});
+		});
 	});
 
 	describe('actors', () => {
@@ -273,6 +335,76 @@ describe('Apify Node', () => {
 				expect(scope.isDone()).toBe(true);
 			});
 		});
+		describe('run-actor-and-get-dataset', () => {
+			it('should run the run-actor-and-get-dataset workflow', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockBuild = fixtures.getBuildResult();
+				const mockFinishedRun = fixtures.getSuccessRunResult();
+				const mockItems = fixtures.getItemsResult();
+
+				const datasetId = mockFinishedRun.data.defaultDatasetId;
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
+					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
+					.reply(200, mockRunActor)
+					.get(`/v2/actor-runs/${mockRunActor.data.id}`)
+					.reply(200, mockFinishedRun)
+					.get(`/v2/datasets/${datasetId}/items`)
+					.query({ format: 'json' })
+					.reply(200, mockItems);
+
+				const { executionData } = await executeWorkflow({
+					credentialsHelper,
+					workflow: runActorAndGetDatasetWorkflow,
+				});
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run actor and get dataset');
+				expect(nodeResults.length).toBe(1);
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+
+				const data = getTaskArrayData(nodeResult);
+				expect(Array.isArray(data)).toBe(true);
+				expect(data?.map((item) => item.json)).toEqual(mockItems);
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should throw if the run-actor-and-get-dataset workflow ends with ABORTED status', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockBuild = fixtures.getBuildResult();
+				const mockAbortedRun = fixtures.getLastRunResult({ status: 'ABORTED' });
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
+					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
+					.reply(200, mockRunActor)
+					.get(`/v2/actor-runs/${mockRunActor.data.id}`)
+					.reply(200, mockAbortedRun);
+
+				const { executionData } = await executeWorkflow({
+					credentialsHelper,
+					workflow: runActorAndGetDatasetWorkflow,
+				});
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run actor and get dataset');
+				expect(nodeResults.length).toBe(1);
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('error');
+
+				expect(scope.isDone()).toBe(true);
+			});
+		});
+
 		describe('scrape-single-url', () => {
 			it('should run the scrape-single-url workflow', async () => {
 				const mockRunActor = fixtures.runActorResult();
