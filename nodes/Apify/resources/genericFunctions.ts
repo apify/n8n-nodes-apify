@@ -50,7 +50,7 @@ export async function apiRequest(
 			);
 		}
 
-		return await this.helpers.requestWithAuthentication.call(this, authenticationMethod, options);
+		return await retryWithExponentialBackoff(this.logger,() => this.helpers.requestWithAuthentication.call(this, authenticationMethod, options));
 	} catch (error) {
 		/**
 		 * using `error instanceof NodeApiError` results in `false`
@@ -69,6 +69,57 @@ export async function apiRequest(
 
 		throw new NodeApiError(this.getNode(), error);
 	}
+}
+
+/**
+ * We retry 429 (rate limit) and 500+.
+ * For status codes 300-499 (except 429) we do not retry the request,
+ * because it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
+ */
+function isStatusCodeRetryable(statusCode: number) {
+	const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
+	const isRateLimitError = statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE;
+	const isInternalError = statusCode >= 500;
+	return isRateLimitError || isInternalError;
+}
+
+
+/**
+ * Used to wrap api requests with exponential backoff.
+ * If request fails with http code 500+ or doesn't return
+ * a code at all it is retried in 1s,2s,4s,.. up to maxRetries
+ * @param logger
+ * @param fn
+ * @param maxRetries
+ * @returns
+ */
+async function retryWithExponentialBackoff(
+	logger: any,
+	fn: () => Promise<any>,
+ 	maxRetries: number = 5,
+) {
+	let lastError;
+	for (let i = 0; i < maxRetries; i++) {
+		try {
+			logger?.debug(`Trying to call fn ${i}/${maxRetries}`);
+			return await fn();
+		} catch (error) {
+			lastError = error;
+			const status = Number(error?.httpCode);
+			logger.warn(`in error with status: ${status} and error: ${error}`);
+			if (isStatusCodeRetryable(status)) {
+				const sleepTimeSecs = Math.pow(2, i); //generate a new sleep time based from 2^i function
+				const sleepTimeMs = sleepTimeSecs * 1000;
+
+				logger?.debug(`sleepTimeMs ${sleepTimeMs}`);
+				await sleep(sleepTimeMs);
+
+				continue;
+			}
+			throw error;
+		}
+	}
+	throw lastError; //in case all of the maxRetries calls failed with no status or isStatusCodeRetryable throw the last error
 }
 
 export async function apiRequestAllItems(
