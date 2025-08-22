@@ -112,7 +112,7 @@ export async function retryWithExponentialBackoff(
 				const sleepTimeSecs = Math.pow(2, i); //generate a new sleep time based from 2^i function
 				const sleepTimeMs = sleepTimeSecs * 1000;
 
-				logger?.debug(`sleepTimeMs ${sleepTimeMs}`);
+				logger.debug(`sleepTimeMs ${sleepTimeMs}`);
 				await sleep(sleepTimeMs);
 
 				continue;
@@ -120,7 +120,8 @@ export async function retryWithExponentialBackoff(
 			throw error;
 		}
 	}
-	throw lastError; //in case all of the maxRetries calls failed with no status or isStatusCodeRetryable throw the last error
+	//In case all of the calls failed with no status or isStatusCodeRetryable, throw the last error
+	throw lastError;
 }
 
 export async function apiRequestAllItems(
