@@ -9,6 +9,7 @@ import {
 	type IRequestOptions,
 	type Logger,
 } from 'n8n-workflow';
+import { MAX_API_CALL_RETRIES } from '../helpers/consts';
 
 type IApiRequestOptions = IRequestOptions & { uri?: string };
 
@@ -73,9 +74,10 @@ export async function apiRequest(
 }
 
 /**
- * We retry 429 (rate limit) and 500+.
- * For status codes 300-499 (except 429) we do not retry the request,
- * because it's probably caused by invalid url (redirect 3xx) or invalid user input (4xx).
+ * Checks if the given status code is retryable
+ * Status codes 429 (rate limit) and 500+ are retried,
+ * Other status codes 300-499 (except 429) are not retried,
+ * because the error is probably caused by invalid URL (redirect 3xx) or invalid user input (4xx).
  */
 function isStatusCodeRetryable(statusCode: number) {
 	const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
@@ -86,7 +88,7 @@ function isStatusCodeRetryable(statusCode: number) {
 
 
 /**
- * Used to wrap api requests with exponential backoff.
+ * Wraps a function with exponential backoff.
  * If request fails with http code 500+ or doesn't return
  * a code at all it is retried in 1s,2s,4s,.. up to maxRetries
  * @param logger
@@ -97,7 +99,7 @@ function isStatusCodeRetryable(statusCode: number) {
 export async function retryWithExponentialBackoff(
 	logger: Logger,
 	fn: () => Promise<any>,
- 	maxRetries: number = 5,
+ 	maxRetries: number = MAX_API_CALL_RETRIES,
 ) {
 	let lastError;
 	for (let i = 0; i < maxRetries; i++) {
@@ -109,7 +111,8 @@ export async function retryWithExponentialBackoff(
 			const status = Number(error?.httpCode);
 			logger.warn(`in error with status: ${status} and error: ${error}`);
 			if (isStatusCodeRetryable(status)) {
-				const sleepTimeSecs = Math.pow(2, i); //generate a new sleep time based from 2^i function
+				//Generate a new sleep time based from 2^i function
+				const sleepTimeSecs = Math.pow(2, i);
 				const sleepTimeMs = sleepTimeSecs * 1000;
 
 				logger.debug(`sleepTimeMs ${sleepTimeMs}`);
