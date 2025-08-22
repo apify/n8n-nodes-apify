@@ -166,6 +166,11 @@ This node supports a wide range of Apify operations, organized by resource type:
 
 ![triggers](./docs/trigger.png)
 
+### AI Tools
+
+All Apify node operations can be combined with n8n's AI tools to create powerful workflows.
+For example, you can scrape data from a website using an Actor and then use an AI model to analyze or summarize the extracted information.
+
 ## Credentials
 
 The node supports two authentication methods:
