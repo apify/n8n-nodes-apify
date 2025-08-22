@@ -14,3 +14,5 @@ export const memoryOptions = [
 	{ name: '16384 MB (16 GB)', value: 16384 },
 	{ name: '32768 MB (32 GB)', value: 32768 },
 ];
+
+export const MAX_API_CALL_RETRIES = 5;
