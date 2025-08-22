@@ -52,7 +52,9 @@ export async function apiRequest(
 			);
 		}
 
-		return await retryWithExponentialBackoff(this.logger,() => this.helpers.requestWithAuthentication.call(this, authenticationMethod, options));
+		return await retryWithExponentialBackoff(this.logger, () =>
+			this.helpers.requestWithAuthentication.call(this, authenticationMethod, options),
+		);
 	} catch (error) {
 		/**
 		 * using `error instanceof NodeApiError` results in `false`
@@ -86,7 +88,6 @@ function isStatusCodeRetryable(statusCode: number) {
 	return isRateLimitError || isInternalError;
 }
 
-
 /**
  * Wraps a function with exponential backoff.
  * If request fails with http code 500+ or doesn't return
@@ -99,7 +100,7 @@ function isStatusCodeRetryable(statusCode: number) {
 export async function retryWithExponentialBackoff(
 	logger: Logger,
 	fn: () => Promise<any>,
- 	maxRetries: number = MAX_API_CALL_RETRIES,
+	maxRetries: number = MAX_API_CALL_RETRIES,
 ): Promise<any> {
 	let lastError;
 	for (let i = 0; i < maxRetries; i++) {

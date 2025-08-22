@@ -518,9 +518,9 @@ describe('Apify Node', () => {
 			let called = 0;
 			let apiCalls = nock('https://api.apify.com')
 				.get(`/v2/key-value-stores/${storeId}/records/${recordKey}`)
-				.reply(500,() => (called++))
+				.reply(500, () => called++)
 				.get(`/v2/key-value-stores/${storeId}/records/${recordKey}`)
-				.reply(200,() => (called++));
+				.reply(200, () => called++);
 
 			const getKeyValueStoreRecordWorkflow = require('./workflows/key-value-stores/get-key-value-store-record.workflow.json');
 			await executeWorkflow({

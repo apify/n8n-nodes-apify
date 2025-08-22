@@ -20,16 +20,17 @@ export async function getKeyValueStoreRecord(
 	}
 
 	try {
-		const apiCallFn = () => this.helpers.httpRequestWithAuthentication.call(this, 'apifyApi', {
-			method: 'GET' as IHttpRequestMethods,
-			url: `${consts.APIFY_API_URL}/v2/key-value-stores/${storeId.value}/records/${recordKey.value}`,
-			headers: {
-				'x-apify-integration-platform': 'n8n',
-			},
-			returnFullResponse: true,
-			encoding: 'arraybuffer',
-		});
-		const apiResult = await retryWithExponentialBackoff(this.logger,apiCallFn);
+		const apiCallFn = () =>
+			this.helpers.httpRequestWithAuthentication.call(this, 'apifyApi', {
+				method: 'GET' as IHttpRequestMethods,
+				url: `${consts.APIFY_API_URL}/v2/key-value-stores/${storeId.value}/records/${recordKey.value}`,
+				headers: {
+					'x-apify-integration-platform': 'n8n',
+				},
+				returnFullResponse: true,
+				encoding: 'arraybuffer',
+			});
+		const apiResult = await retryWithExponentialBackoff(this.logger, apiCallFn);
 
 		if (!apiResult) {
 			return { json: {} };
