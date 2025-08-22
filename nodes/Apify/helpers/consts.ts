@@ -17,4 +17,4 @@ export const memoryOptions = [
 
 export const DEFAULT_EXP_BACKOFF_INTERVAL = 1;
 export const DEFAULT_EXP_BACKOFF_EXPONENTIAL = 2;
-export const MAX_EXP_BAKCOFF_RETRIES = 5;
+export const DEFAULT_EXP_BACKOFF_RETRIES = 5;

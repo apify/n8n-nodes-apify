@@ -9,7 +9,11 @@ import {
 	type IRequestOptions,
 	type Logger,
 } from 'n8n-workflow';
-import { DEFAULT_EXP_BACKOFF_EXPONENTIAL, DEFAULT_EXP_BACKOFF_INTERVAL, MAX_EXP_BAKCOFF_RETRIES } from '../helpers/consts';
+import {
+	DEFAULT_EXP_BACKOFF_EXPONENTIAL,
+	DEFAULT_EXP_BACKOFF_INTERVAL,
+	DEFAULT_EXP_BACKOFF_RETRIES,
+} from '../helpers/consts';
 
 type IApiRequestOptions = IRequestOptions & { uri?: string };
 
@@ -94,6 +98,8 @@ function isStatusCodeRetryable(statusCode: number) {
  * a code at all it is retried in 1s,2s,4s,.. up to maxRetries
  * @param logger
  * @param fn
+ * @param interval
+ * @param exponential
  * @param maxRetries
  * @returns
  */
@@ -102,7 +108,7 @@ export async function retryWithExponentialBackoff(
 	fn: () => Promise<any>,
 	interval: number = DEFAULT_EXP_BACKOFF_INTERVAL,
 	exponential: number = DEFAULT_EXP_BACKOFF_EXPONENTIAL,
-	maxRetries: number = MAX_EXP_BAKCOFF_RETRIES,
+	maxRetries: number = DEFAULT_EXP_BACKOFF_RETRIES,
 ): Promise<any> {
 	let lastError;
 	for (let i = 0; i < maxRetries; i++) {
