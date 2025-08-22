@@ -7,6 +7,7 @@ import {
 	type IHookFunctions,
 	type ILoadOptionsFunctions,
 	type IRequestOptions,
+	type Logger,
 } from 'n8n-workflow';
 
 type IApiRequestOptions = IRequestOptions & { uri?: string };
@@ -93,15 +94,15 @@ function isStatusCodeRetryable(statusCode: number) {
  * @param maxRetries
  * @returns
  */
-async function retryWithExponentialBackoff(
-	logger: any,
+export async function retryWithExponentialBackoff(
+	logger: Logger,
 	fn: () => Promise<any>,
  	maxRetries: number = 5,
 ) {
 	let lastError;
 	for (let i = 0; i < maxRetries; i++) {
 		try {
-			logger?.debug(`Trying to call fn ${i}/${maxRetries}`);
+			logger.debug(`Trying to call fn ${i}/${maxRetries}`);
 			return await fn();
 		} catch (error) {
 			lastError = error;
