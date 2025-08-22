@@ -7,7 +7,6 @@ import {
 	type IHookFunctions,
 	type ILoadOptionsFunctions,
 	type IRequestOptions,
-	type Logger,
 } from 'n8n-workflow';
 import {
 	DEFAULT_EXP_BACKOFF_EXPONENTIAL,
@@ -56,7 +55,7 @@ export async function apiRequest(
 			);
 		}
 
-		return await retryWithExponentialBackoff(this.logger, () =>
+		return await retryWithExponentialBackoff(() =>
 			this.helpers.requestWithAuthentication.call(this, authenticationMethod, options),
 		);
 	} catch (error) {
@@ -96,7 +95,6 @@ function isStatusCodeRetryable(statusCode: number) {
  * Wraps a function with exponential backoff.
  * If request fails with http code 500+ or doesn't return
  * a code at all it is retried in 1s,2s,4s,.. up to maxRetries
- * @param logger
  * @param fn
  * @param interval
  * @param exponential
@@ -104,7 +102,6 @@ function isStatusCodeRetryable(statusCode: number) {
  * @returns
  */
 export async function retryWithExponentialBackoff(
-	logger: Logger,
 	fn: () => Promise<any>,
 	interval: number = DEFAULT_EXP_BACKOFF_INTERVAL,
 	exponential: number = DEFAULT_EXP_BACKOFF_EXPONENTIAL,
@@ -113,18 +110,15 @@ export async function retryWithExponentialBackoff(
 	let lastError;
 	for (let i = 0; i < maxRetries; i++) {
 		try {
-			logger.debug(`Trying to call fn ${i}/${maxRetries}`);
 			return await fn();
 		} catch (error) {
 			lastError = error;
 			const status = Number(error?.httpCode);
-			logger.warn(`in error with status: ${status} and error: ${error}`);
 			if (isStatusCodeRetryable(status)) {
 				//Generate a new sleep time based from interval * exponential^i function
 				const sleepTimeSecs = interval * Math.pow(exponential, i);
 				const sleepTimeMs = sleepTimeSecs * 1000;
 
-				logger.debug(`sleepTimeMs ${sleepTimeMs}`);
 				await sleep(sleepTimeMs);
 
 				continue;

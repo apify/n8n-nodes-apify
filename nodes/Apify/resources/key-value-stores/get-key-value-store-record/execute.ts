@@ -30,7 +30,7 @@ export async function getKeyValueStoreRecord(
 				returnFullResponse: true,
 				encoding: 'arraybuffer',
 			});
-		const apiResult = await retryWithExponentialBackoff(this.logger, apiCallFn);
+		const apiResult = await retryWithExponentialBackoff(apiCallFn);
 
 		if (!apiResult) {
 			return { json: {} };
