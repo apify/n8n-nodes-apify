@@ -100,7 +100,7 @@ export async function retryWithExponentialBackoff(
 	logger: Logger,
 	fn: () => Promise<any>,
  	maxRetries: number = MAX_API_CALL_RETRIES,
-) {
+): Promise<any> {
 	let lastError;
 	for (let i = 0; i < maxRetries; i++) {
 		try {
