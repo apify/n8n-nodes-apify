@@ -130,6 +130,7 @@ This node supports a wide range of Apify operations, organized by resource type:
   - **Custom input**: Provide JSON object to override any or all default parameters.
   - Configurable timeout and memory limits
   - Build version selection
+- **Run Actor and get dataset items**: Execute an Actor, waits for it to finish, and finally returns the dataset items
 - **Scrape Single URL**: Quick scraping of a single URL
 - **Get Last Run**: Retrieve information about the most recent Actor run
 
@@ -140,6 +141,7 @@ This node supports a wide range of Apify operations, organized by resource type:
   - Supports custom input JSON
   - Configurable timeout
   - Task-specific settings
+- **Run task and get dataset items**: Execute a task, wait for it to finish, and return the dataset items
 
 ### Actor runs
 - **Get User Runs List**: List all runs for a user
