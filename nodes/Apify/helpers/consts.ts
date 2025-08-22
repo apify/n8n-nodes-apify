@@ -15,4 +15,6 @@ export const memoryOptions = [
 	{ name: '32768 MB (32 GB)', value: 32768 },
 ];
 
-export const MAX_API_CALL_RETRIES = 5;
+export const DEFAULT_EXP_BACKOFF_INTERVAL = 1;
+export const DEFAULT_EXP_BACKOFF_EXPONENTIAL = 2;
+export const MAX_EXP_BAKCOFF_RETRIES = 5;

@@ -9,7 +9,7 @@ import {
 	type IRequestOptions,
 	type Logger,
 } from 'n8n-workflow';
-import { MAX_API_CALL_RETRIES } from '../helpers/consts';
+import { DEFAULT_EXP_BACKOFF_EXPONENTIAL, DEFAULT_EXP_BACKOFF_INTERVAL, MAX_EXP_BAKCOFF_RETRIES } from '../helpers/consts';
 
 type IApiRequestOptions = IRequestOptions & { uri?: string };
 
@@ -100,7 +100,9 @@ function isStatusCodeRetryable(statusCode: number) {
 export async function retryWithExponentialBackoff(
 	logger: Logger,
 	fn: () => Promise<any>,
-	maxRetries: number = MAX_API_CALL_RETRIES,
+	interval: number = DEFAULT_EXP_BACKOFF_INTERVAL,
+	exponential: number = DEFAULT_EXP_BACKOFF_EXPONENTIAL,
+	maxRetries: number = MAX_EXP_BAKCOFF_RETRIES,
 ): Promise<any> {
 	let lastError;
 	for (let i = 0; i < maxRetries; i++) {
@@ -112,8 +114,8 @@ export async function retryWithExponentialBackoff(
 			const status = Number(error?.httpCode);
 			logger.warn(`in error with status: ${status} and error: ${error}`);
 			if (isStatusCodeRetryable(status)) {
-				//Generate a new sleep time based from 2^i function
-				const sleepTimeSecs = Math.pow(2, i);
+				//Generate a new sleep time based from interval * exponential^i function
+				const sleepTimeSecs = interval * Math.pow(exponential, i);
 				const sleepTimeMs = sleepTimeSecs * 1000;
 
 				logger.debug(`sleepTimeMs ${sleepTimeMs}`);
