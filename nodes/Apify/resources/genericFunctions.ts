@@ -85,8 +85,7 @@ export async function apiRequest(
  * because the error is probably caused by invalid URL (redirect 3xx) or invalid user input (4xx).
  */
 function isStatusCodeRetryable(statusCode: number) {
-	if (Number.isNaN(statusCode))
-		return false;
+	if (Number.isNaN(statusCode)) return false;
 
 	const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
 	const isRateLimitError = statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE;

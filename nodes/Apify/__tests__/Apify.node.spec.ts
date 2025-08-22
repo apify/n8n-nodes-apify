@@ -512,24 +512,25 @@ describe('Apify Node', () => {
 
 	describe('api calls', () => {
 		it('should retry the specified number of times with exponential delays', async () => {
+			const retryAbleCodes = [429, 500];
 			const storeId = 'yTfMu13hDFe9bRjx6';
 			const recordKey = 'INPUT';
 
-			let called = 0;
-			let apiCalls = nock('https://api.apify.com')
-				.get(`/v2/key-value-stores/${storeId}/records/${recordKey}`)
-				.reply(500, () => called++)
-				.get(`/v2/key-value-stores/${storeId}/records/${recordKey}`)
-				.reply(200, () => called++);
+			for (const code of retryAbleCodes) {
+				const scope = nock('https://api.apify.com')
+					.get(`/v2/key-value-stores/${storeId}/records/${recordKey}`)
+					.reply(code)
+					.get(`/v2/key-value-stores/${storeId}/records/${recordKey}`)
+					.reply(200);
 
-			const getKeyValueStoreRecordWorkflow = require('./workflows/key-value-stores/get-key-value-store-record.workflow.json');
-			await executeWorkflow({
-				credentialsHelper,
-				workflow: getKeyValueStoreRecordWorkflow,
-			});
+				const getKeyValueStoreRecordWorkflow = require('./workflows/key-value-stores/get-key-value-store-record.workflow.json');
+				await executeWorkflow({
+					credentialsHelper,
+					workflow: getKeyValueStoreRecordWorkflow,
+				});
 
-			expect(called).toBe(2);
-			expect(apiCalls.isDone()).toBe(true);
+				expect(scope.isDone()).toBe(true);
+			}
 		});
 	});
 });
