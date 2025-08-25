@@ -8,6 +8,11 @@ import {
 	type ILoadOptionsFunctions,
 	type IRequestOptions,
 } from 'n8n-workflow';
+import {
+	DEFAULT_EXP_BACKOFF_EXPONENTIAL,
+	DEFAULT_EXP_BACKOFF_INTERVAL,
+	DEFAULT_EXP_BACKOFF_RETRIES,
+} from '../helpers/consts';
 
 type IApiRequestOptions = IRequestOptions & { uri?: string };
 
@@ -50,7 +55,9 @@ export async function apiRequest(
 			);
 		}
 
-		return await this.helpers.requestWithAuthentication.call(this, authenticationMethod, options);
+		return await retryWithExponentialBackoff(() =>
+			this.helpers.requestWithAuthentication.call(this, authenticationMethod, options),
+		);
 	} catch (error) {
 		/**
 		 * using `error instanceof NodeApiError` results in `false`
@@ -69,6 +76,60 @@ export async function apiRequest(
 
 		throw new NodeApiError(this.getNode(), error);
 	}
+}
+
+/**
+ * Checks if the given status code is retryable
+ * Status codes 429 (rate limit) and 500+ are retried,
+ * Other status codes 300-499 (except 429) are not retried,
+ * because the error is probably caused by invalid URL (redirect 3xx) or invalid user input (4xx).
+ */
+function isStatusCodeRetryable(statusCode: number) {
+	if (Number.isNaN(statusCode)) return false;
+
+	const RATE_LIMIT_EXCEEDED_STATUS_CODE = 429;
+	const isRateLimitError = statusCode === RATE_LIMIT_EXCEEDED_STATUS_CODE;
+	const isInternalError = statusCode >= 500;
+	return isRateLimitError || isInternalError;
+}
+
+/**
+ * Wraps a function with exponential backoff.
+ * If request fails with http code 500+ or doesn't return
+ * a code at all it is retried in 1s,2s,4s,.. up to maxRetries
+ * @param fn
+ * @param interval
+ * @param exponential
+ * @param maxRetries
+ * @returns
+ */
+export async function retryWithExponentialBackoff(
+	fn: () => Promise<any>,
+	interval: number = DEFAULT_EXP_BACKOFF_INTERVAL,
+	exponential: number = DEFAULT_EXP_BACKOFF_EXPONENTIAL,
+	maxRetries: number = DEFAULT_EXP_BACKOFF_RETRIES,
+): Promise<any> {
+	let lastError;
+	for (let i = 0; i < maxRetries; i++) {
+		try {
+			return await fn();
+		} catch (error) {
+			lastError = error;
+			const status = Number(error?.httpCode);
+			if (isStatusCodeRetryable(status)) {
+				//Generate a new sleep time based from interval * exponential^i function
+				const sleepTimeSecs = interval * Math.pow(exponential, i);
+				const sleepTimeMs = sleepTimeSecs * 1000;
+
+				await sleep(sleepTimeMs);
+
+				continue;
+			}
+			throw error;
+		}
+	}
+	//In case all of the calls failed with no status or isStatusCodeRetryable, throw the last error
+	throw lastError;
 }
 
 export async function apiRequestAllItems(

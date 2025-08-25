@@ -509,4 +509,27 @@ describe('Apify Node', () => {
 			});
 		});
 	});
+
+	describe('api calls', () => {
+		it('should retry the specified number of times with exponential delays', async () => {
+			const storeId = 'yTfMu13hDFe9bRjx6';
+			const recordKey = 'INPUT';
+
+			const scope = nock('https://api.apify.com')
+				.get(`/v2/key-value-stores/${storeId}/records/${recordKey}`)
+				.reply(500)
+				.get(`/v2/key-value-stores/${storeId}/records/${recordKey}`)
+				.reply(429)
+				.get(`/v2/key-value-stores/${storeId}/records/${recordKey}`)
+				.reply(200);
+
+			const getKeyValueStoreRecordWorkflow = require('./workflows/key-value-stores/get-key-value-store-record.workflow.json');
+			await executeWorkflow({
+				credentialsHelper,
+				workflow: getKeyValueStoreRecordWorkflow,
+			});
+
+			expect(scope.isDone()).toBe(true);
+		});
+	});
 });

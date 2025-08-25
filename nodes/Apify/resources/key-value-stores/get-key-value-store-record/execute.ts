@@ -6,6 +6,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { consts } from '../../../helpers';
+import { retryWithExponentialBackoff } from '../../genericFunctions';
 
 export async function getKeyValueStoreRecord(
 	this: IExecuteFunctions,
@@ -19,15 +20,17 @@ export async function getKeyValueStoreRecord(
 	}
 
 	try {
-		const apiResult = await this.helpers.httpRequestWithAuthentication.call(this, 'apifyApi', {
-			method: 'GET' as IHttpRequestMethods,
-			url: `${consts.APIFY_API_URL}/v2/key-value-stores/${storeId.value}/records/${recordKey.value}`,
-			headers: {
-				'x-apify-integration-platform': 'n8n',
-			},
-			returnFullResponse: true,
-			encoding: 'arraybuffer',
-		});
+		const apiCallFn = () =>
+			this.helpers.httpRequestWithAuthentication.call(this, 'apifyApi', {
+				method: 'GET' as IHttpRequestMethods,
+				url: `${consts.APIFY_API_URL}/v2/key-value-stores/${storeId.value}/records/${recordKey.value}`,
+				headers: {
+					'x-apify-integration-platform': 'n8n',
+				},
+				returnFullResponse: true,
+				encoding: 'arraybuffer',
+			});
+		const apiResult = await retryWithExponentialBackoff(apiCallFn);
 
 		if (!apiResult) {
 			return { json: {} };

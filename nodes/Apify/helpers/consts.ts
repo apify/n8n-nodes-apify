@@ -14,3 +14,7 @@ export const memoryOptions = [
 	{ name: '16384 MB (16 GB)', value: 16384 },
 	{ name: '32768 MB (32 GB)', value: 32768 },
 ];
+
+export const DEFAULT_EXP_BACKOFF_INTERVAL = 1;
+export const DEFAULT_EXP_BACKOFF_EXPONENTIAL = 2;
+export const DEFAULT_EXP_BACKOFF_RETRIES = 5;
