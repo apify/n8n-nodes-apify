@@ -35,7 +35,7 @@ export const properties: INodeProperties[] = [
 		type: 'json',
 		default: '{}',
 		description:
-			'JSON input for the Actor run, which you can find on the Actor input page in Apify Console. If empty, the run uses the input specified in the default run configuration.',
+			'JSON input for the Actor run, which you can find on the Actor input page in Apify Console. If empty, the run uses the input specified in the default run configuration. https://console.apify.com',
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
