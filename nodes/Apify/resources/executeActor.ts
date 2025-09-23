@@ -62,21 +62,15 @@ export async function executeActor(
 		build = await getDefaultBuild.call(this, actorId);
 	}
 
-	// 3. Get default input for this build
-	const defaultInput = getDefaultInputsFromBuild(build);
-
-	// 4. Merge default input and user's input (user's input overrides)
-	const mergedInput = { ...defaultInput, ...userInput };
-
-	// 5. Prepare query string
+	// 3. Prepare query string
 	const qs: Record<string, any> = {};
 	if (timeout != null) qs.timeout = timeout;
 	if (memory != null) qs.memory = memory;
 	if (build?.buildNumber) qs.build = build.buildNumber;
 	qs.waitForFinish = 0; // set initial run actor to not wait for finish
 
-	// 6. Run the actor
-	const run = await runActorApi.call(this, actorId, mergedInput, qs);
+	// 4. Run the actor
+	const run = await runActorApi.call(this, actorId, userInput, qs);
 	if (!run?.data?.id) {
 		throw new NodeApiError(this.getNode(), {
 			message: `Run ID not found after running the actor`,
@@ -86,7 +80,7 @@ export async function executeActor(
 	const runId = run.data.id;
 	let lastRunData = run.data;
 
-	// 7. If waitForFinish is true, poll for run status until it reaches a terminal state
+	// 5. If waitForFinish is true, poll for run status until it reaches a terminal state
 	if (waitForFinish) {
 		lastRunData = await pollRunStatus.call(this, runId);
 	}
@@ -132,25 +126,6 @@ export async function getDefaultBuild(this: IExecuteFunctions, actorId: string) 
 		});
 	}
 	return defaultBuildResp.data;
-}
-
-export function getDefaultInputsFromBuild(build: any) {
-	const buildInputProperties = build?.actorDefinition?.input?.properties;
-	const defaultInput: Record<string, any> = {};
-	if (buildInputProperties && typeof buildInputProperties === 'object') {
-		for (const [key, property] of Object.entries(buildInputProperties)) {
-			if (
-				property &&
-				typeof property === 'object' &&
-				'prefill' in property &&
-				(property as any).prefill !== undefined &&
-				(property as any).prefill !== null
-			) {
-				defaultInput[key] = (property as any).prefill;
-			}
-		}
-	}
-	return defaultInput;
 }
 
 export async function runActorApi(
