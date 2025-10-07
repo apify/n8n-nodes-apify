@@ -18,7 +18,6 @@ type IApiRequestOptions = IRequestOptions & { uri?: string };
 
 /**
  * Make an API request to Apify
- *
  */
 export async function apiRequest(
 	this: IHookFunctions | IExecuteFunctions | ILoadOptionsFunctions,
@@ -29,15 +28,21 @@ export async function apiRequest(
 	const query = qs || {};
 	const endpoint = `https://api.apify.com${uri}`;
 
+	const headers: Record<string, string> = {
+		'x-apify-integration-platform': 'n8n',
+	};
+
+	if (isUsedAsAiTool(this.getNode().type)) {
+		headers['x-apify-integration-ai-tool'] = 'true';
+	}
+
 	const options: IRequestOptions = {
 		json: true,
 		...rest,
 		method,
 		qs: query,
 		url: endpoint,
-		headers: {
-			'x-apify-integration-platform': 'n8n',
-		},
+		headers,
 	};
 
 	if (method === 'GET') {
@@ -255,4 +260,9 @@ export function customBodyParser(input: string | object) {
 		// It sometimes sends an object instead of a string
 		return input;
 	}
+}
+
+export function isUsedAsAiTool(nodeType: string): boolean {
+	const parts = nodeType.split('.');
+	return parts[parts.length - 1] === 'apifyTool';
 }
