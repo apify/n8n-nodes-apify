@@ -18,15 +18,20 @@
 	"alias": [
 	  "apify",
 	  "actor",
-	  "scraper",
-	  "fire",
+	  "serp",
+	  "llm",
+	  "ai agent",
+	  "tavily",
+	  "mcp server",
+	  "scrape",
 	  "crawler",
-	  "web scraping",
+	  "web",
 	  "dataset",
 	  "bright",
+	  "search",
 	  "data extraction",
 	  "proxy",
-	  "automation",
-	  "tavily"
+	  "fire",
+	  "automation"
 	]
 }
