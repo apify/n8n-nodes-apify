@@ -2,36 +2,43 @@
 	"node": "n8n-nodes-apify",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
-	"categories": ["Development", "Marketing & Content", "Sales", "Analytics", "Utility", "Data & Storage"],
+	"categories": [
+		"Development",
+		"Marketing & Content",
+		"Sales",
+		"Analytics",
+		"Utility",
+		"Data & Storage"
+	],
 	"resources": {
 		"credentialDocumentation": [
 			{
 				"url": "https://docs.apify.com/platform/integrations/n8n"
-			  }
+			}
 		],
 		"primaryDocumentation": [
 			{
 				"url": "https://docs.apify.com/"
-			  }
+			}
 		]
 	},
 	"alias": [
-	  "apify",
-	  "actor",
-	  "serp",
-	  "llm",
-	  "ai agent",
-	  "tavily",
-	  "mcp server",
-	  "scrape",
-	  "crawler",
-	  "web",
-	  "dataset",
-	  "bright",
-	  "search",
-	  "data extraction",
-	  "proxy",
-	  "fire",
-	  "automation"
+		"apify",
+		"actor",
+		"serp",
+		"llm",
+		"ai agent",
+		"tavily",
+		"mcp server",
+		"scrape",
+		"crawler",
+		"web",
+		"dataset",
+		"bright",
+		"search",
+		"data extraction",
+		"proxy",
+		"fire",
+		"automation"
 	]
 }
