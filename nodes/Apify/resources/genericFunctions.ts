@@ -6,7 +6,7 @@ import {
 	type IExecuteFunctions,
 	type IHookFunctions,
 	type ILoadOptionsFunctions,
-	type IRequestOptions,
+	IHttpRequestOptions,
 } from 'n8n-workflow';
 import {
 	DEFAULT_EXP_BACKOFF_EXPONENTIAL,
@@ -14,7 +14,7 @@ import {
 	DEFAULT_EXP_BACKOFF_RETRIES,
 } from '../helpers/consts';
 
-type IApiRequestOptions = IRequestOptions & { uri?: string };
+type IApiRequestOptions = Omit<IHttpRequestOptions, "url"> & {uri?: string};
 
 /**
  * Make an API request to Apify
@@ -36,7 +36,7 @@ export async function apiRequest(
 		headers['x-apify-integration-ai-tool'] = 'true';
 	}
 
-	const options: IRequestOptions = {
+	const options: IHttpRequestOptions = {
 		json: true,
 		...rest,
 		method,
@@ -61,7 +61,7 @@ export async function apiRequest(
 		}
 
 		return await retryWithExponentialBackoff(() =>
-			this.helpers.requestWithAuthentication.call(this, authenticationMethod, options),
+			this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, options),
 		);
 	} catch (error) {
 		/**
