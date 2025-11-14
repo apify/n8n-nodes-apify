@@ -7,6 +7,7 @@ import {
 	type IHookFunctions,
 	type ILoadOptionsFunctions,
 	IHttpRequestOptions,
+	INodeExecutionData,
 } from 'n8n-workflow';
 import {
 	DEFAULT_EXP_BACKOFF_EXPONENTIAL,
@@ -265,4 +266,43 @@ export function customBodyParser(input: string | object) {
 export function isUsedAsAiTool(nodeType: string): boolean {
 	const parts = nodeType.split('.');
 	return parts[parts.length - 1] === 'apifyTool';
+}
+
+export async function executeAndLinkItems<T extends INodeExecutionData | INodeExecutionData[]>(
+	this: IExecuteFunctions,
+	executeFn: (this: IExecuteFunctions) => Promise<T>
+): Promise<INodeExecutionData[][]> {
+    const items = this.getInputData();
+    const returnData: INodeExecutionData[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+			try {
+				const addPairedItem = (item: INodeExecutionData) => ({
+					...item,
+					pairedItem: { item: i },
+				});
+
+        const result = await executeFn.call(this);
+
+				if (Array.isArray(result)) {
+					returnData.push(...result.map(addPairedItem));
+				} else {
+					returnData.push(addPairedItem(result));
+				}
+
+			} catch (error) {
+				// Don't throw error just log it
+				if (this.continueOnFail()) {
+					returnData.push({
+						json: {error: error.message || 'Unexpected error occured'},
+						pairedItem: {item: i}
+					})
+				} else {
+					// Propagade the error further
+					throw error;
+				}
+			}
+    }
+
+    return [returnData];
 }
