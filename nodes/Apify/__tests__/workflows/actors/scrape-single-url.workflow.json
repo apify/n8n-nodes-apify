@@ -3,6 +3,7 @@
 	"nodes": [
 		{
 			"parameters": {
+				"resource": "Actors",
 				"operation": "Scrape single URL"
 			},
 			"id": "cde14951-f922-4710-b3c5-dc913fdcc10b",

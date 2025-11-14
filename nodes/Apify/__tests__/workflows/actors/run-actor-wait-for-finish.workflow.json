@@ -3,6 +3,7 @@
 	"nodes": [
 		{
 			"parameters": {
+				"resource": "Actors",
 				"operation": "Run actor",
 				"actorId": {
 					"__rl": true,
