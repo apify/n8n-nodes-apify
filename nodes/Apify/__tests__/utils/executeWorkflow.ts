@@ -9,6 +9,7 @@ import {
 import { nodeTypes } from './nodeTypesClass';
 import * as fixtures from './fixtures';
 import { IGetNodeParameterOptions } from 'n8n-workflow';
+import axios from 'axios';
 
 export type ExecuteWorkflowArgs = {
 	workflow: any;
@@ -49,50 +50,30 @@ export const executeWorkflow = async ({
 				_credentialType: string,
 				options: any,
 			) {
-				const url = options.url as string;
-				const urlParts = url.split('/');
-				console.log(`url ${JSON.stringify(url)}`)
+        // Make an actual HTTP request that nock can intercept
+        try {
+            const response = await axios({
+                method: options.method || 'GET',
+                url: options.url,
+                params: options.qs,
+                data: options.body,
+                headers: options.headers,
+            });
 
-				if (url.includes('/builds/default')) {
-					return fixtures.getBuildResult();
-				}
-				if (url.includes('/acts')) {
-					if (url.includes('/runs')) {
-						const actId = urlParts?.[urlParts.length - 2];
-						if (actId === 'nFJndFXA5zjCTuudP')
-							return fixtures.getActorRunsResult();
-
-						return fixtures.runActorResult();
-					}
-				}
-				if (url.includes('/actor-runs')) {
-					const runId = urlParts[urlParts.length - 1];
-
-					if (runId === 'c7Orwz5b830Tbp784')
-						return fixtures.getRunResult();
-					if (runId === 'Icz6E0IHX0c40yEi7')
-						return fixtures.getRunTaskResult();
-
-					return fixtures.getUserRunsListResult();
-				}
-				if (url.includes('/actors/')) {
-					return fixtures.getActorResult();
-				}
-				if (url.includes('/actor-tasks')) {
-					const taskId = urlParts?.[urlParts.length - 2]
-					if (taskId === 'PwUDLcG3zMyT8E4vq')
-						return fixtures.runActorResult();
-					if (taskId === 'PwUDLcG3zMyT8E4vq')
-						return fixtures.runActorResult();
-				}
-				if (url.includes('/datasets')) {
-					const datasetId = urlParts?.[urlParts.length - 2];
-
-					if (datasetId === 'c2FdVlC9kJuPexhYo')
-						return fixtures.getItemsResult();
-				}
-
-				throw new Error(`Unhandled request in fixture stub: ${url}`);
+            return response.data;
+        } catch (error: any) {
+            // Re-throw with the same structure as n8n would
+            if (error.response) {
+                const err = new Error(error.response.statusText || 'Request failed');
+                (err as any).statusCode = error.response.status;
+                (err as any).response = {
+                    body: error.response.data,
+                    statusCode: error.response.status,
+                };
+                throw err;
+            }
+            throw error;
+        }
 			},
 			returnJsonArray: (items: any[]) => {
 				return items.map((i) => ({ json: i }));
