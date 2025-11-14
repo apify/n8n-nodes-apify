@@ -7,7 +7,6 @@ import {
 	ITaskData,
 } from 'n8n-workflow';
 import { nodeTypes } from './nodeTypesClass';
-import * as fixtures from './fixtures';
 import { IGetNodeParameterOptions } from 'n8n-workflow';
 import axios from 'axios';
 

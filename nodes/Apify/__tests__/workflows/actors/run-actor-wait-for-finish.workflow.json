@@ -5,6 +5,7 @@
 			"parameters": {
 				"resource": "Actors",
 				"operation": "Run actor",
+				"memory": 1024,
 				"actorId": {
 					"__rl": true,
 					"value": "nFJndFXA5zjCTuudP",

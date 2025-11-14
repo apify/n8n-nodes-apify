@@ -5,6 +5,7 @@
 			"parameters": {
 				"resource": "Actor tasks",
 				"operation": "Run task",
+				"memory": 1024,
 				"actorTaskId": {
 					"__rl": true,
 					"value": "PwUDLcG3zMyT8E4vq",
