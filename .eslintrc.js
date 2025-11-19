@@ -31,7 +31,7 @@ module.exports = {
 		'@stylistic/quotes': [
 			'error',
 			'single',
-			{ allowTemplateLiterals: 'always', ignoreStringLiterals: true },
+			{ allowTemplateLiterals: true, ignoreStringLiterals: true },
 		],
 	},
 
