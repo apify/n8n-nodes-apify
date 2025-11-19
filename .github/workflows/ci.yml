@@ -31,13 +31,13 @@ jobs:
         run: npm install --frozen-lockfile
 
       - name: Format check
-        run: npm exec prettier --check nodes credentials
+        run: npx prettier --check nodes credentials
 
       - name: Lint code
         run: npm run lint
 
       - name: Type-check
-        run: npm tsc --noEmit
+        run: npx tsc --noEmit
 
       - name: Build project
         run: npm build
