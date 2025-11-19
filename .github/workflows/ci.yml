@@ -34,7 +34,7 @@ jobs:
         run: npm exec prettier --check nodes credentials
 
       - name: Lint code
-        run: npm lint
+        run: npm run lint
 
       - name: Type-check
         run: npm tsc --noEmit
