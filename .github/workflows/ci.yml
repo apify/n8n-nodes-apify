@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [22.x] 
+        node-version: [22.x]
 
     steps:
       - name: Checkout code
@@ -21,26 +21,26 @@ jobs:
       - name: Enable Corepack
         run: corepack enable
 
-      - name: Setup Node.js & cache pnpm
+      - name: Setup Node.js & cache npm
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm install --frozen-lockfile
 
       - name: Format check
-        run: pnpm exec prettier --check nodes credentials
+        run: npm exec prettier --check nodes credentials
 
       - name: Lint code
-        run: pnpm lint
+        run: npm lint
 
       - name: Type-check
-        run: pnpm tsc --noEmit
+        run: npm tsc --noEmit
 
       - name: Build project
-        run: pnpm build
+        run: npm build
 
       - name: Run tests
-        run: pnpm test
+        run: npm test

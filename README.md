@@ -47,7 +47,7 @@ To contribute to our Apify node, you can install the node and link it to your n8
 ### ⚙️ Prerequisites
 
 - Node.js (recommended: v18.10+)
-- pnpm installed globally
+- npm installed globally
 
 ---
 
@@ -65,8 +65,8 @@ n8n start # This will generate the ~/.n8n directory
 Install dependencies and build the node:
 
 ```bash
-pnpm install
-pnpm run build
+npm install
+npm run build
 ```
 
 ### 3. Link the custom node to n8n
@@ -95,7 +95,7 @@ n8n start
 If you make any changes to your custom node locally, remember to rebuild and restart:
 
 ```bash
-pnpm run build
+npm run build
 n8n start
 ```
 
@@ -114,7 +114,7 @@ In the same shell or Docker environment where n8n runs, export the `WEBHOOK_URL`
   ```
 2. **Restart n8n** 
   ```bash
-  pnpm run build
+  npm run build
   n8n start
   ```
 
@@ -297,7 +297,7 @@ Regardless of how you create and publish the GitHub Release:
         1.  Code checkout.
         2.  Version extraction (`X.Y.Z`) from the release tag.
         3.  Build and test processes.
-        4.  Update `package.json` and `pnpm-lock.yaml` to version `X.Y.Z`.
+        4.  Update `package.json` and `npm-lock.yaml` to version `X.Y.Z`.
         5.  Commit these version changes back to the branch the release was targeted from with a message like `chore(release): set version to X.Y.Z [skip ci]`.
         6.  Publish the package `@apify/n8n-nodes-apify@X.Y.Z` to npm.
 
@@ -305,7 +305,7 @@ Regardless of how you create and publish the GitHub Release:
     After the workflow successfully completes (check the "Actions" tab in your GitHub repository):
     * Verify the new version on npm:
         ```bash
-        pnpm view @apify/n8n-nodes-apify version
+        npm view @apify/n8n-nodes-apify version
         ```
         This should print `X.Y.Z`.
 
