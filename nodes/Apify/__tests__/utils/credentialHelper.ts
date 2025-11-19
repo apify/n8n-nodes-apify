@@ -46,10 +46,7 @@ export class CredentialsHelper extends ICredentialsHelper {
 		return undefined;
 	}
 
-	async getCredentials(
-		nodeCredentials: INodeCredentialsDetails,
-		type: string,
-	): Promise<any> {
+	async getCredentials(nodeCredentials: INodeCredentialsDetails, type: string): Promise<any> {
 		return {};
 	}
 
