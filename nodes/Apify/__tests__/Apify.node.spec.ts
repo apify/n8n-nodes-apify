@@ -227,15 +227,12 @@ describe('Apify Node', () => {
 					.get(`/v2/actor-runs/${mockRunTask.data.id}`)
 					.reply(200, mockAbortedRun);
 
-				const { executionData } = await executeWorkflow({
-					credentialsHelper,
-					workflow: runTaskAndGetDatasetWorkflow,
-				});
-
-				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run task and get dataset');
-				expect(nodeResults.length).toBe(1);
-				const [nodeResult] = nodeResults;
-				expect(nodeResult.executionStatus).toBe('error');
+				await expect(
+					executeWorkflow({
+						credentialsHelper,
+						workflow: runTaskAndGetDatasetWorkflow,
+					})
+				).rejects.toThrow(/Run .* did not finish with status SUCCEEDED. Run status: ABORTED/);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -391,15 +388,12 @@ describe('Apify Node', () => {
 					.get(`/v2/actor-runs/${mockRunActor.data.id}`)
 					.reply(200, mockAbortedRun);
 
-				const { executionData } = await executeWorkflow({
-					credentialsHelper,
-					workflow: runActorAndGetDatasetWorkflow,
-				});
-
-				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run actor and get dataset');
-				expect(nodeResults.length).toBe(1);
-				const [nodeResult] = nodeResults;
-				expect(nodeResult.executionStatus).toBe('error');
+				await expect(
+					executeWorkflow({
+						credentialsHelper,
+						workflow: runActorAndGetDatasetWorkflow,
+					})
+				).rejects.toThrow(/Run .* did not finish with status SUCCEEDED. Run status: ABORTED/);
 
 				expect(scope.isDone()).toBe(true);
 			});
