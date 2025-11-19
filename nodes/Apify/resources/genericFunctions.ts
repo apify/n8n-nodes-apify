@@ -15,7 +15,7 @@ import {
 	DEFAULT_EXP_BACKOFF_RETRIES,
 } from '../helpers/consts';
 
-type IApiRequestOptions = Omit<IHttpRequestOptions, "url"> & {uri?: string};
+type IApiRequestOptions = Omit<IHttpRequestOptions, 'url'> & { uri?: string };
 
 /**
  * Make an API request to Apify
@@ -270,39 +270,38 @@ export function isUsedAsAiTool(nodeType: string): boolean {
 
 export async function executeAndLinkItems<T extends INodeExecutionData | INodeExecutionData[]>(
 	this: IExecuteFunctions,
-	executeFn: (this: IExecuteFunctions) => Promise<T>
+	executeFn: (this: IExecuteFunctions) => Promise<T>,
 ): Promise<INodeExecutionData[][]> {
-    const items = this.getInputData();
-    const returnData: INodeExecutionData[] = [];
+	const items = this.getInputData();
+	const returnData: INodeExecutionData[] = [];
 
-    for (let i = 0; i < items.length; i++) {
-			try {
-				const addPairedItem = (item: INodeExecutionData) => ({
-					...item,
+	for (let i = 0; i < items.length; i++) {
+		try {
+			const addPairedItem = (item: INodeExecutionData) => ({
+				...item,
+				pairedItem: { item: i },
+			});
+
+			const result = await executeFn.call(this);
+
+			if (Array.isArray(result)) {
+				returnData.push(...result.map(addPairedItem));
+			} else {
+				returnData.push(addPairedItem(result));
+			}
+		} catch (error) {
+			// Don't throw error just log it
+			if (this.continueOnFail()) {
+				returnData.push({
+					json: { error: error.message || 'Unexpected error occured' },
 					pairedItem: { item: i },
 				});
-
-        const result = await executeFn.call(this);
-
-				if (Array.isArray(result)) {
-					returnData.push(...result.map(addPairedItem));
-				} else {
-					returnData.push(addPairedItem(result));
-				}
-
-			} catch (error) {
-				// Don't throw error just log it
-				if (this.continueOnFail()) {
-					returnData.push({
-						json: {error: error.message || 'Unexpected error occured'},
-						pairedItem: {item: i}
-					})
-				} else {
-					// Propagade the error further
-					throw error;
-				}
+			} else {
+				// Propagade the error further
+				throw error;
 			}
-    }
+		}
+	}
 
-    return [returnData];
+	return [returnData];
 }

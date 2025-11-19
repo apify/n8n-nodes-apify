@@ -231,7 +231,7 @@ describe('Apify Node', () => {
 					executeWorkflow({
 						credentialsHelper,
 						workflow: runTaskAndGetDatasetWorkflow,
-					})
+					}),
 				).rejects.toThrow(/Run .* did not finish with status SUCCEEDED. Run status: ABORTED/);
 
 				expect(scope.isDone()).toBe(true);
@@ -392,7 +392,7 @@ describe('Apify Node', () => {
 					executeWorkflow({
 						credentialsHelper,
 						workflow: runActorAndGetDatasetWorkflow,
-					})
+					}),
 				).rejects.toThrow(/Run .* did not finish with status SUCCEEDED. Run status: ABORTED/);
 
 				expect(scope.isDone()).toBe(true);

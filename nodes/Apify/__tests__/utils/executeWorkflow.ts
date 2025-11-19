@@ -27,9 +27,13 @@ export const executeWorkflow = async ({
 		getCredentials: async (name: string) => {
 			return credentialsHelper.getDecrypted({} as any, { name } as any, name, 'manual');
 		},
-		getNodeParameter: (parameterName: string, itemIndex: number, fallbackValue?: any, options?: IGetNodeParameterOptions) => {
-			if (options?.extractValue)
-				return node.parameters[parameterName].value;
+		getNodeParameter: (
+			parameterName: string,
+			itemIndex: number,
+			fallbackValue?: any,
+			options?: IGetNodeParameterOptions,
+		) => {
+			if (options?.extractValue) return node.parameters[parameterName].value;
 			return node.parameters[parameterName];
 		},
 		getInputData: (): INodeExecutionData[] => {
@@ -49,39 +53,38 @@ export const executeWorkflow = async ({
 				_credentialType: string,
 				options: any,
 			) {
-        // Make an actual HTTP request that nock can intercept
-        try {
-            const response = await axios({
-                method: options.method || 'GET',
-                url: options.url,
-                params: options.qs,
-                data: options.body,
-                headers: options.headers,
-            });
+				// Make an actual HTTP request that nock can intercept
+				try {
+					const response = await axios({
+						method: options.method || 'GET',
+						url: options.url,
+						params: options.qs,
+						data: options.body,
+						headers: options.headers,
+					});
 
-						// For /items endpoint just return data
-						if (options.url.includes('/items'))
-							return response.data;
+					// For /items endpoint just return data
+					if (options.url.includes('/items')) return response.data;
 
-						// Build a return object compatible with the n8n node
-						return {
-							...response.data,
-							headers: response.headers,
-							body: JSON.stringify(response.data) // Needed by key-value tests
-						}
-        } catch (error: any) {
-            // Re-throw with the same structure as n8n would
-            if (error.response) {
-                const err = new Error(error.response.statusText || 'Request failed');
-                (err as any).httpCode = error.status;
-                (err as any).response = {
-                    body: error.response.data,
-                    statusCode: error.response.status,
-                };
-                throw err;
-            }
-            throw error;
-        }
+					// Build a return object compatible with the n8n node
+					return {
+						...response.data,
+						headers: response.headers,
+						body: JSON.stringify(response.data), // Needed by key-value tests
+					};
+				} catch (error: any) {
+					// Re-throw with the same structure as n8n would
+					if (error.response) {
+						const err = new Error(error.response.statusText || 'Request failed');
+						(err as any).httpCode = error.status;
+						(err as any).response = {
+							body: error.response.data,
+							statusCode: error.response.status,
+						};
+						throw err;
+					}
+					throw error;
+				}
 			},
 			returnJsonArray: (items: any[]) => {
 				return items.map((i) => ({ json: i }));

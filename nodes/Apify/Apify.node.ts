@@ -57,7 +57,7 @@ export class Apify implements INodeType {
 	methods = methods;
 
 	async execute(this: IExecuteFunctions) {
-		return await executeAndLinkItems.call(this, async function(this: IExecuteFunctions) {
+		return await executeAndLinkItems.call(this, async function (this: IExecuteFunctions) {
 			const items = this.getInputData();
 			const returnData: INodeExecutionData[] = [];
 
@@ -72,6 +72,6 @@ export class Apify implements INodeType {
 			}
 
 			return returnData;
-		})
+		});
 	}
 }
