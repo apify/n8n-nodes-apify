@@ -59,12 +59,21 @@ export const executeWorkflow = async ({
                 headers: options.headers,
             });
 
-            return response.data;
+						// For /items endpoint just return data
+						if (options.url.includes('/items'))
+							return response.data;
+
+						// Build a return object compatible with the n8n node
+						return {
+							...response.data,
+							headers: response.headers,
+							body: JSON.stringify(response.data) // Needed by key-value tests
+						}
         } catch (error: any) {
             // Re-throw with the same structure as n8n would
             if (error.response) {
                 const err = new Error(error.response.statusText || 'Request failed');
-                (err as any).statusCode = error.response.status;
+                (err as any).httpCode = error.status;
                 (err as any).response = {
                     body: error.response.data,
                     statusCode: error.response.status,
