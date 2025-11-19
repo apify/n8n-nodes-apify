@@ -1,4 +1,3 @@
-import { Credentials } from 'n8n-core';
 import {
 	ICredentialDataDecryptedObject,
 	ICredentialsHelper,
@@ -6,7 +5,6 @@ import {
 	IHttpRequestOptions,
 	INode,
 	INodeCredentialsDetails,
-	ICredentials,
 	INodeProperties,
 	IWorkflowExecuteAdditionalData,
 	WorkflowExecuteMode,
@@ -51,8 +49,8 @@ export class CredentialsHelper extends ICredentialsHelper {
 	async getCredentials(
 		nodeCredentials: INodeCredentialsDetails,
 		type: string,
-	): Promise<ICredentials> {
-		return new Credentials({ id: null, name: '' }, '', '');
+	): Promise<any> {
+		return {};
 	}
 
 	async getDecrypted(

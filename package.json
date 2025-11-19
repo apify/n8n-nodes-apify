@@ -57,7 +57,6 @@
 		"eslint-plugin-n8n-nodes-base": "^1.16.4",
 		"gulp": "^4.0.2",
 		"jest": "^29.7.0",
-		"n8n-core": "1.83.0",
 		"n8n-workflow": "1.82.0",
 		"nock": "^14.0.5",
 		"prettier": "^3.3.2",
