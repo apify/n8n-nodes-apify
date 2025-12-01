@@ -17,23 +17,20 @@ jobs:
           token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Set up Node.js & cache pnpm
+      - name: Set up Node.js & cache npm
         uses: actions/setup-node@v4
         with:
           node-version: '22.x'
-          cache: pnpm
+          cache: npm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci --legacy-peer-deps
 
       - name: Build project
-        run: pnpm build
+        run: npm run build
 
       - name: Run tests
-        run: pnpm test
+        run: npm run test
 
       - name: Configure Git
         run: |
@@ -50,11 +47,11 @@ jobs:
       - name: Update package.json version
         run: |
           echo "Updating package.json to version ${{ env.VERSION }}"
-          pnpm version ${{ env.VERSION }} --no-git-tag-version
+          npm version ${{ env.VERSION }} --no-git-tag-version
 
       - name: Commit version update
         run: |
-          git add package.json pnpm-lock.yaml
+          git add package.json package-lock.json
           if ! git diff --staged --quiet; then
             TARGET_BRANCH="${{ github.event.release.target_commitish }}"
             echo "Target branch for push: $TARGET_BRANCH"
@@ -62,21 +59,21 @@ jobs:
             echo "Pushing version update to branch: $TARGET_BRANCH"
             git push origin HEAD:"refs/heads/$TARGET_BRANCH"
           else
-            echo "No changes to commit in package.json or pnpm-lock.yaml for version update."
+            echo "No changes to commit in package.json or package-lock.json for version update."
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
 
       - name: Set up npm for publishing
-        run: echo "//registry.npmjs.org/:_authToken=${{secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}" > .npmrc
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}" > .npmrc
 
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_NPM_TOKEN }}
         run: |
-          if pnpm view @apify/n8n-nodes-apify@${{ env.VERSION }} version > /dev/null 2>&1; then
+          if npm view @apify/n8n-nodes-apify@${{ env.VERSION }} version > /dev/null 2>&1; then
             echo "Version ${{ env.VERSION }} of @apify/n8n-nodes-apify is already published to npm. Skipping publish step."
           else
             echo "Publishing @apify/n8n-nodes-apify@${{ env.VERSION }} to npm..."
-            pnpm publish --access public --no-git-checks
+            npm publish --access public
           fi
