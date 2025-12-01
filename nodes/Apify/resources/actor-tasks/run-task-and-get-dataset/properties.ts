@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { INodeProperties } from 'n8n-workflow';
 
 import * as helpers from '../../../helpers';

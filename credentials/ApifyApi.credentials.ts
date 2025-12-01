@@ -1,5 +1,5 @@
 import type { IAuthenticateGeneric, ICredentialType, INodeProperties } from 'n8n-workflow';
-
+// eslint-disable-next-line
 export class ApifyApi implements ICredentialType {
 	name = 'apifyApi';
 

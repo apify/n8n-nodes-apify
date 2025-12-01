@@ -76,6 +76,7 @@ timeout specified in the default run configuration for the Actor.`,
 		name: 'memory',
 		description:
 			'Memory limit for the run, in megabytes. The amount of memory can be set to one of the available options. By default, the run uses a memory limit specified in the default run configuration for the Actor.',
+		// eslint-disable-next-line
 		default: 1024,
 		type: 'options',
 		options: helpers.consts.memoryOptions,

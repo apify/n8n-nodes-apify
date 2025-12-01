@@ -1,13 +1,15 @@
 import type { ICredentialType, INodeProperties } from 'n8n-workflow';
 
 const scopes = ['profile', 'full_api_access'];
-
+// eslint-disable-next-line
 export class ApifyOAuth2Api implements ICredentialType {
 	name = 'apifyOAuth2Api';
 
 	extends = ['oAuth2Api'];
 
 	displayName = 'Apify OAuth2 API';
+	// eslint-disable-next-line
+	documentationUrl = 'apify';
 
 	properties: INodeProperties[] = [
 		{
@@ -61,6 +63,7 @@ export class ApifyOAuth2Api implements ICredentialType {
 			name: 'clientSecret',
 			type: 'hidden',
 			default: '',
+			typeOptions: { password: true },
 		},
 		{
 			displayName:
