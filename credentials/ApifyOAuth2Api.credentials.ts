@@ -8,8 +8,6 @@ export class ApifyOAuth2Api implements ICredentialType {
 	extends = ['oAuth2Api'];
 
 	displayName = 'Apify OAuth2 API';
-	// eslint-disable-next-line
-	documentationUrl = 'apify';
 
 	properties: INodeProperties[] = [
 		{
