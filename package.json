@@ -32,7 +32,6 @@
 		"format": "prettier nodes credentials --write",
 		"lint": "n8n-node lint",
 		"lint:fix": "n8n-node lint --fix",
-		"prepublishOnly": "npm run build && npm run lint",
 		"merge:api": "npx openapi-merge-cli --config ./openapi.config.json",
 		"test": "WEBHOOK_URL=https://localhost:5678 jest --config jest.config.js"
 	},
