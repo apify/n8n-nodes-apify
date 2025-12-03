@@ -43,8 +43,6 @@ If you're using n8n Cloud, installing community nodes is even simpler:
 
 ### ⚙️ Prerequisites
 
-### Prerequisites
-
 - **Node.js**: 22.x or higher (required)
 - **npm**: 10.8.2 or higher (required)
 
