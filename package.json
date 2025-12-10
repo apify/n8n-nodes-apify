@@ -30,7 +30,6 @@
 		"format": "prettier nodes credentials --write",
 		"lint": "eslint nodes credentials package.json",
 		"lintfix": "eslint nodes credentials package.json --fix",
-		"prepublishOnly": "npm build && npm lint -c .eslintrc.prepublish.js nodes credentials package.json",
 		"merge:api": "npx openapi-merge-cli --config ./openapi.config.json",
 		"test": "WEBHOOK_URL=https://localhost:5678 jest --config jest.config.js"
 	},
