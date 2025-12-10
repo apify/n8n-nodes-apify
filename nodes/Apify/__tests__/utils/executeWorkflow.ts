@@ -8,11 +8,99 @@ import {
 } from 'n8n-workflow';
 import { nodeTypes } from './nodeTypesClass';
 import { IGetNodeParameterOptions } from 'n8n-workflow';
-import axios from 'axios';
+import https from 'https';
+import http from 'http';
+import { URL } from 'url';
 
 export type ExecuteWorkflowArgs = {
 	workflow: any;
 	credentialsHelper: ICredentialsHelper;
+};
+
+const makeHttpRequest = (options: any): Promise<any> => {
+	return new Promise((resolve, reject) => {
+		const url = new URL(options.url);
+		const protocol = url.protocol === 'https:' ? https : http;
+
+		// Build query string from params if provided
+		if (options.params) {
+			const queryString = new URLSearchParams(options.params).toString();
+			if (queryString) {
+				url.search = url.search ? `${url.search}&${queryString}` : `?${queryString}`;
+			}
+		}
+
+		const reqOptions = {
+			hostname: url.hostname,
+			port: url.port,
+			path: url.pathname + url.search,
+			method: options.method || 'GET',
+			headers: options.headers || {},
+		};
+
+		// Set Content-Type for POST/PUT requests with body
+		if (options.data && !reqOptions.headers['Content-Type']) {
+			reqOptions.headers['Content-Type'] = 'application/json';
+		}
+
+		const req = protocol.request(reqOptions, (res) => {
+			let data = '';
+
+			res.on('data', (chunk) => {
+				data += chunk;
+			});
+
+			res.on('end', () => {
+				try {
+					const parsedData = data ? JSON.parse(data) : {};
+
+					if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+						resolve({
+							data: parsedData,
+							status: res.statusCode,
+							headers: res.headers,
+						});
+					} else {
+						const error: any = new Error(res.statusMessage || 'Request failed');
+						error.response = {
+							data: parsedData,
+							status: res.statusCode,
+							statusText: res.statusMessage,
+						};
+						reject(error);
+					}
+				} catch (e) {
+					// If response is not JSON, return raw data
+					if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+						resolve({
+							data,
+							status: res.statusCode,
+							headers: res.headers,
+						});
+					} else {
+						const error: any = new Error(res.statusMessage || 'Request failed');
+						error.response = {
+							data,
+							status: res.statusCode,
+							statusText: res.statusMessage,
+						};
+						reject(error);
+					}
+				}
+			});
+		});
+
+		req.on('error', (error) => {
+			reject(error);
+		});
+
+		if (options.data) {
+			const body = typeof options.data === 'string' ? options.data : JSON.stringify(options.data);
+			req.write(body);
+		}
+
+		req.end();
+	});
 };
 
 export const executeWorkflow = async ({
@@ -55,7 +143,7 @@ export const executeWorkflow = async ({
 			) {
 				// Make an actual HTTP request that nock can intercept
 				try {
-					const response = await axios({
+					const response = await makeHttpRequest({
 						method: options.method || 'GET',
 						url: options.url,
 						params: options.qs,
@@ -76,7 +164,7 @@ export const executeWorkflow = async ({
 					// Re-throw with the same structure as n8n would
 					if (error.response) {
 						const err = new Error(error.response.statusText || 'Request failed');
-						(err as any).httpCode = error.status;
+						(err as any).httpCode = error.response.status;
 						(err as any).response = {
 							body: error.response.data,
 							statusCode: error.response.status,
