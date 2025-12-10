@@ -297,7 +297,7 @@ Regardless of how you create and publish the GitHub Release:
         1.  Code checkout.
         2.  Version extraction (`X.Y.Z`) from the release tag.
         3.  Build and test processes.
-        4.  Update `package.json` and `npm-lock.yaml` to version `X.Y.Z`.
+        4.  Update `package.json` and `package-lock.json` to version `X.Y.Z`.
         5.  Commit these version changes back to the branch the release was targeted from with a message like `chore(release): set version to X.Y.Z [skip ci]`.
         6.  Publish the package `@apify/n8n-nodes-apify@X.Y.Z` to npm.
 

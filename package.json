@@ -28,6 +28,7 @@
 		"build": "tsc && gulp build:icons",
 		"dev": "tsc --watch",
 		"format": "prettier nodes credentials --write",
+		"format:check": "prettier --check nodes credentials",
 		"lint": "eslint nodes credentials package.json",
 		"lintfix": "eslint nodes credentials package.json --fix",
 		"merge:api": "npx openapi-merge-cli --config ./openapi.config.json",

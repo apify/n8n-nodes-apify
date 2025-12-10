@@ -27,7 +27,7 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm install --frozen-lockfile
+        run: npm ci
 
       - name: Build project
         run: npm build
@@ -54,7 +54,7 @@ jobs:
 
       - name: Commit version update
         run: |
-          git add package.json npm-lock.yaml
+          git add package.json package-lock.json
           if ! git diff --staged --quiet; then
             TARGET_BRANCH="${{ github.event.release.target_commitish }}"
             echo "Target branch for push: $TARGET_BRANCH"
