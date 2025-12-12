@@ -65,13 +65,7 @@ export async function apiRequest(
 			this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, options),
 		);
 	} catch (error) {
-		/**
-		 * using `error instanceof NodeApiError` results in `false`
-		 * because it's thrown by a different instance of n8n-workflow
-		 */
-		if (error.constructor?.name === 'NodeApiError') {
-			throw error;
-		}
+		if (error instanceof NodeApiError) throw error;
 
 		if (error.response && error.response.body) {
 			throw new NodeApiError(this.getNode(), error, {
