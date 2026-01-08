@@ -19,7 +19,7 @@ export async function runTask(this: IExecuteFunctions, i: number): Promise<INode
 	let input: any;
 	try {
 		input = customBodyParser(rawStringifiedInput);
-	} catch (err) {
+	} catch {
 		throw new NodeOperationError(
 			this.getNode(),
 			`Could not parse custom body: ${rawStringifiedInput}`,

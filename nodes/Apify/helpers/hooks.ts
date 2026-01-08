@@ -1,3 +1,4 @@
+/* eslint-disable */
 import {
 	BinaryFileType,
 	IBinaryData,
@@ -34,14 +35,15 @@ export async function preSendActionCustonBody(
 	return Promise.resolve(requestOptions);
 }
 
-/* eslint-disable indent */
+
 /* tslint:disable:indent */
 export type PostReceiveAction =
 	| ((
 			this: IExecuteSingleFunctions,
 			items: INodeExecutionData[],
 			response: IN8nHttpFullResponse,
-	  ) => Promise<INodeExecutionData[]>)
+			) => Promise<INodeExecutionData[]>
+		)
 	| IPostReceiveBinaryData
 	| IPostReceiveFilter
 	| IPostReceiveLimit
@@ -49,7 +51,7 @@ export type PostReceiveAction =
 	| IPostReceiveSet
 	| IPostReceiveSetKeyValue
 	| IPostReceiveSort;
-/* eslint-enable indent */
+
 /* tslint:enable:indent */
 
 function getResponseContentType(response: IN8nHttpFullResponse): string {
