@@ -89,7 +89,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item) => item.json)).toEqual(mockRunsList.data.items);
+				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockRunsList.data.items);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -116,7 +116,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item) => item.json)).toEqual(mockRunsList.data.items);
+				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockRunsList.data.items);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -211,7 +211,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item) => item.json)).toEqual(mockItems);
+				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -367,7 +367,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item) => item.json)).toEqual(mockItems);
+				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -462,7 +462,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item) => item.json)).toEqual(mockItems);
+				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});

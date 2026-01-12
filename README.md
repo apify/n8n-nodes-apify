@@ -25,67 +25,68 @@ To install the Apify community node directly from the n8n Editor UI:
 1. Open your n8n instance.
 2. Go to **Settings > Community Nodes**
 3. Select **Install**.
-4. Enter the npm package name: `@apify/n8n-nodes-apify` to install the latest version. To install a specific version (e.g 0.4.4) enter `@apify/n8n-nodes-apify@0.4.4`. All versions are available [here](https://www.npmjs.com/package/@apify/n8n-nodes-apify?activeTab=versions)
+4. Enter the npm package name: `@apify/n8n-nodes-apify` to install the latest version. To install a specific version (e.g 0.6.4) enter `@apify/n8n-nodes-apify@0.6.4`. All versions are available [here](https://www.npmjs.com/package/@apify/n8n-nodes-apify?activeTab=versions)
 5. Agree to the [risks](https://docs.n8n.io/integrations/community-nodes/risks/) of using community nodes and select **Install**
 6. The node is now available to use in your workflows.
 
 ## Installation (n8n Cloud)
 
-If you’re using n8n Cloud, installing community nodes is even simpler:
+If you're using n8n Cloud, installing community nodes is even simpler:
 
 1. Go to the **Canvas** and open the **nodes panel**.
 2. Search for **Apify** in the community node registry.
 3. Click **Install node** to add the Apify node to your instance.
 
+> On n8n cloud users can choose not to show verified community nodes. Instance owners can toggle this in the Cloud Admin Panel. To install the Apify node, make sure the installation of verified community nodes is enabled.
 
- > On n8n cloud users can choose not to show verified community nodes. Instance owners can toggle this in the Cloud Admin Panel. To install the Apify node, make sure the installation of verified community nodes is enabled. 
-
-
-## Installation (development and contributing) 
-To contribute to our Apify node, you can install the node and link it to your n8n instance. Follow the steps below:
+## Installation (development and contributing)
 
 ### ⚙️ Prerequisites
 
-- Node.js (recommended: v18.10+)
-- npm installed globally
+- **Node.js**: 22.x or higher (required)
+- **npm**: 10.8.2 or higher (required)
 
----
-
-### 1. Initialize n8n locally
-
-Begin by installing and running n8n to create the necessary configuration directory (`~/.n8n`):
+Verify your versions:
 
 ```bash
-npm install -g n8n # Skip this step if you already have n8n installed globally
-n8n start # This will generate the ~/.n8n directory
+node --version  # Should be v22.x.x or higher
+npm --version   # Should be 10.8.2 or higher
 ```
 
-### 2. Clone and build the Node Package
-
-Install dependencies and build the node:
+If you use `nvm`, the project includes a `.nvmrc` file. Simply run:
 
 ```bash
+nvm use
+```
+
+### 1. Clone and Install Dependencies
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/apify/n8n-nodes-apify.git
+cd n8n-nodes-apify
 npm install
+```
+
+> **Note:** This project uses `legacy-peer-deps=true` in [.npmrc](.npmrc) to handle peer dependency conflicts with `@n8n/node-cli`. This means peer dependencies (like `n8n-workflow`) are not automatically installed. To run tests, install them manually:
+>
+> ```bash
+> npm install n8n-workflow@1.82.0
+> ```
+
+### 2. Build the Node Package
+
+```bash
 npm run build
 ```
 
-### 3. Link the custom node to n8n
+### 3. Start Development Server
 
-Create the `custom` directory inside `~/.n8n` (if it doesn't exist), then symlink your local node package:
-
-```bash
-mkdir -p ~/.n8n/custom
-ln -s /full/path/to/n8n-nodes-apify ~/.n8n/custom/n8n-nodes-apify # replace full/path/to with the path to your n8n-nodes-apify directory
-```
-
-> **Note:** Use the absolute path in the symlink for compatibility.
-
-### 4. Restart n8n
-
-Now that your custom node is linked, start n8n again:
+Start the n8n development server with your node linked:
 
 ```bash
-n8n start
+npm run dev
 ```
 
 ---
@@ -96,7 +97,6 @@ If you make any changes to your custom node locally, remember to rebuild and res
 
 ```bash
 npm run build
-n8n start
 ```
 
 ---
@@ -108,35 +108,35 @@ This configuration is required for our service's trigger functionality to work c
 By default, when running locally n8n generates webhook URLs using `localhost`, which external services cannot reach. To fix this:
 
 1. **Set your webhook URL**  
-In the same shell or Docker environment where n8n runs, export the `WEBHOOK_URL` to a publicly-accessible address. For example:
-  ```bash
-  export WEBHOOK_URL="https://your-tunnel.local"
-  ```
-2. **Restart n8n** 
-  ```bash
-  npm run build
-  n8n start
-  ```
+   In the same shell or Docker environment where n8n runs, export the `WEBHOOK_URL` to a publicly-accessible address. For example:
+
+```bash
+export WEBHOOK_URL="https://your-tunnel.local"
+```
+
+2. **Restart n8n**
+
+```bash
+npm run dev
+```
 
 ## Operations
-
-![operations](./docs/actions.png)
 
 This node supports a wide range of Apify operations, organized by resource type:
 
 ### Actors
+
 - **Run Actor**: Execute an Actor with optional input parameters
-  - **Default behavior**: Uses predefined input values
-  - **Custom input**: Provide JSON object to override any or all default parameters.
+  - Default behavior: Uses predefined input values
+  - Custom input: Provide JSON object to override any or all default parameters
   - Configurable timeout and memory limits
   - Build version selection
-- **Run Actor and get dataset items**: Execute an Actor, waits for it to finish, and finally returns the dataset items
+- **Run Actor and get dataset items**: Execute an Actor, wait for it to finish, and return the dataset items
 - **Scrape Single URL**: Quick scraping of a single URL
 - **Get Last Run**: Retrieve information about the most recent Actor run
 
-![actor run](./docs/run-actor.png)
-
 ### Actor tasks
+
 - **Run Task**: Execute a predefined Actor task
   - Supports custom input JSON
   - Configurable timeout
@@ -144,6 +144,7 @@ This node supports a wide range of Apify operations, organized by resource type:
 - **Run task and get dataset items**: Execute a task, wait for it to finish, and return the dataset items
 
 ### Actor runs
+
 - **Get User Runs List**: List all runs for a user
   - Pagination support
   - Sorting options
@@ -151,20 +152,22 @@ This node supports a wide range of Apify operations, organized by resource type:
 - **Get run**: Retrieve detailed information about a specific run
 
 ### Datasets
+
 - **Get Items**: Fetch items from a dataset
 
 ### Key-Value Stores
+
 - **Get Key-Value Store Record**: Retrieve a specific record by key
 
 ### Triggers
-  Automatically start an n8n workflow whenever an Actor or task finishes execution
-  - Can be configured to trigger on success, failure, abort, timeout or any combination of these states
-  - Includes run metadata in the output
-  - Available triggers: 
-    - **Actor Run Finished**: Start a workflow when an Actor run completes
-    - **Task Run Finished**: Start a workflow when a task run completes
 
-![triggers](./docs/trigger.png)
+Automatically start an n8n workflow whenever an Actor or task finishes execution
+
+- Can be configured to trigger on success, failure, abort, timeout or any combination of these states
+- Includes run metadata in the output
+- Available triggers:
+  - **Actor Run Finished**: Start a workflow when an Actor run completes
+  - **Task Run Finished**: Start a workflow when a task run completes
 
 ### AI Tools
 
@@ -183,10 +186,11 @@ The node supports two authentication methods:
 
 ![auth](./docs/auth.png)
 
-
 ## Compatibility
 
-This node has been tested with n8n version 1.57.0.
+- **n8n**: Version 1.57.0 and higher
+- **Node.js**: 22.x or higher
+- **npm**: 10.8.2 or higher
 
 ## Usage
 
@@ -210,37 +214,37 @@ This project uses a GitHub Actions workflow to automate the release process, inc
 
 **Prerequisites (for all methods):**
 
-* Ensure your target branch on GitHub is up-to-date with all changes you want to include in the release.
-* Decide on the new version number, following semantic versioning (e.g., `vX.Y.Z`).
-* Prepare your release notes detailing the changes.
-* If you're using CLI to release, make sure you have the [GitHub CLI (`gh`)](https://cli.github.com/) installed and authenticated (`gh auth login`).
+- Ensure your target branch on GitHub is up-to-date with all changes you want to include in the release.
+- Decide on the new version number, following semantic versioning (e.g., `vX.Y.Z`).
+- Prepare your release notes detailing the changes.
+- If you're using CLI to release, make sure you have the [GitHub CLI (`gh`)](https://cli.github.com/) installed and authenticated (`gh auth login`).
 
 ---
 
 ## Method 1: Using the GitHub Web UI (Recommended for ease of use)
 
 1.  **Navigate to GitHub Releases:**
-    * Go to your repository’s "Releases" tab
+    - Go to your repository's "Releases" tab
 
 2.  **Draft a New Release:**
-    * Click the **“Draft a new release”** button.
+    - Click the **"Draft a new release"** button.
 
 3.  **Create or Choose a Tag:**
-    * In the “Choose a tag” dropdown:
-        * **Type your new tag name** (e.g., `v1.2.3`).
-        * If the tag doesn't exist, GitHub will prompt you with an option like **“Create new tag: v1.2.3 on publish.”** Click this.
-        * Ensure the **target branch** selected for creating the new tag is correct. This tag will point to the latest commit on this target branch.
+    - In the "Choose a tag" dropdown:
+      - **Type your new tag name** (e.g., `v1.2.3`).
+      - If the tag doesn't exist, GitHub will prompt you with an option like **"Create new tag: v1.2.3 on publish."** Click this.
+      - Ensure the **target branch** selected for creating the new tag is correct. This tag will point to the latest commit on this target branch.
 
 4.  **Set Release Title and Notes:**
-    * Set the "Release title" (e.g., `vX.Y.Z` or a more descriptive title).
-    * For the release notes in the description field, you have a few options:
-        * **Write your prepared release notes.**
-        * **Click the "Generate release notes" button:** GitHub will attempt to automatically create release notes based on merged pull requests since the last release. You can then review and edit these auto-generated notes.
+    - Set the "Release title" (e.g., `vX.Y.Z` or a more descriptive title).
+    - For the release notes in the description field, you have a few options:
+      - **Write your prepared release notes.**
+      - **Click the "Generate release notes" button:** GitHub will attempt to automatically create release notes based on merged pull requests since the last release. You can then review and edit these auto-generated notes.
 
 5.  **Publish the Release:**
-    * Click the **“Publish release”** button.
+    - Click the **"Publish release"** button.
 
-    *Upon publishing, GitHub creates the tag from your specified branch and then creates the release. This "published" release event triggers the automated workflow.*
+      _Upon publishing, GitHub creates the tag from your specified branch and then creates the release. This "published" release event triggers the automated workflow._
 
 ---
 
@@ -249,10 +253,10 @@ This project uses a GitHub Actions workflow to automate the release process, inc
 This method uses the GitHub CLI (`gh`) for all steps, including tag creation.
 
 1.  **Ensure your local target branch is synced and changes are pushed:**
-    ```bash
-    git checkout master
-    git pull origin master
-    ```
+    `bash
+git checkout master
+git pull origin master
+`
 
 2.  **Create the Release (which also creates and pushes the tag):**
     Replace `vX.Y.Z` with your desired tag/version. The command will create this tag from the latest commit of your specified `--target` branch (defaults to repository's default branch, if `--target` is omitted and the branch is up to date).
@@ -272,18 +276,18 @@ This method uses the GitHub CLI (`gh`) for all steps, including tag creation.
         --notes-file ./RELEASE_NOTES.md
 
     # Or, to generate notes from pull requests (commits must follow conventional commit format for best results):
-    gh release create vX.Y.Z \ 
+    gh release create vX.Y.Z \
         --target master \
-        --title "vX.Y.Z" 
+        --title "vX.Y.Z"
         --generate-notes
     ```
-    
-    * `vX.Y.Z`: The tag and release name.
-    * `--target <branch>`: Specifies which branch the tag should be created from (e.g., `master`). If the tag `vX.Y.Z` doesn't exist, `gh` will create it based on the HEAD of this target branch and push it.
-    * `--title "<title>"`: The title for your release.
-    * `--notes "<notes>"` or `--notes-file <filepath>` or `--generate-notes`: Your release notes.
 
-    *This command will create the tag, push it to GitHub, and then publish the release. This "published" release event triggers the automated workflow.*
+    - `vX.Y.Z`: The tag and release name.
+    - `--target <branch>`: Specifies which branch the tag should be created from (e.g., `master`). If the tag `vX.Y.Z` doesn't exist, `gh` will create it based on the HEAD of this target branch and push it.
+    - `--title "<title>"`: The title for your release.
+    - `--notes "<notes>"` or `--notes-file <filepath>` or `--generate-notes`: Your release notes.
+
+      _This command will create the tag, push it to GitHub, and then publish the release. This "published" release event triggers the automated workflow._
 
 ---
 
@@ -292,22 +296,22 @@ This method uses the GitHub CLI (`gh`) for all steps, including tag creation.
 Regardless of how you create and publish the GitHub Release:
 
 1.  **Automated Workflow Execution:**
-    * The "Release & Publish" GitHub Actions workflow will automatically trigger.
-    * It will perform:
-        1.  Code checkout.
-        2.  Version extraction (`X.Y.Z`) from the release tag.
-        3.  Build and test processes.
-        4.  Update `package.json` and `package-lock.json` to version `X.Y.Z`.
-        5.  Commit these version changes back to the branch the release was targeted from with a message like `chore(release): set version to X.Y.Z [skip ci]`.
-        6.  Publish the package `@apify/n8n-nodes-apify@X.Y.Z` to npm.
+    - The "Release & Publish" GitHub Actions workflow will automatically trigger.
+    - It will perform:
+      1.  Code checkout.
+      2.  Version extraction (`X.Y.Z`) from the release tag.
+      3.  Build and test processes.
+      4.  Update `package.json` and `package-lock.json` to version `X.Y.Z`.
+      5.  Commit these version changes back to the branch the release was targeted from with a message like `chore(release): set version to X.Y.Z [skip ci]`.
+      6.  Publish the package `@apify/n8n-nodes-apify@X.Y.Z` to npm.
 
 2.  **Verify the Package on npm:**
     After the workflow successfully completes (check the "Actions" tab in your GitHub repository):
-    * Verify the new version on npm:
-        ```bash
-        npm view @apify/n8n-nodes-apify version
-        ```
-        This should print `X.Y.Z`.
+    - Verify the new version on npm:
+      `bash
+npm view @apify/n8n-nodes-apify version
+`
+      This should print `X.Y.Z`.
 
 ## Version history
 
@@ -333,6 +337,7 @@ Track changes and updates to the node here.
 ### Getting help
 
 If you encounter issues:
+
 1. Check the [Apify API documentation](https://docs.apify.com)
 2. Review the [n8n Community Nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
 3. Open an issue in the [GitHub repository](https://github.com/apify/n8n-nodes-apify)
