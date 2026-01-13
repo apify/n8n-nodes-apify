@@ -28,7 +28,7 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Install peer dependencies
-        run: npm install n8n-workflow@1.82.0
+        run: npm install --no-save --legacy-peer-deps n8n-workflow@1.82.0
 
       - name: Lint code
         run: npm run lint
