@@ -69,12 +69,6 @@ cd n8n-nodes-apify
 npm install
 ```
 
-> **Note:** This project uses `legacy-peer-deps=true` in [.npmrc](.npmrc) to handle peer dependency conflicts with `@n8n/node-cli`. This means peer dependencies (like `n8n-workflow`) are not automatically installed. To run tests, install them manually:
->
-> ```bash
-> npm install n8n-workflow@1.82.0
-> ```
-
 ### 2. Build the Node Package
 
 ```bash
@@ -306,12 +300,11 @@ Regardless of how you create and publish the GitHub Release:
       6.  Publish the package `@apify/n8n-nodes-apify@X.Y.Z` to npm.
 
 2.  **Verify the Package on npm:**
-    After the workflow successfully completes (check the "Actions" tab in your GitHub repository):
-    - Verify the new version on npm:
-      `bash
+    After the workflow successfully completes (check the "Actions" tab in your GitHub repository): - Verify the new version on npm:
+    `bash
 npm view @apify/n8n-nodes-apify version
 `
-      This should print `X.Y.Z`.
+    This should print `X.Y.Z`.
 
 ## Version history
 
