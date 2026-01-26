@@ -3,6 +3,7 @@
 	"nodes": [
 		{
 			"parameters": {
+				"resource": "Actors",
 				"operation": "Get last run",
 				"userActorId": {
 					"__rl": true,

@@ -3,6 +3,7 @@
 	"nodes": [
 		{
 			"parameters": {
+				"resource": "Actors",
 				"operation": "Run actor and get dataset",
 				"actorId": {
 					"__rl": true,

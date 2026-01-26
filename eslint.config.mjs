@@ -1,5 +1,4 @@
 import { config } from '@n8n/node-cli/eslint';
-import stylistic from '@stylistic/eslint-plugin';
 
 export default [
 	// include base n8n config first
@@ -19,15 +18,7 @@ export default [
 
 	// global rules
 	{
-		plugins: {
-			'@stylistic': stylistic,
-		},
 		rules: {
-			'@stylistic/quotes': [
-				'error',
-				'single',
-				{ allowTemplateLiterals: 'always', ignoreStringLiterals: true },
-			],
 			'@typescript-eslint/no-explicit-any': 'off',
 		},
 	},

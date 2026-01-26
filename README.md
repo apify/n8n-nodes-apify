@@ -66,10 +66,8 @@ Clone the repository and install dependencies:
 ```bash
 git clone https://github.com/apify/n8n-nodes-apify.git
 cd n8n-nodes-apify
-npm install --legacy-peer-deps
+npm install
 ```
-
-The `--legacy-peer-deps` flag is required due to n8n's complex peer dependency tree.
 
 ### 2. Build the Node Package
 
@@ -104,14 +102,17 @@ This configuration is required for our service's trigger functionality to work c
 By default, when running locally n8n generates webhook URLs using `localhost`, which external services cannot reach. To fix this:
 
 1. **Set your webhook URL**  
-In the same shell or Docker environment where n8n runs, export the `WEBHOOK_URL` to a publicly-accessible address. For example:
-  ```bash
-  export WEBHOOK_URL="https://your-tunnel.local"
-  ```
-2. **Restart n8n** 
-  ```bash
+   In the same shell or Docker environment where n8n runs, export the `WEBHOOK_URL` to a publicly-accessible address. For example:
+
+```bash
+export WEBHOOK_URL="https://your-tunnel.local"
+```
+
+2. **Restart n8n**
+
+```bash
 npm run dev
-  ```
+```
 
 ## Operations
 
@@ -120,10 +121,10 @@ This node supports a wide range of Apify operations, organized by resource type:
 ### Actors
 
 - **Run Actor**: Execute an Actor with optional input parameters
-	- Default behavior: Uses predefined input values
-	- Custom input: Provide JSON object to override any or all default parameters
-	- Configurable timeout and memory limits
-	- Build version selection
+  - Default behavior: Uses predefined input values
+  - Custom input: Provide JSON object to override any or all default parameters
+  - Configurable timeout and memory limits
+  - Build version selection
 - **Run Actor and get dataset items**: Execute an Actor, wait for it to finish, and return the dataset items
 - **Scrape Single URL**: Quick scraping of a single URL
 - **Get Last Run**: Retrieve information about the most recent Actor run
@@ -131,17 +132,17 @@ This node supports a wide range of Apify operations, organized by resource type:
 ### Actor tasks
 
 - **Run Task**: Execute a predefined Actor task
-	- Supports custom input JSON
-	- Configurable timeout
-	- Task-specific settings
+  - Supports custom input JSON
+  - Configurable timeout
+  - Task-specific settings
 - **Run task and get dataset items**: Execute a task, wait for it to finish, and return the dataset items
 
 ### Actor runs
 
 - **Get User Runs List**: List all runs for a user
-	- Pagination support
-	- Sorting options
-	- Status filtering
+  - Pagination support
+  - Sorting options
+  - Status filtering
 - **Get run**: Retrieve detailed information about a specific run
 
 ### Datasets
@@ -159,8 +160,8 @@ Automatically start an n8n workflow whenever an Actor or task finishes execution
 - Can be configured to trigger on success, failure, abort, timeout or any combination of these states
 - Includes run metadata in the output
 - Available triggers:
-	- **Actor Run Finished**: Start a workflow when an Actor run completes
-	- **Task Run Finished**: Start a workflow when a task run completes
+  - **Actor Run Finished**: Start a workflow when an Actor run completes
+  - **Task Run Finished**: Start a workflow when a task run completes
 
 ### AI Tools
 
@@ -172,13 +173,12 @@ For example, you can scrape data from a website using an Actor and then use an A
 The node supports two authentication methods:
 
 1. **API key authentication**
-	- Configure your Apify API key in the n8n credentials section under `apifyApi`
+   - Configure your Apify API key in the n8n credentials section under `apifyApi`
 
 2. **OAuth2 authentication** (available only in n8n cloud)
-	- Configure OAuth2 credentials in the n8n credentials section under `apifyOAuth2Api`
+   - Configure OAuth2 credentials in the n8n credentials section under `apifyOAuth2Api`
 
 ![auth](./docs/auth.png)
-
 
 ## Compatibility
 
@@ -208,37 +208,37 @@ This project uses a GitHub Actions workflow to automate the release process, inc
 
 **Prerequisites (for all methods):**
 
-* Ensure your target branch on GitHub is up-to-date with all changes you want to include in the release.
-* Decide on the new version number, following semantic versioning (e.g., `vX.Y.Z`).
-* Prepare your release notes detailing the changes.
-* If you're using CLI to release, make sure you have the [GitHub CLI (`gh`)](https://cli.github.com/) installed and authenticated (`gh auth login`).
+- Ensure your target branch on GitHub is up-to-date with all changes you want to include in the release.
+- Decide on the new version number, following semantic versioning (e.g., `vX.Y.Z`).
+- Prepare your release notes detailing the changes.
+- If you're using CLI to release, make sure you have the [GitHub CLI (`gh`)](https://cli.github.com/) installed and authenticated (`gh auth login`).
 
 ---
 
 ## Method 1: Using the GitHub Web UI (Recommended for ease of use)
 
 1.  **Navigate to GitHub Releases:**
-	* Go to your repository's "Releases" tab
+    - Go to your repository's "Releases" tab
 
 2.  **Draft a New Release:**
-	* Click the **"Draft a new release"** button.
+    - Click the **"Draft a new release"** button.
 
 3.  **Create or Choose a Tag:**
-	* In the "Choose a tag" dropdown:
-		* **Type your new tag name** (e.g., `v1.2.3`).
-		* If the tag doesn't exist, GitHub will prompt you with an option like **"Create new tag: v1.2.3 on publish."** Click this.
-		* Ensure the **target branch** selected for creating the new tag is correct. This tag will point to the latest commit on this target branch.
+    - In the "Choose a tag" dropdown:
+      - **Type your new tag name** (e.g., `v1.2.3`).
+      - If the tag doesn't exist, GitHub will prompt you with an option like **"Create new tag: v1.2.3 on publish."** Click this.
+      - Ensure the **target branch** selected for creating the new tag is correct. This tag will point to the latest commit on this target branch.
 
 4.  **Set Release Title and Notes:**
-	* Set the "Release title" (e.g., `vX.Y.Z` or a more descriptive title).
-	* For the release notes in the description field, you have a few options:
-		* **Write your prepared release notes.**
-		* **Click the "Generate release notes" button:** GitHub will attempt to automatically create release notes based on merged pull requests since the last release. You can then review and edit these auto-generated notes.
+    - Set the "Release title" (e.g., `vX.Y.Z` or a more descriptive title).
+    - For the release notes in the description field, you have a few options:
+      - **Write your prepared release notes.**
+      - **Click the "Generate release notes" button:** GitHub will attempt to automatically create release notes based on merged pull requests since the last release. You can then review and edit these auto-generated notes.
 
 5.  **Publish the Release:**
-	* Click the **"Publish release"** button.
+    - Click the **"Publish release"** button.
 
-		*Upon publishing, GitHub creates the tag from your specified branch and then creates the release. This "published" release event triggers the automated workflow.*
+      _Upon publishing, GitHub creates the tag from your specified branch and then creates the release. This "published" release event triggers the automated workflow._
 
 ---
 
@@ -247,13 +247,13 @@ This project uses a GitHub Actions workflow to automate the release process, inc
 This method uses the GitHub CLI (`gh`) for all steps, including tag creation.
 
 1.  **Ensure your local target branch is synced and changes are pushed:**
-		```bash
-		git checkout master
-		git pull origin master
-		```
+    `bash
+git checkout master
+git pull origin master
+`
 
 2.  **Create the Release (which also creates and pushes the tag):**
-		Replace `vX.Y.Z` with your desired tag/version. The command will create this tag from the latest commit of your specified `--target` branch (defaults to repository's default branch, if `--target` is omitted and the branch is up to date).
+    Replace `vX.Y.Z` with your desired tag/version. The command will create this tag from the latest commit of your specified `--target` branch (defaults to repository's default branch, if `--target` is omitted and the branch is up to date).
 
     ```bash
     gh release create vX.Y.Z \
@@ -270,18 +270,18 @@ This method uses the GitHub CLI (`gh`) for all steps, including tag creation.
         --notes-file ./RELEASE_NOTES.md
 
     # Or, to generate notes from pull requests (commits must follow conventional commit format for best results):
-    gh release create vX.Y.Z \ 
+    gh release create vX.Y.Z \
         --target master \
-        --title "vX.Y.Z" 
+        --title "vX.Y.Z"
         --generate-notes
     ```
-    
-    * `vX.Y.Z`: The tag and release name.
-    * `--target <branch>`: Specifies which branch the tag should be created from (e.g., `master`). If the tag `vX.Y.Z` doesn't exist, `gh` will create it based on the HEAD of this target branch and push it.
-    * `--title "<title>"`: The title for your release.
-    * `--notes "<notes>"` or `--notes-file <filepath>` or `--generate-notes`: Your release notes.
 
-		*This command will create the tag, push it to GitHub, and then publish the release. This "published" release event triggers the automated workflow.*
+    - `vX.Y.Z`: The tag and release name.
+    - `--target <branch>`: Specifies which branch the tag should be created from (e.g., `master`). If the tag `vX.Y.Z` doesn't exist, `gh` will create it based on the HEAD of this target branch and push it.
+    - `--title "<title>"`: The title for your release.
+    - `--notes "<notes>"` or `--notes-file <filepath>` or `--generate-notes`: Your release notes.
+
+      _This command will create the tag, push it to GitHub, and then publish the release. This "published" release event triggers the automated workflow._
 
 ---
 
@@ -290,22 +290,21 @@ This method uses the GitHub CLI (`gh`) for all steps, including tag creation.
 Regardless of how you create and publish the GitHub Release:
 
 1.  **Automated Workflow Execution:**
-	* The "Release & Publish" GitHub Actions workflow will automatically trigger.
-	* It will perform:
-		1.  Code checkout.
-		2.  Version extraction (`X.Y.Z`) from the release tag.
-		3.  Build and test processes.
-		4.  Update `package.json` and `package-lock.json` to version `X.Y.Z`.
-		5.  Commit these version changes back to the branch the release was targeted from with a message like `chore(release): set version to X.Y.Z [skip ci]`.
-		6.  Publish the package `@apify/n8n-nodes-apify@X.Y.Z` to npm.
+    - The "Release & Publish" GitHub Actions workflow will automatically trigger.
+    - It will perform:
+      1.  Code checkout.
+      2.  Version extraction (`X.Y.Z`) from the release tag.
+      3.  Build and test processes.
+      4.  Update `package.json` and `package-lock.json` to version `X.Y.Z`.
+      5.  Commit these version changes back to the branch the release was targeted from with a message like `chore(release): set version to X.Y.Z [skip ci]`.
+      6.  Publish the package `@apify/n8n-nodes-apify@X.Y.Z` to npm.
 
 2.  **Verify the Package on npm:**
-		After the workflow successfully completes (check the "Actions" tab in your GitHub repository):
-	* Verify the new version on npm:
-			```bash
-			npm view @apify/n8n-nodes-apify version
-			```
-		This should print `X.Y.Z`.
+    After the workflow successfully completes (check the "Actions" tab in your GitHub repository): - Verify the new version on npm:
+    `bash
+npm view @apify/n8n-nodes-apify version
+`
+    This should print `X.Y.Z`.
 
 ## Version history
 
@@ -316,21 +315,22 @@ Track changes and updates to the node here.
 ### Common issues
 
 1. **Authentication errors**
-	- Verify your API key is correct
+   - Verify your API key is correct
 
 2. **Resource Not Found**
-	- Verify the resource ID format
-	- Check if the resource exists in your Apify account
-	- Ensure you have access to the resource
+   - Verify the resource ID format
+   - Check if the resource exists in your Apify account
+   - Ensure you have access to the resource
 
 3. **Operation failures**
-	- Check the input parameters
-	- Verify resource limits (memory, timeout)
-	- Review Apify Console for detailed error messages
+   - Check the input parameters
+   - Verify resource limits (memory, timeout)
+   - Review Apify Console for detailed error messages
 
 ### Getting help
 
 If you encounter issues:
+
 1. Check the [Apify API documentation](https://docs.apify.com)
 2. Review the [n8n Community Nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
 3. Open an issue in the [GitHub repository](https://github.com/apify/n8n-nodes-apify)

@@ -7,7 +7,8 @@ import {
 	type IExecuteFunctions,
 	type IHookFunctions,
 	type ILoadOptionsFunctions,
-	type IRequestOptions,
+	IHttpRequestOptions,
+	INodeExecutionData,
 } from 'n8n-workflow';
 import {
 	DEFAULT_EXP_BACKOFF_EXPONENTIAL,
@@ -15,7 +16,7 @@ import {
 	DEFAULT_EXP_BACKOFF_RETRIES,
 } from '../helpers/consts';
 
-type IApiRequestOptions = IRequestOptions & { uri?: string };
+type IApiRequestOptions = Omit<IHttpRequestOptions, 'url'> & { uri?: string };
 
 /**
  * Make an API request to Apify
@@ -37,7 +38,7 @@ export async function apiRequest(
 		headers['x-apify-integration-ai-tool'] = 'true';
 	}
 
-	const options: IRequestOptions = {
+	const options: IHttpRequestOptions = {
 		json: true,
 		...rest,
 		method,
@@ -62,16 +63,10 @@ export async function apiRequest(
 		}
 
 		return await retryWithExponentialBackoff(() =>
-			this.helpers.requestWithAuthentication.call(this, authenticationMethod, options),
+			this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, options),
 		);
 	} catch (error) {
-		/**
-		 * using `error instanceof NodeApiError` results in `false`
-		 * because it's thrown by a different instance of n8n-workflow
-		 */
-		if (error.constructor?.name === 'NodeApiError') {
-			throw error;
-		}
+		if (error instanceof NodeApiError) throw error;
 
 		if (error.response && error.response.body) {
 			throw new NodeApiError(this.getNode(), error, {
@@ -266,4 +261,42 @@ export function customBodyParser(input: string | object) {
 export function isUsedAsAiTool(nodeType: string): boolean {
 	const parts = nodeType.split('.');
 	return parts[parts.length - 1] === 'apifyTool';
+}
+
+export async function executeAndLinkItems<T extends INodeExecutionData | INodeExecutionData[]>(
+	this: IExecuteFunctions,
+	executeFn: (this: IExecuteFunctions) => Promise<T>,
+): Promise<INodeExecutionData[][]> {
+	const items = this.getInputData();
+	const returnData: INodeExecutionData[] = [];
+
+	for (let i = 0; i < items.length; i++) {
+		try {
+			const addPairedItem = (item: INodeExecutionData) => ({
+				...item,
+				pairedItem: { item: i },
+			});
+
+			const result = await executeFn.call(this);
+
+			if (Array.isArray(result)) {
+				returnData.push(...result.map(addPairedItem));
+			} else {
+				returnData.push(addPairedItem(result));
+			}
+		} catch (error) {
+			// Don't throw error just log it
+			if (this.continueOnFail()) {
+				returnData.push({
+					json: { error: error.message || 'Unexpected error occured' },
+					pairedItem: { item: i },
+				});
+			} else {
+				// Propagade the error further
+				throw error;
+			}
+		}
+	}
+
+	return [returnData];
 }
