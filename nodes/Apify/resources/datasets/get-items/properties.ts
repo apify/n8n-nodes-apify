@@ -44,4 +44,35 @@ export const properties: INodeProperties[] = [
 			},
 		},
 	},
+	{
+		displayName: 'Options',
+		name: 'options',
+		type: 'collection',
+		placeholder: 'Add Option',
+		default: {},
+		displayOptions: {
+			show: {
+				resource: ['Datasets'],
+				operation: ['Get items'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Fields',
+				name: 'fields',
+				type: 'string',
+				default: '',
+				description:
+					'Comma-separated list of fields to include in the results. Only these fields will be returned.',
+			},
+			{
+				displayName: 'Omit',
+				name: 'omit',
+				type: 'string',
+				default: '',
+				description:
+					'Comma-separated list of fields to exclude from the results. If a field appears in both "fields" and "omit", it will be excluded.',
+			},
+		],
+	},
 ];
