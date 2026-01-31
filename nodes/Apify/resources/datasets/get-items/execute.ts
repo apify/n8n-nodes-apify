@@ -10,7 +10,7 @@ export async function getItems(this: IExecuteFunctions, i: number): Promise<INod
 	const datasetId = this.getNodeParameter('datasetId', i) as string;
 	const offset = this.getNodeParameter('offset', i, 0) as number;
 	const limit = this.getNodeParameter('limit', i, 50) as number;
-	const options = this.getNodeParameter('options', i, {}) as {
+	const options = (this.getNodeParameter('options', i, {}) || {}) as {
 		fields?: string;
 		omit?: string;
 	};
