@@ -1,4 +1,4 @@
-/* eslint-disable n8n-nodes-base/node-class-description-outputs-wrong */
+ 
 
 import {
 	IDataObject,
@@ -32,7 +32,7 @@ export class ApifyTrigger implements INodeType {
 		description: 'Triggers workflow on Apify Actor or task run events',
 		defaults: { name: 'Apify Trigger' },
 		inputs: [],
-		outputs: [NodeConnectionType.Main],
+		outputs: ['main'] as NodeConnectionType[],
 		credentials: [
 			{
 				displayName: 'Apify API key connection',
@@ -150,6 +150,7 @@ export class ApifyTrigger implements INodeType {
 				description: 'The status of the Actor or task run that should trigger the workflow',
 			},
 		]),
+		usableAsTool: true,
 	};
 
 	webhookMethods = {

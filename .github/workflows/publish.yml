@@ -19,9 +19,6 @@ jobs:
           token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
           fetch-depth: 0
 
-      - name: Enable Corepack
-        run: corepack enable
-
       - name: Set up Node.js & cache npm
         uses: actions/setup-node@v6
         with:
@@ -36,10 +33,10 @@ jobs:
         run: npm ci
 
       - name: Build project
-        run: npm build
+        run: npm run build
 
       - name: Run tests
-        run: npm test
+        run: npm run test
 
       - name: Configure Git
         run: |
@@ -68,7 +65,7 @@ jobs:
             echo "Pushing version update to branch: $TARGET_BRANCH"
             git push origin HEAD:"refs/heads/$TARGET_BRANCH"
           else
-            echo "No changes to commit in package.json or npm-lock.yaml for version update."
+            echo "No changes to commit in package.json or package-lock.json for version update."
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
@@ -79,5 +76,5 @@ jobs:
             echo "Version ${{ env.VERSION }} of @apify/n8n-nodes-apify is already published to npm. Skipping publish step."
           else
             echo "Publishing @apify/n8n-nodes-apify@${{ env.VERSION }} to npm..."
-            npm publish --access public --no-git-checks
+            npm publish --access public
           fi

@@ -31,7 +31,7 @@ export async function executeActor(
 	let userInput: any;
 	try {
 		userInput = customBodyParser(rawStringifiedInput);
-	} catch (err) {
+	} catch {
 		throw new NodeOperationError(
 			this.getNode(),
 			`Could not parse custom body: ${rawStringifiedInput}`,
