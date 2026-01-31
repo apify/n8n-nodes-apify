@@ -6,6 +6,14 @@ import {
 } from 'n8n-workflow';
 import { apiRequest } from '../../../resources/genericFunctions';
 
+function normalizeCommaSeparatedList(value: string): string {
+	return value
+		.split(',')
+		.map((field) => field.trim())
+		.filter((field) => field.length > 0)
+		.join(',');
+}
+
 export async function getItems(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
 	const datasetId = this.getNodeParameter('datasetId', i) as string;
 	const offset = this.getNodeParameter('offset', i, 0) as number;
@@ -22,11 +30,11 @@ export async function getItems(this: IExecuteFunctions, i: number): Promise<INod
 	const qs: { offset: number; limit: number; fields?: string; omit?: string } = { offset, limit };
 
 	if (options.fields) {
-		qs.fields = options.fields;
+		qs.fields = normalizeCommaSeparatedList(options.fields);
 	}
 
 	if (options.omit) {
-		qs.omit = options.omit;
+		qs.omit = normalizeCommaSeparatedList(options.omit);
 	}
 
 	try {
