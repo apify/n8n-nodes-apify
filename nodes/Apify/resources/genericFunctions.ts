@@ -265,7 +265,7 @@ export function isUsedAsAiTool(nodeType: string): boolean {
 
 export async function executeAndLinkItems<T extends INodeExecutionData | INodeExecutionData[]>(
 	this: IExecuteFunctions,
-	executeFn: (this: IExecuteFunctions) => Promise<T>,
+	executeFn: (this: IExecuteFunctions, itemIndex: number) => Promise<T>,
 ): Promise<INodeExecutionData[][]> {
 	const items = this.getInputData();
 	const returnData: INodeExecutionData[] = [];
@@ -277,7 +277,7 @@ export async function executeAndLinkItems<T extends INodeExecutionData | INodeEx
 				pairedItem: { item: i },
 			});
 
-			const result = await executeFn.call(this);
+			const result = await executeFn.call(this, i);
 
 			if (Array.isArray(result)) {
 				returnData.push(...result.map(addPairedItem));

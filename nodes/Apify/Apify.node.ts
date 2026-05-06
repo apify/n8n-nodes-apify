@@ -3,7 +3,6 @@
 
 import {
 	IExecuteFunctions,
-	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
 	NodeConnectionType
@@ -57,21 +56,8 @@ export class Apify implements INodeType {
 	methods = methods;
 
 	async execute(this: IExecuteFunctions) {
-		return await executeAndLinkItems.call(this, async function (this: IExecuteFunctions) {
-			const items = this.getInputData();
-			const returnData: INodeExecutionData[] = [];
-
-			for (let i = 0; i < items.length; i++) {
-				const data = await resourceRouter.call(this, i);
-				// `data` may be an array of items or a single item, so we either push the spreaded array or the single item
-				if (Array.isArray(data)) {
-					returnData.push(...data);
-				} else {
-					returnData.push(data);
-				}
-			}
-
-			return returnData;
+		return await executeAndLinkItems.call(this, async function (this: IExecuteFunctions, itemIndex: number) {
+			return await resourceRouter.call(this, itemIndex);
 		});
 	}
 }
