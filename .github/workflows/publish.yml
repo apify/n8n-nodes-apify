@@ -27,7 +27,7 @@ jobs:
           cache: npm
 
       - name: Ensure npm >= 11.5.1
-        run: npm install -g "npm@^11.5.1"
+        run: npm install -g "npm@^11.5.1" --force
 
       - name: Install dependencies
         run: npm ci
