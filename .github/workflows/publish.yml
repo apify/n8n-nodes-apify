@@ -73,5 +73,5 @@ jobs:
             echo "Version ${{ env.VERSION }} of @apify/n8n-nodes-apify is already published to npm. Skipping publish step."
           else
             echo "Publishing @apify/n8n-nodes-apify@${{ env.VERSION }} to npm..."
-            npm publish --access public
+            npm publish --provenance --access public
           fi
