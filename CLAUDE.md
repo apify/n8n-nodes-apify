@@ -43,7 +43,7 @@ For trigger development on self-hosted n8n, export a public `WEBHOOK_URL` before
 ## Conventions
 - Default branch: `master`. PRs target `master`; CI must pass (lint, type-check, build, test).
 - Conventional Commits (`feat:`, `fix:`, `chore:`, `ci:`, `chore(release):`); `[skip ci]` suffix for release version-bump commits.
-- Releases: publish a GitHub Release with tag `vX.Y.Z`; the `publish.yml` workflow extracts the version, runs `npm version`, commits `chore(release): set version to X.Y.Z [skip ci]` to the target branch, and publishes `@apify/n8n-nodes-apify@X.Y.Z` to npm (skips if version already exists).
+- Releases: publish a GitHub Release with tag `vX.Y.Z`; the `publish.yml` workflow extracts the version, runs `npm version`, commits `chore(release): set version to X.Y.Z [skip ci]` to the target branch, and publishes `@apify/n8n-nodes-apify@X.Y.Z` to npm with `--provenance --access public` (skips if version already exists).
 - Two credential types: `apifyApi` (API key, all installs) and `apifyOAuth2Api` (n8n cloud only).
 - Tests live in `nodes/Apify/__tests__/` matching `**/?(*.)+(spec).ts`; excluded from the TypeScript build via `tsconfig.json`.
 
