@@ -47,22 +47,11 @@ jobs:
           echo "Updating package.json to version ${{ env.VERSION }}"
           npm version ${{ env.VERSION }} --no-git-tag-version
 
-      - name: Stage version update
-        id: stage
-        run: |
-          git add package.json package-lock.json
-          if git diff --cached --quiet; then
-            echo "No changes to commit in package.json or package-lock.json for version update."
-            echo "has-changes=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "has-changes=true" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Commit version update
-        if: steps.stage.outputs.has-changes == 'true'
-        uses: apify/workflows/commit@v0.44.0
+        uses: apify/actions/signed-commit@v1.0.0
         with:
-          commit-message: "chore(release): set version to ${{ env.VERSION }} [skip ci]"
+          message: "chore(release): set version to ${{ env.VERSION }} [skip ci]"
+          add: 'package.json package-lock.json'
           github-token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
           branch: ${{ github.event.release.target_commitish }}
 
