@@ -55,6 +55,8 @@ export class Apify implements INodeType {
 
 	methods = methods;
 
+	// continueOnFail is handled inside executeAndLinkItems (see resources/genericFunctions.ts).
+	// eslint-disable-next-line @n8n/community-nodes/require-continue-on-fail
 	async execute(this: IExecuteFunctions) {
 		return await executeAndLinkItems.call(this, async function (this: IExecuteFunctions, itemIndex: number) {
 			return await resourceRouter.call(this, itemIndex);

@@ -68,6 +68,12 @@ export class CredentialsHelper extends ICredentialsHelper {
 		data: ICredentialDataDecryptedObject,
 	): Promise<void> {}
 
+	async updateCredentialsOauthTokenData(
+		nodeCredentials: INodeCredentialsDetails,
+		type: string,
+		data: ICredentialDataDecryptedObject,
+	): Promise<void> {}
+
 	getCredentialsProperties(type: string): INodeProperties[] {
 		return [];
 	}

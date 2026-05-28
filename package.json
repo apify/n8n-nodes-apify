@@ -62,6 +62,6 @@
 		"typescript": "5.5.3"
 	},
 	"peerDependencies": {
-		"n8n-workflow": "^1.120.14"
+		"n8n-workflow": "*"
 	}
 }
