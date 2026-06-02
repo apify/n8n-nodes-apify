@@ -29,6 +29,7 @@ export class ApifyTrigger implements INodeType {
 		icon: 'file:apify.svg',
 		group: ['trigger'],
 		version: 1,
+		subtitle: '={{($parameter["resource"] === "actor" ? $parameter["actorId"] : $parameter["actorTaskId"]) + ": " + $parameter["eventType"].join(", ")}}',
 		description: 'Triggers workflow on Apify Actor or task run events',
 		defaults: { name: 'Apify Trigger' },
 		inputs: [],

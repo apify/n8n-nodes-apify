@@ -1,4 +1,5 @@
 import {
+	createRunExecutionData,
 	ICredentialsHelper,
 	IExecuteFunctions,
 	IExecuteSingleFunctions,
@@ -193,6 +194,7 @@ export const executeWorkflow = async ({
 	// Build fake ITaskData
 	const taskData: ITaskData = {
 		startTime: Date.now(),
+		executionIndex: 0,
 		executionTime: 1,
 		executionStatus: 'success',
 		data: { main: result as any },
@@ -207,13 +209,13 @@ export const executeWorkflow = async ({
 	const executionData: IRun = {
 		mode: 'manual',
 		status: 'success',
-		data: {
+		data: createRunExecutionData({
 			resultData: {
 				runData: {
 					[node.name]: [taskData],
 				},
 			},
-		},
+		}),
 		finished: true,
 		startedAt: new Date(),
 		stoppedAt: new Date(),
