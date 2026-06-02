@@ -23,7 +23,7 @@ Community n8n node package (`@apify/n8n-nodes-apify`) that integrates the [Apify
 - **Language:** TypeScript 5.5 (CommonJS, target ES2019, strict mode).
 - **Runtime:** Node.js — `package.json` requires `>=22.0.0`; CI runs on `24.x`.
 - **Package manager:** npm `10.8.2`.
-- **n8n:** peer dep `n8n-workflow@1.82.0`; build/dev tooling via `@n8n/node-cli`.
+- **n8n:** peer dep `n8n-workflow` is unpinned (`*`); build/dev tooling via `@n8n/node-cli`.
 - **Test:** Jest + ts-jest, with `nock` for HTTP mocking.
 - **Lint/format:** ESLint 9 (via `n8n-node lint`), Prettier 3.
 
@@ -54,3 +54,4 @@ For trigger development on self-hosted n8n, export a public `WEBHOOK_URL` before
 - The `fix: prevent duplicate actor runs with multiple input items` change (commit `4a3836e`) is recent — be cautious about regressing input-iteration behavior in `resources/executeActor.ts` and related actor/task run handlers.
 - Do not bump version manually; the release workflow owns `package.json` / `package-lock.json` version updates.
 - Don't commit `dist/`; it is built in CI/release and listed in `package.json#files` only for publish.
+- `Apify.node.ts#execute` carries an intentional `// eslint-disable ... require-continue-on-fail` — `continueOnFail` is handled inside `executeAndLinkItems` (`resources/genericFunctions.ts`), not in `execute`. Don't remove the disable.
