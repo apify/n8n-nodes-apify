@@ -14,6 +14,11 @@ import {
 	DEFAULT_EXP_BACKOFF_EXPONENTIAL,
 	DEFAULT_EXP_BACKOFF_INTERVAL,
 	DEFAULT_EXP_BACKOFF_RETRIES,
+	DEFAULT_REQUEST_TIMEOUT_MS,
+	TERMINAL_RUN_STATUSES,
+	WAIT_FOR_FINISH_BUFFER_MS,
+	WAIT_FOR_FINISH_MAX_DURATION_MS,
+	WAIT_FOR_FINISH_POLL_INTERVAL,
 } from '../helpers/consts';
 
 type IApiRequestOptions = Omit<IHttpRequestOptions, 'url'> & { uri?: string };
@@ -40,6 +45,8 @@ export async function apiRequest(
 
 	const options: IHttpRequestOptions = {
 		json: true,
+		// Can be overridden per request via `requestOptions.timeout`.
+		timeout: DEFAULT_REQUEST_TIMEOUT_MS,
 		...rest,
 		method,
 		qs: query,
@@ -186,6 +193,10 @@ export async function pollRunStatus(
 	runId: string,
 ): Promise<any> {
 	let lastRunData: any;
+	const startedAt = Date.now();
+	// The max timeout is based on run timeout or maximum, in case there is no timeout.
+	let maxDurationMs = WAIT_FOR_FINISH_MAX_DURATION_MS;
+	let timeoutChecked = false;
 	while (true) {
 		try {
 			const pollResult = await apiRequest.call(this, {
@@ -194,15 +205,28 @@ export async function pollRunStatus(
 			});
 			const status = pollResult?.data?.status;
 			lastRunData = pollResult?.data;
-			if (['SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'].includes(status)) {
+			if (TERMINAL_RUN_STATUSES.includes(status)) {
 				break;
+			}
+			if (!timeoutChecked) {
+				const timeoutSecs = Number(lastRunData?.options?.timeoutSecs);
+				if (Number.isFinite(timeoutSecs) && timeoutSecs > 0) {
+					maxDurationMs = timeoutSecs * 1000 + WAIT_FOR_FINISH_BUFFER_MS;
+				}
+				timeoutChecked = true;
 			}
 		} catch (err) {
 			throw new NodeApiError(this.getNode(), {
 				message: `Error polling run status: ${err}`,
 			});
 		}
-		await sleep(1000); // 1 second polling interval
+		const elapsedMs = Date.now() - startedAt;
+		if (elapsedMs > maxDurationMs) {
+			throw new NodeApiError(this.getNode(), {
+				message: `Timed out after ${Math.round(elapsedMs / 1000)}s waiting for run ${runId} to finish. Last known status: ${lastRunData?.status ?? 'unknown'}.`,
+			});
+		}
+		await sleep(WAIT_FOR_FINISH_POLL_INTERVAL);
 	}
 	return lastRunData;
 }
