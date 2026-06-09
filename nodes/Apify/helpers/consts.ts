@@ -4,6 +4,8 @@ export const TERMINAL_RUN_STATUSES = ['SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORT
 export const WAIT_FOR_FINISH_POLL_INTERVAL = 1000;
 // Per-request HTTP timeout (ms). Prevents a stalled socket from hanging the node indefinitely.
 export const DEFAULT_REQUEST_TIMEOUT_MS = 60_000;
+// Longer timeout for dataset item downloads, which can be large and slow to fully transfer.
+export const DATASET_REQUEST_TIMEOUT_MS = 10 * 60 * 1000;
 // Grace period added on top of a run's own `timeoutSecs` when polling
 export const WAIT_FOR_FINISH_BUFFER_MS = 5 * 60 * 1000;
 // Absolute ceiling for polling when a run has no timeout of its own (timeoutSecs = 0).

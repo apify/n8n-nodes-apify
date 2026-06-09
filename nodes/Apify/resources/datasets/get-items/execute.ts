@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { apiRequest } from '../../../resources/genericFunctions';
+import { consts } from '../../../helpers';
 
 function normalizeCommaSeparatedList(value: string): string {
 	return value
@@ -42,6 +43,7 @@ export async function getItems(this: IExecuteFunctions, i: number): Promise<INod
 			method: 'GET',
 			uri: `/v2/datasets/${datasetId}/items`,
 			qs,
+			timeout: consts.DATASET_REQUEST_TIMEOUT_MS,
 		});
 
 		return this.helpers.returnJsonArray(itemsArray);

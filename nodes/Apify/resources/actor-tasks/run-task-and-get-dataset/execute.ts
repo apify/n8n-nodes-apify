@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { apiRequest, customBodyParser, pollRunStatus } from '../../genericFunctions';
+import { consts } from '../../../helpers';
 
 export async function runTaskAndGetDataset(
 	this: IExecuteFunctions,
@@ -70,6 +71,7 @@ export async function runTaskAndGetDataset(
 		method: 'GET',
 		uri: `/v2/datasets/${lastRunData.defaultDatasetId}/items`,
 		qs: { format: 'json' },
+		timeout: consts.DATASET_REQUEST_TIMEOUT_MS,
 	});
 
 	return this.helpers.returnJsonArray(datasetItems);

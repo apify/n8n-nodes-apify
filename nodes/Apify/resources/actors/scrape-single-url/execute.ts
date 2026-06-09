@@ -56,6 +56,7 @@ export async function scrapeSingleUrl(
 			method: 'GET',
 			uri: `/v2/datasets/${defaultDatasetId}/items`,
 			qs: { format: 'json' },
+			timeout: consts.DATASET_REQUEST_TIMEOUT_MS,
 		});
 
 		delete item.text;
