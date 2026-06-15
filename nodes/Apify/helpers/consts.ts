@@ -9,7 +9,7 @@ export const DATASET_REQUEST_TIMEOUT_MS = 10 * 60 * 1000;
 // Grace period added on top of a run's own `timeoutSecs` when polling
 export const WAIT_FOR_FINISH_BUFFER_MS = 5 * 60 * 1000;
 // Absolute ceiling for polling when a run has no timeout of its own (timeoutSecs = 0).
-export const WAIT_FOR_FINISH_MAX_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+export const WAIT_FOR_FINISH_MAX_DURATION_MS = 24 * 60 * 60 * 1000; // 1 day
 
 export const memoryOptions = [
 	{ name: '128 MB', value: 128 },
