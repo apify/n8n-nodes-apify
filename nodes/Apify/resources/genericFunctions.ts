@@ -14,6 +14,11 @@ import {
 	DEFAULT_EXP_BACKOFF_EXPONENTIAL,
 	DEFAULT_EXP_BACKOFF_INTERVAL,
 	DEFAULT_EXP_BACKOFF_RETRIES,
+	DEFAULT_REQUEST_TIMEOUT_MS,
+	TERMINAL_RUN_STATUSES,
+	WAIT_FOR_FINISH_BUFFER_MS,
+	WAIT_FOR_FINISH_MAX_DURATION_MS,
+	WAIT_FOR_FINISH_POLL_INTERVAL,
 } from '../helpers/consts';
 
 type IApiRequestOptions = Omit<IHttpRequestOptions, 'url'> & { uri?: string };
@@ -40,6 +45,8 @@ export async function apiRequest(
 
 	const options: IHttpRequestOptions = {
 		json: true,
+		// Can be overridden per request via `requestOptions.timeout`.
+		timeout: DEFAULT_REQUEST_TIMEOUT_MS,
 		...rest,
 		method,
 		qs: query,
@@ -62,8 +69,11 @@ export async function apiRequest(
 			);
 		}
 
-		return await retryWithExponentialBackoff(() =>
-			this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, options),
+		return await retryWithExponentialBackoff(
+			() => this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, options),
+			// Only retry timeouts/network errors for idempotent GET requests. Retrying a
+			// non-idempotent POST (e.g. starting an Actor run) could create duplicate runs.
+			{ retryNetworkErrors: method === 'GET' },
 		);
 	} catch (error) {
 		if (error instanceof NodeApiError) throw error;
@@ -94,22 +104,30 @@ function isStatusCodeRetryable(statusCode: number) {
 	return isRateLimitError || isInternalError;
 }
 
+interface RetryOptions {
+	interval?: number;
+	exponential?: number;
+	maxRetries?: number;
+	// Whether to retry network errors that carry no HTTP status code (e.g. socket timeouts).
+	retryNetworkErrors?: boolean;
+}
+
 /**
  * Wraps a function with exponential backoff.
- * If request fails with http code 500+ or doesn't return
- * a code at all it is retried in 1s,2s,4s,.. up to maxRetries
- * @param fn
- * @param interval
- * @param exponential
- * @param maxRetries
- * @returns
+ * Retries on HTTP 429 / 500+ (in 1s,2s,4s,.. up to maxRetries). When `retryNetworkErrors`
+ * is set, errors without an HTTP status code (e.g. socket timeouts) are retried too.
  */
 export async function retryWithExponentialBackoff(
 	fn: () => Promise<any>,
-	interval: number = DEFAULT_EXP_BACKOFF_INTERVAL,
-	exponential: number = DEFAULT_EXP_BACKOFF_EXPONENTIAL,
-	maxRetries: number = DEFAULT_EXP_BACKOFF_RETRIES,
+	options: RetryOptions = {},
 ): Promise<any> {
+	const {
+		interval = DEFAULT_EXP_BACKOFF_INTERVAL,
+		exponential = DEFAULT_EXP_BACKOFF_EXPONENTIAL,
+		maxRetries = DEFAULT_EXP_BACKOFF_RETRIES,
+		retryNetworkErrors = false,
+	} = options;
+
 	let lastError;
 	for (let i = 0; i < maxRetries; i++) {
 		try {
@@ -117,7 +135,12 @@ export async function retryWithExponentialBackoff(
 		} catch (error) {
 			lastError = error;
 			const status = Number(error?.httpCode);
-			if (isStatusCodeRetryable(status)) {
+			// A missing/non-numeric status code usually means a network-level error
+			// (timeout, connection reset, DNS) rather than an HTTP response.
+			const isNetworkError = Number.isNaN(status);
+			const shouldRetry =
+				isStatusCodeRetryable(status) || (retryNetworkErrors && isNetworkError);
+			if (shouldRetry) {
 				//Generate a new sleep time based from interval * exponential^i function
 				const sleepTimeSecs = interval * Math.pow(exponential, i);
 				const sleepTimeMs = sleepTimeSecs * 1000;
@@ -186,6 +209,10 @@ export async function pollRunStatus(
 	runId: string,
 ): Promise<any> {
 	let lastRunData: any;
+	const startedAt = Date.now();
+	// The max timeout is based on run timeout or maximum, in case there is no timeout.
+	let maxDurationMs = WAIT_FOR_FINISH_MAX_DURATION_MS;
+	let timeoutChecked = false;
 	while (true) {
 		try {
 			const pollResult = await apiRequest.call(this, {
@@ -194,15 +221,28 @@ export async function pollRunStatus(
 			});
 			const status = pollResult?.data?.status;
 			lastRunData = pollResult?.data;
-			if (['SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'].includes(status)) {
+			if (TERMINAL_RUN_STATUSES.includes(status)) {
 				break;
+			}
+			if (!timeoutChecked) {
+				const timeoutSecs = Number(lastRunData?.options?.timeoutSecs);
+				if (Number.isFinite(timeoutSecs) && timeoutSecs > 0) {
+					maxDurationMs = timeoutSecs * 1000 + WAIT_FOR_FINISH_BUFFER_MS;
+				}
+				timeoutChecked = true;
 			}
 		} catch (err) {
 			throw new NodeApiError(this.getNode(), {
 				message: `Error polling run status: ${err}`,
 			});
 		}
-		await sleep(1000); // 1 second polling interval
+		const elapsedMs = Date.now() - startedAt;
+		if (elapsedMs > maxDurationMs) {
+			throw new NodeApiError(this.getNode(), {
+				message: `Timed out after ${Math.round(elapsedMs / 1000)}s waiting for run ${runId} to finish. Last known status: ${lastRunData?.status ?? 'unknown'}.`,
+			});
+		}
+		await sleep(WAIT_FOR_FINISH_POLL_INTERVAL);
 	}
 	return lastRunData;
 }

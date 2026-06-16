@@ -1,6 +1,7 @@
 import { IExecuteFunctions, INodeExecutionData, NodeApiError } from 'n8n-workflow';
 import { apiRequest } from '../../genericFunctions';
 import { executeActor } from '../../executeActor';
+import { consts } from '../../../helpers';
 
 export async function runActorAndGetDataset(
 	this: IExecuteFunctions,
@@ -39,6 +40,7 @@ export async function runActorAndGetDataset(
 		method: 'GET',
 		uri: `/v2/datasets/${lastRunData.defaultDatasetId}/items`,
 		qs: { format: 'json' },
+		timeout: consts.DATASET_REQUEST_TIMEOUT_MS,
 	});
 
 	return this.helpers.returnJsonArray(datasetItems);
