@@ -3,6 +3,8 @@
 		"strict": true,
 		"module": "commonjs",
 		"moduleResolution": "node",
+		"ignoreDeprecations": "6.0",
+		"types": ["node", "jest"],
 		"target": "es2019",
 		"lib": ["es2019", "es2020", "es2022.error"],
 		"removeComments": true,
