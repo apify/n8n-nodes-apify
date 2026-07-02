@@ -33,7 +33,7 @@ const resourceLocatorProperty: INodeProperties = {
 				},
 			],
 			placeholder: 'RECORD_KEY',
-			url: '=https://api.apify.com/v2/key-value-stores/{{ $value }}/records/{{ $value }}',
+			url: '=https://api.apify.com/v2/key-value-stores/{{$parameter["storeId"]}}/records/{{$value}}',
 		},
 	],
 };

@@ -1,4 +1,9 @@
-import { IExecuteFunctions, INodeExecutionData, NodeApiError } from 'n8n-workflow';
+import {
+	IExecuteFunctions,
+	INodeExecutionData,
+	NodeApiError,
+	NodeOperationError,
+} from 'n8n-workflow';
 import { apiRequest, pollRunStatus } from '../../../resources/genericFunctions';
 import { consts } from '../../../helpers';
 
@@ -8,6 +13,24 @@ export async function scrapeSingleUrl(
 ): Promise<INodeExecutionData> {
 	const url = this.getNodeParameter('url', i) as string;
 	const crawlerType = this.getNodeParameter('crawlerType', i, 'cheerio') as string;
+
+	const isValidHostname = (hostname: string): boolean =>
+		/^(?=.{1,253}$)((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$/.test(hostname);
+	try {
+		const parsedUrl = new URL(url);
+		if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+			throw new Error('Unsupported protocol');
+		}
+		if (!isValidHostname(parsedUrl.hostname)) {
+			throw new Error('Invalid hostname');
+		}
+	} catch {
+		throw new NodeOperationError(
+			this.getNode(),
+			`Invalid URL: "${url}". Provide a full, valid URL including a domain name, e.g. https://example.com.`,
+			{ itemIndex: i },
+		);
+	}
 
 	try {
 		const input = {
@@ -58,6 +81,13 @@ export async function scrapeSingleUrl(
 			qs: { format: 'json' },
 			timeout: consts.DATASET_REQUEST_TIMEOUT_MS,
 		});
+
+		if (!item) {
+			throw new NodeApiError(this.getNode(), {
+				message:
+					'No content was scraped from the provided URL. Make sure the URL is valid and publicly accessible.',
+			});
+		}
 
 		delete item.text;
 

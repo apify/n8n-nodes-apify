@@ -53,7 +53,7 @@ const resourceLocatorProperty: INodeProperties = {
 				},
 			],
 			placeholder: 'WAtmhr6rhfBnwqKDY',
-			url: '=http:/console.apify.com/actors/{{ $value }}/runs/{{ $value }}#log',
+			url: '=https://console.apify.com/actors/runs/{{$value}}#log',
 		},
 	],
 };
