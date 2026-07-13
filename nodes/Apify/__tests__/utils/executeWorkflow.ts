@@ -219,6 +219,7 @@ export const executeWorkflow = async ({
 		finished: true,
 		startedAt: new Date(),
 		stoppedAt: new Date(),
+		storedAt: 'db',
 	};
 
 	return { executionData };
