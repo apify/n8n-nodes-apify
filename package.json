@@ -50,7 +50,7 @@
 		]
 	},
 	"devDependencies": {
-		"@n8n/node-cli": "*",
+		"@n8n/node-cli": "^0.38.8",
 		"@types/jest": "^29.5.14",
 		"@types/node": "^24.0.1",
 		"eslint": "^9.32.0",
@@ -63,9 +63,5 @@
 	},
 	"peerDependencies": {
 		"n8n-workflow": "*"
-	},
-	"overrides": {
-		"minimatch": "^9.0.7",
-		"uuid": "^11.1.1"
 	}
 }
