@@ -20,11 +20,11 @@ Community n8n node package (`@apify/n8n-nodes-apify`) that integrates the [Apify
 - `.github/workflows/publish.yml` — release-triggered build, version bump, npm publish.
 
 ## Technology Stack
-- **Language:** TypeScript 5.5 (CommonJS, target ES2019, strict mode).
+- **Language:** TypeScript 6 (`^6.0.3`, CommonJS, target ES2019, strict mode). `tsconfig.json` sets `ignoreDeprecations: "6.0"` (silences TS6-era deprecation errors) and pins `types: ["node", "jest"]`.
 - **Runtime:** Node.js — `package.json` requires `>=22.0.0`; CI runs on `24.x`.
 - **Package manager:** npm `10.8.2`.
-- **n8n:** peer dep `n8n-workflow` is unpinned (`*`); build/dev tooling via `@n8n/node-cli`.
-- **Test:** Jest + ts-jest, with `nock` for HTTP mocking.
+- **n8n:** peer dep `n8n-workflow` is unpinned (`*`); build/dev tooling via `@n8n/node-cli` (`^0.37.2`).
+- **Test:** Jest 30 + ts-jest, with `nock` for HTTP mocking.
 - **Lint/format:** ESLint 9 (via `n8n-node lint`), Prettier 3.
 
 ## Build, Test & Run
