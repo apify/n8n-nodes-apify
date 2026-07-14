@@ -435,6 +435,54 @@ describe('Apify Node', () => {
 
 				expect(scope.isDone()).toBe(true);
 			});
+
+			it('should throw a clear error when the scraper returns no dataset items', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockFinishedRun = fixtures.getSuccessRunResult();
+				const datasetId = mockFinishedRun.data.defaultDatasetId;
+
+				const scope = nock('https://api.apify.com')
+					.post(`/v2/acts/${helpers.consts.WEB_CONTENT_SCRAPER_ACTOR_ID}/runs`)
+					.query({ waitForFinish: 0 })
+					.reply(200, mockRunActor)
+					.get(`/v2/actor-runs/${mockRunActor.data.id}`)
+					.reply(200, mockFinishedRun)
+					.get(`/v2/datasets/${datasetId}/items`)
+					.query({ format: 'json' })
+					.reply(200, []);
+
+				const scrapeSingleUrlWorkflow = require('./workflows/actors/scrape-single-url.workflow.json');
+
+				await expect(
+					executeWorkflow({
+						credentialsHelper,
+						workflow: scrapeSingleUrlWorkflow,
+					}),
+				).rejects.toThrow(/No content was scraped/);
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should reject an obviously invalid URL before calling the API', async () => {
+				const baseWorkflow = require('./workflows/actors/scrape-single-url.workflow.json');
+				const makeWorkflowWithUrl = (url: string) => ({
+					...baseWorkflow,
+					nodes: baseWorkflow.nodes.map((node: any) =>
+						node.name === 'Scrape single URL'
+							? { ...node, parameters: { ...node.parameters, url } }
+							: node,
+					),
+				});
+
+				for (const badUrl of ['https://bla', 'https://-.com', 'not-a-url', 'ftp://example.com']) {
+					await expect(
+						executeWorkflow({
+							credentialsHelper,
+							workflow: makeWorkflowWithUrl(badUrl),
+						}),
+					).rejects.toThrow(/Invalid URL/);
+				}
+			});
 		});
 	});
 

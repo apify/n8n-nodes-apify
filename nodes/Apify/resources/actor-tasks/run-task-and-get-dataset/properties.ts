@@ -75,10 +75,9 @@ timeout specified in the task settings.`,
 		},
 	},
 	{
-		displayName: 'Build',
+		displayName: 'Build Tag',
 		name: 'build',
-		description: `Specifies the Actor build to run. It can be either a build tag or build
-number. By default, the run uses the build specified in the task
+		description: `Specifies the Actor build tag to run. By default, the run uses the build specified in the task
 settings (typically \`latest\`).`,
 		default: '',
 		type: 'string',

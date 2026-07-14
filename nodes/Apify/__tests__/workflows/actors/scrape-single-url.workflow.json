@@ -4,7 +4,8 @@
 		{
 			"parameters": {
 				"resource": "Actors",
-				"operation": "Scrape single URL"
+				"operation": "Scrape single URL",
+				"url": "https://docs.apify.com/academy/web-scraping-for-beginners"
 			},
 			"id": "cde14951-f922-4710-b3c5-dc913fdcc10b",
 			"name": "Scrape single URL",
