@@ -209,7 +209,6 @@ export const executeWorkflow = async ({
 	const executionData: IRun = {
 		mode: 'manual',
 		status: 'success',
-		storedAt: 'db',
 		data: createRunExecutionData({
 			resultData: {
 				runData: {
@@ -220,6 +219,7 @@ export const executeWorkflow = async ({
 		finished: true,
 		startedAt: new Date(),
 		stoppedAt: new Date(),
+		storedAt: 'db',
 	};
 
 	return { executionData };
