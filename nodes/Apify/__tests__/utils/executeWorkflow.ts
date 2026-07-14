@@ -209,6 +209,7 @@ export const executeWorkflow = async ({
 	const executionData: IRun = {
 		mode: 'manual',
 		status: 'success',
+		storedAt: 'db',
 		data: createRunExecutionData({
 			resultData: {
 				runData: {
