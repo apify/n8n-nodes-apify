@@ -6,6 +6,7 @@ import {
 	INodeExecutionData,
 	IRun,
 	ITaskData,
+	NodeApiError,
 } from 'n8n-workflow';
 import { nodeTypes } from './nodeTypesClass';
 import { IGetNodeParameterOptions } from 'n8n-workflow';
@@ -162,15 +163,20 @@ export const executeWorkflow = async ({
 						body: JSON.stringify(response.data), // Needed by key-value tests
 					};
 				} catch (error: any) {
-					// Re-throw with the same structure as n8n would
+					// Mirror how n8n's real httpRequestWithAuthentication surfaces HTTP failures:
+					// it wraps them in a NodeApiError that preserves the parsed response body on
+					// `context.data` (and keeps the status on `httpCode`).
 					if (error.response) {
-						const err = new Error(error.response.statusText || 'Request failed');
-						(err as any).httpCode = error.response.status;
-						(err as any).response = {
-							body: error.response.data,
-							statusCode: error.response.status,
+						const rawError: any = new Error(
+							`Request failed with status code ${error.response.status}`,
+						);
+						rawError.httpCode = error.response.status;
+						rawError.response = {
+							data: error.response.data,
+							status: error.response.status,
+							statusText: error.response.statusText,
 						};
-						throw err;
+						throw new NodeApiError(this.getNode(), rawError);
 					}
 					throw error;
 				}
