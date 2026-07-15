@@ -385,6 +385,45 @@ describe('Apify Node', () => {
 
 				expect(scope.isDone()).toBe(true);
 			});
+
+			it('should surface the approval link when running an unapproved full-permission actor', async () => {
+				const mockBuild = fixtures.getBuildResult();
+				const approvalUrl =
+					'https://console.apify.com/actors/nFJndFXA5zjCTuudP?approvePermissions=true';
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
+					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
+					.reply(403, {
+						error: {
+							type: 'full-permission-actor-not-approved',
+							message: `This Actor requires full access to your account. You must approve its permissions before running it: ${approvalUrl}`,
+							data: { approvalUrl },
+						},
+					});
+
+				const runActorWorkflow = require('./workflows/actors/run-actor.workflow.json');
+
+				let thrown: any;
+				try {
+					await executeWorkflow({ credentialsHelper, workflow: runActorWorkflow });
+				} catch (error) {
+					thrown = error;
+				}
+
+				expect(thrown).toBeDefined();
+				expect(thrown.message).toContain('You must approve its permissions');
+				expect(thrown.message).toContain('See the approval link in the node output');
+				expect(thrown.message).not.toContain(approvalUrl);
+				// Output description: the clickable approval link.
+				expect(thrown.description).toContain(`href="${approvalUrl}"`);
+
+				expect(scope.isDone()).toBe(true);
+			});
 		});
 		describe('run-actor-and-get-dataset', () => {
 			it('should run the run-actor-and-get-dataset workflow', async () => {

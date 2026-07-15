@@ -76,6 +76,26 @@ export async function apiRequest(
 			{ retryNetworkErrors: method === 'GET' },
 		);
 	} catch (error) {
+		// Give the full-permission-approval error an actionable message + link instead of the
+		// generic 403. n8n keeps the response body on `error.context.data`.
+		const apifyError = error?.context?.data?.error;
+		if (apifyError?.type === 'full-permission-actor-not-approved') {
+			const approvalUrl = apifyError.data?.approvalUrl;
+			// Mutate and re-throw the same error object so the host keeps our message.
+			// `message` is plain text (n8n escapes the title); the clickable link goes in
+			// `description`, which n8n renders as HTML in the node output.
+			const reason = (apifyError.message || 'This Actor requires permission approval before it can run.')
+				.replace(approvalUrl ?? '', '')
+				.replace(/[\s:]+$/, '')
+				.trim();
+			error.message = approvalUrl ? `${reason}. See the approval link in the node output.` : reason;
+			if (Array.isArray(error.messages)) error.messages = [error.message];
+			error.description = approvalUrl
+				? `Approve this Actor's permissions, then run it again: <a href="${approvalUrl}" target="_blank">${approvalUrl}</a>`
+				: apifyError.message;
+			throw error;
+		}
+
 		if (error instanceof NodeApiError) throw error;
 
 		if (error.response && error.response.body) {
