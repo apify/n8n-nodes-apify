@@ -10,7 +10,35 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	const maxTotalChargeUsd = this.getNodeParameter('maxTotalChargeUsd', i, null) as number | null;
 	const buildParam = this.getNodeParameter('build', i) as string | null;
 	const waitForFinish = this.getNodeParameter('waitForFinish', i) as boolean;
-	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
+
+	// ─── DEMO / PROOF-OF-CONCEPT (not production) — see resources/actorInputMapper.ts ──────
+	// Use the mapped resourceMapper input if the user set any values, otherwise fall back to
+	// the raw Input JSON field.
+	const mapped = this.getNodeParameter('actorInput', i, {}) as { value?: Record<string, unknown> };
+	const mappedValues = mapped?.value && typeof mapped.value === 'object' ? mapped.value : {};
+	const coerce = (v: unknown) => {
+		if (typeof v === 'string') {
+			const t = v.trim();
+			if (t.startsWith('{') || t.startsWith('[')) {
+				try {
+					return JSON.parse(t);
+				} catch {
+					return v;
+				}
+			}
+		}
+		return v;
+	};
+	const mappedInput: Record<string, unknown> = {};
+	for (const [k, v] of Object.entries(mappedValues)) {
+		const cv = coerce(v);
+		// Skip empty values so we never send null/"" and override the Actor's own defaults.
+		if (cv === null || cv === undefined || cv === '') continue;
+		mappedInput[k] = cv;
+	}
+	const rawStringifiedInput = Object.keys(mappedInput).length
+		? mappedInput
+		: (this.getNodeParameter('customBody', i, '{}') as string | object);
 
 	const { lastRunData } = await executeActor.call(this, {
 		actorId,

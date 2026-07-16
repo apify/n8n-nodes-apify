@@ -31,6 +31,39 @@ export const properties: INodeProperties[] = [
 			},
 		},
 	},
+	// ─── DEMO / PROOF-OF-CONCEPT (not production) — see resources/actorInputMapper.ts ──────
+	// resourceMapper preview of the Actor's default input. Shown alongside the raw Input JSON
+	// field below (which stays as the flexible fallback). Run actor only.
+	{
+		displayName: 'Actor Input (Demo)',
+		name: 'actorInput',
+		type: 'resourceMapper',
+		noDataExpression: true,
+		default: { mappingMode: 'defineBelow', value: null },
+		typeOptions: {
+			loadOptionsDependsOn: ['actorId.value'],
+			resourceMapper: {
+				resourceMapperMethod: 'getActorInputFields',
+				mode: 'add',
+				// Rename the default "Values to Send" section header so users know it's the Actor input.
+				valuesLabel: 'Actor input',
+				fieldWords: { singular: 'input field', plural: 'input fields' },
+				// Show all non-removed fields by default; the per-field `removed` flag keeps only
+				// prefilled fields visible and pushes the rest into the "Add field" dropdown.
+				addAllFields: true,
+				multiKeyMatch: false,
+				supportAutoMap: false,
+				noFieldsError:
+					'No input fields loaded — the Actor may have no default build. Use the Input JSON field below instead.',
+			},
+		},
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Run actor'],
+			},
+		},
+	},
 	{
 		displayName: 'Input JSON',
 		name: 'customBody',
