@@ -10,6 +10,10 @@
 		"Utility",
 		"Data & Storage"
 	],
+	"subcategories": {
+		"AI": ["Tools"],
+		"Tools": ["Other Tools"]
+	},
 	"resources": {
 		"credentialDocumentation": [
 			{
