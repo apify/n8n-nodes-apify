@@ -29,11 +29,18 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 		}
 		return v;
 	};
+	const isEmpty = (v: unknown) => {
+		if (v === null || v === undefined) return true;
+		if (typeof v === 'string') return v.trim() === '';
+		if (Array.isArray(v)) return v.length === 0;
+		if (typeof v === 'object') return Object.keys(v as object).length === 0;
+		return false;
+	};
 	const mappedInput: Record<string, unknown> = {};
 	for (const [k, v] of Object.entries(mappedValues)) {
 		const cv = coerce(v);
-		// Skip empty values so we never send null/"" and override the Actor's own defaults.
-		if (cv === null || cv === undefined || cv === '') continue;
+		// Skip empty values (incl. [] and {}) so we never override the Actor's own defaults.
+		if (isEmpty(cv)) continue;
 		mappedInput[k] = cv;
 	}
 	const rawStringifiedInput = Object.keys(mappedInput).length

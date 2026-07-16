@@ -23,6 +23,16 @@ import {
 } from 'n8n-workflow';
 import { apiRequest } from './genericFunctions';
 
+// Treats null/undefined, blank strings, empty arrays and empty objects as "empty" — Apify
+// prefills many list fields with `[]`, which we don't want to show or send by default.
+function isEmptyValue(v: any): boolean {
+	if (v == null) return true;
+	if (typeof v === 'string') return v.trim() === '';
+	if (Array.isArray(v)) return v.length === 0;
+	if (typeof v === 'object') return Object.keys(v).length === 0;
+	return false;
+}
+
 function mapType(prop: any): FieldType {
 	if (Array.isArray(prop?.enum) && prop.enum.length) return 'options';
 	switch (prop?.type) {
@@ -82,7 +92,7 @@ export async function getActorInputFields(
 	for (const key of Object.keys(props)) {
 		const p = props[key];
 		const type = mapType(p);
-		const hasPrefill = p?.prefill != null;
+		const hasPrefill = !isEmptyValue(p?.prefill);
 		const isRequired = requiredKeys.includes(key);
 		let def: any = hasPrefill ? p.prefill : undefined;
 		if (def !== undefined && typeof def === 'object') def = JSON.stringify(def);
