@@ -13,6 +13,8 @@ export async function scrapeSingleUrl(
 ): Promise<INodeExecutionData> {
 	const url = this.getNodeParameter('url', i) as string;
 	const crawlerType = this.getNodeParameter('crawlerType', i, 'cheerio') as string;
+	const outputFormat = this.getNodeParameter('outputFormat', i, 'markdown') as string;
+	const includeMetadata = this.getNodeParameter('includeMetadata', i, false) as boolean;
 
 	const isValidHostname = (hostname: string): boolean =>
 		/^(?=.{1,253}$)((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$/.test(hostname);
@@ -43,8 +45,8 @@ export async function scrapeSingleUrl(
 				useApifyProxy: true,
 			},
 			removeCookieWarnings: true,
-			saveHtml: true,
-			saveMarkdown: true,
+			saveHtml: outputFormat === 'html',
+			saveMarkdown: outputFormat === 'markdown',
 		};
 
 		// Run the actor and do not wait for finish
@@ -89,9 +91,20 @@ export async function scrapeSingleUrl(
 			});
 		}
 
-		delete item.text;
+		const content = { [outputFormat]: item[outputFormat] };
 
-		return { json: { ...item } };
+		if (!includeMetadata) {
+			return { json: content };
+		}
+
+		// The scraper returns all content fields (text/html/markdown) regardless of the save
+		// flags, so strip them from the metadata and keep only the selected format.
+		const metadata = { ...item };
+		delete metadata.text;
+		delete metadata.html;
+		delete metadata.markdown;
+
+		return { json: { ...metadata, ...content } };
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
 	}
