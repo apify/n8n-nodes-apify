@@ -4,11 +4,13 @@ import { runHooks } from './hooks';
 import * as getUserRunsList from './get-user-runs-list';
 import * as getRun from './get-run';
 import * as getActorRuns from './get-actor-runs';
+import * as abortRun from './abort-run';
 
 const operations: INodePropertyOptions[] = [
 	getUserRunsList.option,
 	getRun.option,
 	getActorRuns.option,
+	abortRun.option,
 ];
 
 const name = 'Actor runs';
@@ -37,6 +39,7 @@ export const rawProperties: INodeProperties[] = [
 	...getUserRunsList.properties,
 	...getRun.properties,
 	...getActorRuns.properties,
+	...abortRun.properties,
 ];
 
 const { properties, methods } = runHooks(rawProperties);
