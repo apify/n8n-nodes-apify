@@ -21,19 +21,6 @@ export async function abortRun(this: IExecuteFunctions, i: number): Promise<INod
       qs: gracefully ? { gracefully: true } : {},
     });
 
-    if (!apiResult) {
-      throw new NodeApiError(this.getNode(), {
-        message: `Run ${runId} not found`,
-      });
-    }
-
-    if (apiResult.error) {
-      throw new NodeApiError(this.getNode(), {
-        message: apiResult.error.message,
-        type: apiResult.error.type,
-      });
-    }
-
     return { json: { ...apiResult.data } };
   } catch (error) {
     throw new NodeApiError(this.getNode(), error);
