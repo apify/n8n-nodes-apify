@@ -1,0 +1,36 @@
+{
+	"name": "Abort run workflow",
+	"nodes": [
+		{
+			"parameters": {
+				"resource": "Actor runs",
+				"operation": "Abort run",
+				"abortRunId": "c7Orwz5b830Tbp784"
+			},
+			"id": "9f4c2a11-2b6e-4c8a-9d1f-6a2b3c4d5e6f",
+			"name": "Abort run",
+			"type": "n8n-nodes-apify.apify",
+			"typeVersion": 1,
+			"position": [920, 460],
+			"credentials": {
+				"apifyApi": {
+					"apiToken": "test-token",
+					"name": "Apify account"
+				}
+			}
+		}
+	],
+	"pinData": {},
+	"connections": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "b1d2e3f4-5a6b-7c8d-9e0f-1a2b3c4d5e6f",
+	"meta": {
+		"templateCredsSetupCompleted": true,
+		"instanceId": "3f65ba173ae28613be507e94c0a98de4375527c55e31b7fc173a4edee4e2ded3"
+	},
+	"id": "AbortRunWkfl0001",
+	"tags": []
+}

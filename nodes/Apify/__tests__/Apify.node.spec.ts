@@ -121,6 +121,60 @@ describe('Apify Node', () => {
 				expect(scope.isDone()).toBe(true);
 			});
 		});
+
+		describe('abort-run', () => {
+			it('should run the abort-run workflow', async () => {
+				const runId = 'c7Orwz5b830Tbp784';
+				const mockAbort = fixtures.abortRunResult();
+
+				const scope = nock('https://api.apify.com')
+					.post(`/v2/actor-runs/${runId}/abort`)
+					.reply(200, mockAbort);
+
+				const abortRunWorkflow = require('./workflows/actor-runs/abort-run.workflow.json');
+				const { executionData } = await executeWorkflow({
+					credentialsHelper,
+					workflow: abortRunWorkflow,
+				});
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Abort run');
+				expect(nodeResults.length).toBe(1);
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+
+				const data = getTaskData(nodeResult);
+				expect(data).toEqual(mockAbort.data);
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should pass gracefully=true as a query param when enabled', async () => {
+				const runId = 'c7Orwz5b830Tbp784';
+				const mockAbort = fixtures.abortRunResult();
+
+				const scope = nock('https://api.apify.com')
+					.post(`/v2/actor-runs/${runId}/abort`)
+					.query({ gracefully: 'true' })
+					.reply(200, mockAbort);
+
+				const baseWorkflow = require('./workflows/actor-runs/abort-run.workflow.json');
+				const workflow = {
+					...baseWorkflow,
+					nodes: baseWorkflow.nodes.map((node: any) =>
+						node.name === 'Abort run'
+							? { ...node, parameters: { ...node.parameters, gracefully: true } }
+							: node,
+					),
+				};
+
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Abort run');
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+				expect(scope.isDone()).toBe(true);
+			});
+		});
 	});
 
 	describe('actor-tasks', () => {

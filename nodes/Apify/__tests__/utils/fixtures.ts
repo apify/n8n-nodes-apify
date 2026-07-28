@@ -639,6 +639,19 @@ export const getScrapeSingleUrlItemsResult = () => {
 	];
 };
 
+
+export const abortRunResult = () => {
+	return {
+		data: {
+			id: 'c7Orwz5b830Tbp784',
+			status: 'ABORTED',
+			actorId: 'some-actor-id',
+			startedAt: '2023-01-01T00:00:00.000Z',
+			finishedAt: '2023-01-01T00:05:00.000Z',
+		},
+	};
+};
+
 export const getActorResult = () => {
 	return {
 		data: {
