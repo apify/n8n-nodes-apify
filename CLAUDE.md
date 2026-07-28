@@ -9,8 +9,9 @@ Community n8n node package (`@apify/n8n-nodes-apify`) that integrates the [Apify
   - `ApifyTrigger.node.ts` / `ApifyTrigger.node.json` — trigger node (Actor / task run finished).
   - `Apify.properties.ts`, `Apify.methods.ts`, `properties.json` — generated/maintained UI properties and methods.
   - `resources/` — per-resource handlers: `actors/`, `actor-tasks/`, `actor-runs/`, `datasets/`, `key-value-stores/`, plus `router.ts`, `executeActor.ts`, `genericFunctions.ts`, `hooks.ts`, and resource locators.
+    - Each resource has `index.ts` (operation list + `operation` select), `router.ts` (operation → execute dispatch), `hooks.ts`, and one directory per operation (e.g. `actor-runs/abort-run/`) containing `index.ts`, `properties.ts`, `execute.ts`, `hooks.ts`.
   - `helpers/` — shared `consts.ts`, `hooks.ts`, `methods.ts`.
-  - `__tests__/` — Jest specs (excluded from `tsconfig`).
+  - `__tests__/` — Jest specs (excluded from `tsconfig`), `utils/` helpers + `fixtures.ts`, and `workflows/<resource>/*.workflow.json` exported n8n workflows used as test inputs.
   - `apify.svg` — node icon.
 - `credentials/` — `ApifyApi.credentials.ts` (API key) and `ApifyOAuth2Api.credentials.ts` (OAuth2, n8n cloud only).
 - `icons/`, `docs/` — node icon assets and README screenshots.
@@ -46,11 +47,15 @@ For trigger development on self-hosted n8n, export a public `WEBHOOK_URL` before
 - Releases: publish a GitHub Release with tag `vX.Y.Z`; the `publish.yml` workflow extracts the version, runs `npm version`, commits `chore(release): set version to X.Y.Z [skip ci]` to the target branch, and publishes `@apify/n8n-nodes-apify@X.Y.Z` to npm with `--provenance --access public` (skips if version already exists).
 - Two credential types: `apifyApi` (API key, all installs) and `apifyOAuth2Api` (n8n cloud only).
 - Tests live in `nodes/Apify/__tests__/` matching `**/?(*.)+(spec).ts`; excluded from the TypeScript build via `tsconfig.json`.
+- Resource / operation names are human-readable strings with spaces (e.g. resource `Actor runs`, operation `Abort run`) and are used verbatim as `displayOptions.show` values, router `switch` cases, and workflow-JSON parameters — keep them identical across `index.ts`, `properties.ts`, `router.ts`, and test workflows.
+- Adding an operation by hand: create `resources/<resource>/<operation>/` with `properties.ts` (gated by `displayOptions.show` on resource + operation), `execute.ts`, `hooks.ts`, `index.ts` (exports `option`, `properties`, `name`), then register it in the resource's `index.ts` (`operations` array + spread into `rawProperties`) and `router.ts`. Cover it with a `__tests__/workflows/<resource>/<op>.workflow.json` fixture, a `nock` scope, and a fixture factory in `__tests__/utils/fixtures.ts`.
 
 ## Key Notes for AI Assistants
 - Node engine mismatch is intentional/known: `package.json` engines = `>=22.0.0`, README says 22.x, but CI (`ci.yml`, `publish.yml`) runs Node `24.x`. Don't "fix" one without checking the others.
 - `package.json#main` is `index.js` (empty stub); n8n loads compiled artifacts from `dist/` listed under the `n8n` field — always run `npm run build` before linking/testing in n8n.
 - Many node properties are generated from an OpenAPI spec via `nodes.config.js` + `npm run merge:api`. When changing operation surface, update the spec / `tags` list in `nodes.config.js` rather than hand-editing generated property files.
+- Not every operation is generated: several OpenAPI tags in `nodes.config.js` are intentionally commented out (`Actor runs/Abort run`, `Delete run`, `Metamorph run`, `Reboot run`, `Resurrect run`, `Update status message`, …). `Actor runs → Abort run` is implemented by hand in `resources/actor-runs/abort-run/` while its tag stays commented out — don't uncomment the tag to "enable" it, or the generated properties will collide with the hand-written ones.
+- `abort-run/execute.ts` `POST`s `/v2/actor-runs/{runId}/abort` and only sends `gracefully=true` as a query param when the boolean is set (omitting the param entirely otherwise). It reads `abortRunId` (not `runId`) as its parameter name.
 - The `fix: prevent duplicate actor runs with multiple input items` change (commit `4a3836e`) is recent — be cautious about regressing input-iteration behavior in `resources/executeActor.ts` and related actor/task run handlers.
 - HTTP requests in `resources/genericFunctions.ts#apiRequest` carry a default `timeout` (`DEFAULT_REQUEST_TIMEOUT_MS`, 60s; overridable per request via `requestOptions.timeout`); dataset item downloads pass the longer `DATASET_REQUEST_TIMEOUT_MS` (10m). Network errors (no HTTP status, e.g. socket timeouts) are retried **only for idempotent `GET`** requests (`retryNetworkErrors: method === 'GET'`) — never widen this to POST, which could create duplicate Actor runs. All timeout constants live in `helpers/consts.ts`.
 - `pollRunStatus` is bounded: it caps polling at the run's own `timeoutSecs` plus `WAIT_FOR_FINISH_BUFFER_MS` (5m grace), falling back to `WAIT_FOR_FINISH_MAX_DURATION_MS` (24h) when the run has no timeout, and throws once exceeded. Don't reintroduce unbounded `while (true)` polling.
