@@ -20,9 +20,9 @@ export const properties: INodeProperties[] = [
 		name: 'actorId',
 		required: true,
 		description:
-			'The ID of the Actor to run, in the format "username~actor-name" (e.g. "apify~web-scraper") ' +
-			'or as a plain actor ID. Browse available Actors at https://apify.com/store',
-		default: 'janedoe~my-actor',
+			'The Actor to run. Choose from the list, or set via expression. ' +
+			'For field-by-field input (Actor Schema mode), select a fixed Actor so its schema can be loaded.',
+		default: { mode: 'list', value: '' },
 		type: 'string',
 		displayOptions: {
 			show: {
@@ -31,11 +31,35 @@ export const properties: INodeProperties[] = [
 			},
 		},
 	},
-	// ─── DEMO / PROOF-OF-CONCEPT (not production) — see resources/actorInputMapper.ts ──────
-	// resourceMapper preview of the Actor's default input. Shown alongside the raw Input JSON
-	// field below (which stays as the flexible fallback). Run actor only.
 	{
-		displayName: 'Actor Input (Demo)',
+		displayName: 'Actor Input',
+		name: 'actorInputMode',
+		type: 'options',
+		noDataExpression: true,
+		options: [
+			{
+				name: 'Using JSON',
+				value: 'json',
+				description: 'Provide the full Actor input as a JSON object.',
+			},
+			{
+				name: 'Using Actor Schema',
+				value: 'schema',
+				description:
+					'Show separate fields from the Actor’s input schema. Requires a fixed Actor selection (recommended for AI Agent tools).',
+			},
+		],
+		default: 'json',
+		description: 'How to provide input for the selected Actor.',
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Run actor'],
+			},
+		},
+	},
+	{
+		displayName: 'Actor Input Fields',
 		name: 'actorInput',
 		type: 'resourceMapper',
 		noDataExpression: true,
@@ -45,22 +69,20 @@ export const properties: INodeProperties[] = [
 			resourceMapper: {
 				resourceMapperMethod: 'getActorInputFields',
 				mode: 'add',
-				// Rename the default "Values to Send" section header so users know it's the Actor input.
 				valuesLabel: 'Actor input',
 				fieldWords: { singular: 'input field', plural: 'input fields' },
-				// Show all non-removed fields by default; the per-field `removed` flag keeps only
-				// prefilled fields visible and pushes the rest into the "Add field" dropdown.
 				addAllFields: true,
 				multiKeyMatch: false,
 				supportAutoMap: false,
 				noFieldsError:
-					'No input fields loaded — the Actor may have no default build. Use the Input JSON field below instead.',
+					'No input fields loaded — select a fixed Actor first, or switch to "Using JSON".',
 			},
 		},
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
+				actorInputMode: ['schema'],
 			},
 		},
 	},
@@ -79,6 +101,7 @@ export const properties: INodeProperties[] = [
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
+				actorInputMode: ['json'],
 			},
 		},
 	},

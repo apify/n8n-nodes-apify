@@ -1,19 +1,9 @@
 /**
- * ⚠️  DEMO / PROOF-OF-CONCEPT — NOT production code. Committed only to preserve the prototype.
+ * Loads an Actor's input schema into n8n's resourceMapper so each schema property
+ * becomes an editable field (incl. expressions / $fromAI on individual fields).
  *
- * Explores pulling an Actor's default input into the node UI via n8n's resourceMapper:
- * fetches the selected Actor's default build, reads its INPUT_SCHEMA, and exposes the
- * prefilled properties as editable, mappable fields. Other schema fields are hidden but
- * offered through the "Add field" dropdown.
- *
- * Wired into the "Run an Actor" operation only (see run-actor/properties.ts + execute.ts).
- *
- * Known gaps (why this stays demo-only):
- *   - Only "Run an Actor" — run-task and the *-and-get-dataset operations are untouched.
- *   - Value coercion is best-effort (JSON.parse for object/array-looking strings).
- *   - No automated tests.
- *   - resourceMapper can only represent fields defined in the schema; the raw Input JSON
- *     field can still send arbitrary keys, which is why that field is kept alongside this.
+ * Used when actorInputMode === 'schema'. Needs a resolvable Actor ID at config time
+ * (list/URL/ID). If the Actor is set via expression / $fromAI(), fields cannot be loaded.
  */
 import {
 	ILoadOptionsFunctions,
@@ -23,8 +13,10 @@ import {
 } from 'n8n-workflow';
 import { apiRequest } from './genericFunctions';
 
-// Treats null/undefined, blank strings, empty arrays and empty objects as "empty" — Apify
-// prefills many list fields with `[]`, which we don't want to show or send by default.
+function isExpressionValue(value: unknown): boolean {
+	return typeof value === 'string' && value.startsWith('=');
+}
+
 function isEmptyValue(v: any): boolean {
 	if (v == null) return true;
 	if (typeof v === 'string') return v.trim() === '';
@@ -60,8 +52,17 @@ export async function getActorInputFields(
 	} catch {
 		actorId = '';
 	}
+
 	if (!actorId) {
 		return { fields: [], emptyFieldsNotice: 'Select an Actor to load its input fields.' };
+	}
+
+	if (isExpressionValue(actorId)) {
+		return {
+			fields: [],
+			emptyFieldsNotice:
+				'Actor is set via an expression or $fromAI(), so its input schema cannot be loaded. Switch Actor Input to "Using JSON", or select a fixed Actor.',
+		};
 	}
 
 	let schema: any;
@@ -81,7 +82,7 @@ export async function getActorInputFields(
 		return {
 			fields: [],
 			emptyFieldsNotice:
-				'No default build for this Actor yet — its input fields could not be loaded. Use the Input JSON field instead.',
+				'No default build for this Actor yet — its input fields could not be loaded. Switch Actor Input to "Using JSON".',
 		};
 	}
 
