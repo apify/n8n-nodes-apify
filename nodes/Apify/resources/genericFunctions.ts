@@ -23,6 +23,28 @@ import {
 
 type IApiRequestOptions = Omit<IHttpRequestOptions, 'url'> & { uri?: string };
 
+/** Escape a string for interpolation into HTML markup. */
+function escapeHtml(value: string): string {
+	return value
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
+}
+
+/** Returns the value only if it is an absolute http(s) URL, otherwise `undefined`. */
+function toSafeHttpUrl(value: unknown): string | undefined {
+	if (typeof value !== 'string' || !value) return undefined;
+	try {
+		const parsed = new URL(value);
+		if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return undefined;
+		return parsed.toString();
+	} catch {
+		return undefined;
+	}
+}
+
 /**
  * Make an API request to Apify
  */
@@ -80,19 +102,36 @@ export async function apiRequest(
 		// generic 403. n8n keeps the response body on `error.context.data`.
 		const apifyError = error?.context?.data?.error;
 		if (apifyError?.type === 'full-permission-actor-not-approved') {
-			const approvalUrl = apifyError.data?.approvalUrl;
+			const rawApprovalUrl =
+				typeof apifyError.data?.approvalUrl === 'string' ? apifyError.data.approvalUrl : '';
+			// Untrusted response data - validate before it goes anywhere near an `href`.
+			const approvalUrl = toSafeHttpUrl(rawApprovalUrl);
 			// Mutate and re-throw the same error object so the host keeps our message.
-			// `message` is plain text (n8n escapes the title); the clickable link goes in
-			// `description`, which n8n renders as HTML in the node output.
-			const reason = (apifyError.message || 'This Actor requires permission approval before it can run.')
-				.replace(approvalUrl ?? '', '')
+			// The API appends the URL to its own message, so strip it and the dangling ":".
+			const reason = (
+				apifyError.message || 'This Actor requires permission approval before it can run.'
+			)
+				.replace(rawApprovalUrl, '')
 				.replace(/[\s:]+$/, '')
 				.trim();
-			error.message = approvalUrl ? `${reason}. See the approval link in the node output.` : reason;
+			const cta = "Approve this Actor's permissions, then run it again";
+
+			// The URL only ever goes in `description`: n8n replaces any `message` containing an
+			// error code, and `approvePermissions` contains `EPERM`. As an AI tool n8n appends
+			// `description` to `message`, so it must be plain text there; the UI renders it as
+			// HTML, so a clickable link needs an `<a>` tag.
+			if (!approvalUrl) {
+				error.message = reason;
+				error.description = undefined;
+			} else if (isUsedAsAiTool(this.getNode().type)) {
+				error.message = `${reason}. ${cta}.`;
+				error.description = approvalUrl;
+			} else {
+				const url = escapeHtml(approvalUrl);
+				error.message = `${reason}. See the approval link in the node output.`;
+				error.description = `${cta}: <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+			}
 			if (Array.isArray(error.messages)) error.messages = [error.message];
-			error.description = approvalUrl
-				? `Approve this Actor's permissions, then run it again: <a href="${approvalUrl}" target="_blank">${approvalUrl}</a>`
-				: apifyError.message;
 			throw error;
 		}
 
