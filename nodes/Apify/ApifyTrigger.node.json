@@ -2,9 +2,28 @@
 	"node": "n8n-nodes-apifyTrigger",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
-	"categories": ["Development", "Developer Tools"],
+	"categories": ["Development", "Data & Storage", "Utility"],
 	"resources": {
-		"credentialDocumentation": [],
-		"primaryDocumentation": []
-	}
+		"credentialDocumentation": [
+			{
+				"url": "https://docs.apify.com/platform/integrations/api#api-token"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://docs.apify.com/platform/integrations/n8n"
+			}
+		]
+	},
+	"alias": [
+		"apify",
+		"actor",
+		"task",
+		"trigger",
+		"webhook",
+		"scrape",
+		"crawler",
+		"dataset",
+		"automation"
+	]
 }

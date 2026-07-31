@@ -1,4 +1,5 @@
 import nock from 'nock';
+import { NodeOperationError } from 'n8n-workflow';
 import { Apify } from '../Apify.node';
 import { executeWorkflow } from './utils/executeWorkflow';
 import { CredentialsHelper } from './utils/credentialHelper';
@@ -382,6 +383,142 @@ describe('Apify Node', () => {
 				// exptect polled terminal run as result
 				expect(data).not.toEqual(mockRunActor.data);
 				expect(data).toEqual(mockFinishedRun.data);
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should surface the approval link when running an unapproved full-permission actor', async () => {
+				const mockBuild = fixtures.getBuildResult();
+				const approvalUrl =
+					'https://console.apify.com/actors/nFJndFXA5zjCTuudP?approvePermissions=true';
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
+					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
+					.reply(403, {
+						error: {
+							type: 'full-permission-actor-not-approved',
+							message: `This Actor requires full access to your account. You must approve its permissions before running it: ${approvalUrl}`,
+							data: { approvalUrl },
+						},
+					});
+
+				const runActorWorkflow = require('./workflows/actors/run-actor.workflow.json');
+
+				let thrown: any;
+				try {
+					await executeWorkflow({ credentialsHelper, workflow: runActorWorkflow });
+				} catch (error) {
+					thrown = error;
+				}
+
+				expect(thrown).toBeDefined();
+				expect(thrown.message).toContain('You must approve its permissions');
+				expect(thrown.message).toContain('See the approval link in the node output');
+				expect(thrown.message).not.toContain(approvalUrl);
+				// Output description: the clickable approval link.
+				expect(thrown.description).toContain(`href="${approvalUrl}"`);
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should not embed an unsafe approval URL in the error description', async () => {
+				const mockBuild = fixtures.getBuildResult();
+				// eslint-disable-next-line no-script-url
+				const approvalUrl = 'javascript:alert(1)//" onmouseover="alert(2)';
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
+					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
+					.reply(403, {
+						error: {
+							type: 'full-permission-actor-not-approved',
+							message: `This Actor requires full access to your account. You must approve its permissions before running it: ${approvalUrl}`,
+							data: { approvalUrl },
+						},
+					});
+
+				const runActorWorkflow = require('./workflows/actors/run-actor.workflow.json');
+
+				let thrown: any;
+				try {
+					await executeWorkflow({ credentialsHelper, workflow: runActorWorkflow });
+				} catch (error) {
+					thrown = error;
+				}
+
+				expect(thrown).toBeDefined();
+				expect(thrown.message).toContain('You must approve its permissions');
+				// The unsafe URL is dropped entirely, so no link is rendered anywhere.
+				expect(thrown.message).not.toContain('javascript:');
+				expect(thrown.message).not.toContain('onmouseover');
+				expect(thrown.description).toBeUndefined();
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should give an AI tool a plain-text approval link n8n will not rewrite', async () => {
+				const mockBuild = fixtures.getBuildResult();
+				const approvalUrl =
+					'https://console.apify.com/actors/nFJndFXA5zjCTuudP?approvePermissions=true';
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
+					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
+					.reply(403, {
+						error: {
+							type: 'full-permission-actor-not-approved',
+							message: `This Actor requires full access to your account. You must approve its permissions before running it: ${approvalUrl}`,
+							data: { approvalUrl },
+						},
+					});
+
+				// Same workflow, but the node runs under the `…Tool` type, as an AI Agent tool.
+				const runActorWorkflow = JSON.parse(
+					JSON.stringify(require('./workflows/actors/run-actor.workflow.json')),
+				);
+				runActorWorkflow.nodes[0].type = 'n8n-nodes-apify.apifyTool';
+
+				let thrown: any;
+				try {
+					await executeWorkflow({ credentialsHelper, workflow: runActorWorkflow });
+				} catch (error) {
+					thrown = error;
+				}
+
+				expect(thrown).toBeDefined();
+				// The agent reads `message`, so it carries the instruction; the bare URL goes in
+				// `description`, which n8n appends for the agent and renders under the title.
+				expect(thrown.message).toContain('You must approve its permissions');
+				expect(thrown.message).toContain("Approve this Actor's permissions, then run it again");
+				expect(thrown.message).not.toContain('node output');
+				expect(thrown.description).toBe(approvalUrl);
+
+				// A `message` containing the URL would hit n8n's `EPERM` rewrite (`approvePermissions`).
+				expect(thrown.message).not.toContain(approvalUrl);
+				expect(thrown.message.toUpperCase()).not.toContain('EPERM');
+				expect(thrown.message).not.toContain('Operation not permitted');
+
+				// Replay n8n's node-as-tool wrap + merge to check what the agent ends up with.
+				const wrapped: any = new NodeOperationError(thrown.node, thrown);
+				const agentText = wrapped.message.includes(wrapped.description)
+					? wrapped.message
+					: `${wrapped.message}\n\nDetails: ${wrapped.description}`;
+				expect(agentText).toContain('You must approve its permissions');
+				expect(agentText).toContain(approvalUrl);
+				expect(agentText).not.toContain('Operation not permitted');
 
 				expect(scope.isDone()).toBe(true);
 			});

@@ -7,7 +7,7 @@ export const properties: INodeProperties[] = [
 		displayName: 'Actor Task',
 		name: 'actorTaskId',
 		required: true,
-		description: 'Task ID or a tilde-separated username and task name',
+		description: 'The ID of the task to run, in the format "username~task-name" or as a plain task ID. Manage your saved tasks in Apify Console at https://console.apify.com.',
 		default: 'janedoe~my-task',
 		type: 'string',
 		displayOptions: {
@@ -21,7 +21,7 @@ export const properties: INodeProperties[] = [
 		displayName: 'Use Custom Body',
 		name: 'useCustomBody',
 		type: 'boolean',
-		description: 'Whether to use a custom body',
+		description: "Whether to override the task's saved input with custom JSON provided below",
 		// default to false since Task should use task-defined input for its Actor
 		default: false,
 		displayOptions: {
@@ -36,7 +36,11 @@ export const properties: INodeProperties[] = [
 		name: 'customBody',
 		type: 'json',
 		default: '{}',
-		description: 'Custom body to send',
+		description:
+			'JSON input that overrides the input saved in this task. The exact structure depends on the Actor behind the task — consult its input schema for valid fields. ' +
+			'Common fields for web-scraping Actors include "startUrls" (array of {"url": "https://..."} objects), ' +
+			'"maxCrawlPages" or "maxRequestsPerCrawl" (number limiting how much is crawled), and "proxyConfiguration" ({"useApifyProxy": true}). ' +
+			'Find the exact input schema in Apify Console at https://console.apify.com',
 		displayOptions: {
 			show: {
 				useCustomBody: [true],

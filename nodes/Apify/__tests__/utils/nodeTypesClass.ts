@@ -43,6 +43,8 @@ export class NodeTypesClass implements INodeTypes {
 const nodeTypes = new NodeTypesClass();
 
 nodeTypes.addNode('n8n-nodes-apify.apify', new Apify());
+// Same node, registered under the `…Tool` type n8n uses when it runs as an AI Agent tool.
+nodeTypes.addNode('n8n-nodes-apify.apifyTool', new Apify());
 nodeTypes.addNode('n8n-nodes-apify.apifyTrigger', new ApifyTrigger());
 
 export { nodeTypes };
