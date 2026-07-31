@@ -5,6 +5,7 @@ export interface ActorExecutionParams {
 	actorId: string;
 	timeout: number | null;
 	memory: number | null;
+	maxTotalChargeUsd?: number | null;
 	buildParam: string | null;
 	rawStringifiedInput: string | object;
 	waitForFinish?: boolean;
@@ -23,6 +24,7 @@ export async function executeActor(
 		actorId,
 		timeout,
 		memory,
+		maxTotalChargeUsd,
 		buildParam,
 		rawStringifiedInput,
 		waitForFinish = false,
@@ -66,6 +68,8 @@ export async function executeActor(
 	const qs: Record<string, any> = {};
 	if (timeout != null) qs.timeout = timeout;
 	if (memory != null) qs.memory = memory;
+	// 0 or empty means no limit
+	if (maxTotalChargeUsd != null && maxTotalChargeUsd > 0) qs.maxTotalChargeUsd = maxTotalChargeUsd;
 	if (build?.buildNumber) qs.build = build.buildNumber;
 	qs.waitForFinish = 0; // set initial run actor to not wait for finish
 

@@ -12,6 +12,7 @@ export async function runActorAndGetDataset(
 	}) as string;
 	const timeout = this.getNodeParameter('timeout', i) as number | null;
 	const memory = this.getNodeParameter('memory', i) as number | null;
+	const maxTotalChargeUsd = this.getNodeParameter('maxTotalChargeUsd', i, null) as number | null;
 	const buildParam = this.getNodeParameter('build', i) as string | null;
 	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
 
@@ -19,6 +20,7 @@ export async function runActorAndGetDataset(
 		actorId,
 		timeout,
 		memory,
+		maxTotalChargeUsd,
 		buildParam,
 		rawStringifiedInput,
 		waitForFinish: true,

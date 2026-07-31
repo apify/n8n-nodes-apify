@@ -7,6 +7,7 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	}) as string;
 	const timeout = this.getNodeParameter('timeout', i) as number | null;
 	const memory = this.getNodeParameter('memory', i) as number | null;
+	const maxTotalChargeUsd = this.getNodeParameter('maxTotalChargeUsd', i, null) as number | null;
 	const buildParam = this.getNodeParameter('build', i) as string | null;
 	const waitForFinish = this.getNodeParameter('waitForFinish', i) as boolean;
 	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
@@ -15,6 +16,7 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 		actorId,
 		timeout,
 		memory,
+		maxTotalChargeUsd,
 		buildParam,
 		rawStringifiedInput,
 		waitForFinish,

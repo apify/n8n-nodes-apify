@@ -79,6 +79,23 @@ timeout specified in the task settings.`,
 		},
 	},
 	{
+		displayName: 'Maximum Cost per Run (USD)',
+		name: 'maxTotalChargeUsd',
+		description:
+			'Maximum total amount in USD that the run may be charged. Applies to Actors with pay-per-event or pay-per-result pricing; the run is aborted once the limit is reached. Leave empty for no limit.',
+		default: null,
+		type: 'number',
+		typeOptions: {
+			minValue: 0,
+		},
+		displayOptions: {
+			show: {
+				resource: ['Actor tasks'],
+				operation: ['Run task and get dataset'],
+			},
+		},
+	},
+	{
 		displayName: 'Build Tag',
 		name: 'build',
 		description: `Specifies the Actor build tag to run. By default, the run uses the build specified in the task
