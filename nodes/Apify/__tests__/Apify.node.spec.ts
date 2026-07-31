@@ -621,8 +621,88 @@ describe('Apify Node', () => {
 
 				const data = getTaskData(nodeResult);
 				expect(typeof data).toBe('object');
-				const { text, ...mockedItemWithoutText } = mockItems[0];
-				expect(data).toEqual(mockedItemWithoutText);
+				// Default output format is markdown, so only the markdown field is returned.
+				expect(data).toEqual({ markdown: mockItems[0].markdown });
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should return only the selected output format (html)', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockFinishedRun = fixtures.getSuccessRunResult();
+				const mockItems = fixtures.getScrapeSingleUrlItemsResult();
+
+				const datasetId = mockFinishedRun.data.defaultDatasetId;
+
+				const scope = nock('https://api.apify.com')
+					.post(`/v2/acts/${helpers.consts.WEB_CONTENT_SCRAPER_ACTOR_ID}/runs`)
+					.query({ waitForFinish: 0 })
+					.reply(200, mockRunActor)
+					.get(`/v2/actor-runs/${mockRunActor.data.id}`)
+					.reply(200, mockFinishedRun)
+					.get(`/v2/datasets/${datasetId}/items`)
+					.query({ format: 'json' })
+					.reply(200, mockItems);
+
+				const baseWorkflow = require('./workflows/actors/scrape-single-url.workflow.json');
+				const workflow = {
+					...baseWorkflow,
+					nodes: baseWorkflow.nodes.map((node: any) =>
+						node.name === 'Scrape single URL'
+							? { ...node, parameters: { ...node.parameters, outputFormat: 'html' } }
+							: node,
+					),
+				};
+
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Scrape single URL');
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+
+				const data = getTaskData(nodeResult);
+				expect(data).toEqual({ html: mockItems[0].html });
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should include metadata (without other content formats) when includeMetadata is enabled', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockFinishedRun = fixtures.getSuccessRunResult();
+				const mockItems = fixtures.getScrapeSingleUrlItemsResult();
+
+				const datasetId = mockFinishedRun.data.defaultDatasetId;
+
+				const scope = nock('https://api.apify.com')
+					.post(`/v2/acts/${helpers.consts.WEB_CONTENT_SCRAPER_ACTOR_ID}/runs`)
+					.query({ waitForFinish: 0 })
+					.reply(200, mockRunActor)
+					.get(`/v2/actor-runs/${mockRunActor.data.id}`)
+					.reply(200, mockFinishedRun)
+					.get(`/v2/datasets/${datasetId}/items`)
+					.query({ format: 'json' })
+					.reply(200, mockItems);
+
+				const baseWorkflow = require('./workflows/actors/scrape-single-url.workflow.json');
+				const workflow = {
+					...baseWorkflow,
+					nodes: baseWorkflow.nodes.map((node: any) =>
+						node.name === 'Scrape single URL'
+							? { ...node, parameters: { ...node.parameters, includeMetadata: true } }
+							: node,
+					),
+				};
+
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Scrape single URL');
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+
+				const data = getTaskData(nodeResult);
+				// Metadata plus only the default (markdown) content format - no html/text.
+				const { text, html, markdown, ...metadata } = mockItems[0];
+				expect(data).toEqual({ ...metadata, markdown });
 
 				expect(scope.isDone()).toBe(true);
 			});

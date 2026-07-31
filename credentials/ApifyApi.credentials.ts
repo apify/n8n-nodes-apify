@@ -1,4 +1,11 @@
-import type { IAuthenticateGeneric, ICredentialType, INodeProperties } from 'n8n-workflow';
+import type {
+	IAuthenticateGeneric,
+	ICredentialTestRequest,
+	ICredentialType,
+	INodeProperties,
+} from 'n8n-workflow';
+
+import { APIFY_API_URL } from '../nodes/Apify/helpers/consts';
 // eslint-disable-next-line
 export class ApifyApi implements ICredentialType {
 	name = 'apifyApi';
@@ -23,6 +30,13 @@ export class ApifyApi implements ICredentialType {
 			headers: {
 				Authorization: '=Bearer {{$credentials.apiKey}}',
 			},
+		},
+	};
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: APIFY_API_URL,
+			url: '/v2/users/me',
 		},
 	};
 }

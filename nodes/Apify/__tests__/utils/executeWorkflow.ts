@@ -124,7 +124,8 @@ export const executeWorkflow = async ({
 			options?: IGetNodeParameterOptions,
 		) => {
 			if (options?.extractValue) return node.parameters[parameterName].value;
-			return node.parameters[parameterName];
+			// Mirror n8n: fall back to the provided default when the parameter is unset.
+			return node.parameters[parameterName] ?? fallbackValue;
 		},
 		getInputData: (): INodeExecutionData[] => {
 			// Provide at least one empty item so loops like `for (let i = 0; i < items.length; i++)`
