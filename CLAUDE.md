@@ -11,9 +11,9 @@ Community n8n node package (`@apify/n8n-nodes-apify`) that integrates the [Apify
   - `resources/` — per-resource handlers: `actors/`, `actor-tasks/`, `actor-runs/`, `datasets/`, `key-value-stores/`, plus `router.ts`, `executeActor.ts`, `genericFunctions.ts`, `hooks.ts`, and resource locators.
   - `helpers/` — shared `consts.ts`, `hooks.ts`, `methods.ts`.
   - `__tests__/` — Jest specs (excluded from `tsconfig`).
-  - `apify.svg` — node icon.
+  - `apify-light.svg` / `apify-dark.svg` — themed node icons.
 - `credentials/` — `ApifyApi.credentials.ts` (API key) and `ApifyOAuth2Api.credentials.ts` (OAuth2, n8n cloud only).
-- `icons/`, `docs/` — node icon assets and README screenshots.
+- `docs/` — README screenshots.
 - `nodes.config.js` — `@n8n/node-cli` config (package name, credentials, OpenAPI tags/excludes, name overrides).
 - `gulpfile.js`, `tsconfig.json`, `eslint.config.mjs`, `tslint.json`, `.eslintrc.prepublish.js`, `.prettierrc.js`, `jest.config.js` — build / lint / format / test config.
 - `.github/workflows/ci.yml` — lint, type-check, build, test on push / PR to `master`.

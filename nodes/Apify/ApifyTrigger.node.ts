@@ -26,7 +26,7 @@ export class ApifyTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Apify Trigger',
 		name: 'apifyTrigger',
-		icon: 'file:apify.svg',
+		icon: { light: 'file:apify-light.svg', dark: 'file:apify-dark.svg' },
 		group: ['trigger'],
 		version: 1,
 		subtitle: '={{($parameter["resource"] === "actor" ? $parameter["actorId"] : $parameter["actorTaskId"]) + ": " + $parameter["eventType"].join(", ")}}',
