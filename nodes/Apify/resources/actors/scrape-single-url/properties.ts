@@ -74,18 +74,4 @@ export const properties: INodeProperties[] = [
 			},
 		},
 	},
-	{
-		displayName: 'Include Metadata',
-		name: 'includeMetadata',
-		type: 'boolean',
-		default: false,
-		description:
-			'Whether to include page metadata (URL, crawl details, page metadata) alongside the content. Leave off for lean output best suited to AI agents; turn on when you need the full page context.',
-		displayOptions: {
-			show: {
-				resource: ['Actors'],
-				operation: ['Scrape single URL'],
-			},
-		},
-	},
 ];
