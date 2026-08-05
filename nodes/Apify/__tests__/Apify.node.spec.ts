@@ -40,6 +40,25 @@ describe('Apify Node', () => {
 		it('should have credential properties defined', () => {
 			expect(apifyNode.description.credentials).toBeDefined();
 		});
+
+		it('should expose maxTotalChargeUsd on every operation that starts a run', () => {
+			const maxCostProperties = apifyNode.description.properties.filter(
+				(property) => property.name === 'maxTotalChargeUsd',
+			);
+
+			expect(
+				maxCostProperties.map((property) => property.displayOptions?.show?.operation).flat(),
+			).toEqual(
+				expect.arrayContaining([
+					'Run actor',
+					'Run actor and get dataset',
+					'Run task',
+					'Run task and get dataset',
+				]),
+			);
+			// unset must mean no limit
+			maxCostProperties.forEach((property) => expect(property.default).toBeNull());
+		});
 	});
 
 	describe('actor-runs', () => {
@@ -205,6 +224,59 @@ describe('Apify Node', () => {
 				expect(scope.isDone()).toBe(true);
 			});
 
+			it('should pass maxTotalChargeUsd as a query param when set', async () => {
+				const mockRunTask = fixtures.runActorResult();
+
+				const scope = nock('https://api.apify.com')
+					.post('/v2/actor-tasks/PwUDLcG3zMyT8E4vq/runs')
+					.query({ waitForFinish: 0, memory: 1024, maxTotalChargeUsd: 5.5 })
+					.reply(200, mockRunTask);
+
+				const baseWorkflow = require('./workflows/actor-tasks/run-task.workflow.json');
+				const workflow = {
+					...baseWorkflow,
+					nodes: baseWorkflow.nodes.map((node: any) =>
+						node.name === 'Run task'
+							? { ...node, parameters: { ...node.parameters, maxTotalChargeUsd: 5.5 } }
+							: node,
+					),
+				};
+
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run task');
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should omit maxTotalChargeUsd when it is 0, treating it as no limit', async () => {
+				const mockRunTask = fixtures.runActorResult();
+
+				const scope = nock('https://api.apify.com')
+					.post('/v2/actor-tasks/PwUDLcG3zMyT8E4vq/runs')
+					// nock matches the query exactly
+					.query({ waitForFinish: 0, memory: 1024 })
+					.reply(200, mockRunTask);
+
+				const baseWorkflow = require('./workflows/actor-tasks/run-task.workflow.json');
+				const workflow = {
+					...baseWorkflow,
+					nodes: baseWorkflow.nodes.map((node: any) =>
+						node.name === 'Run task'
+							? { ...node, parameters: { ...node.parameters, maxTotalChargeUsd: 0 } }
+							: node,
+					),
+				};
+
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run task');
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+				expect(scope.isDone()).toBe(true);
+			});
+
 			it('should run the run-task workflow and wait for finish (waitForFinish: true)', async () => {
 				const mockRunTask = fixtures.runActorResult();
 				const mockFinishedRun = fixtures.getRunTaskResult();
@@ -349,6 +421,74 @@ describe('Apify Node', () => {
 				const data = getTaskData(nodeResult);
 				expect(data).toEqual(mockRunActor.data);
 
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should pass maxTotalChargeUsd as a query param when set', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockBuild = fixtures.getBuildResult();
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
+					.query({
+						waitForFinish: 0,
+						build: mockBuild.data.buildNumber,
+						memory: 1024,
+						maxTotalChargeUsd: 5.5,
+					})
+					.reply(200, mockRunActor);
+
+				const baseWorkflow = require('./workflows/actors/run-actor.workflow.json');
+				const workflow = {
+					...baseWorkflow,
+					nodes: baseWorkflow.nodes.map((node: any) =>
+						node.name === 'Run actor'
+							? { ...node, parameters: { ...node.parameters, maxTotalChargeUsd: 5.5 } }
+							: node,
+					),
+				};
+
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run actor');
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should omit maxTotalChargeUsd when it is 0, treating it as no limit', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockBuild = fixtures.getBuildResult();
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
+					// nock matches the query exactly
+					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
+					.reply(200, mockRunActor);
+
+				const baseWorkflow = require('./workflows/actors/run-actor.workflow.json');
+				const workflow = {
+					...baseWorkflow,
+					nodes: baseWorkflow.nodes.map((node: any) =>
+						node.name === 'Run actor'
+							? { ...node, parameters: { ...node.parameters, maxTotalChargeUsd: 0 } }
+							: node,
+					),
+				};
+
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Run actor');
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
 				expect(scope.isDone()).toBe(true);
 			});
 

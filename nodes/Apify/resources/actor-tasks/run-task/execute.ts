@@ -14,6 +14,7 @@ export async function runTask(this: IExecuteFunctions, i: number): Promise<INode
 	const waitForFinish = this.getNodeParameter('waitForFinish', i) as boolean;
 	const timeout = this.getNodeParameter('timeout', i, null) as number | null;
 	const memory = this.getNodeParameter('memory', i, null) as number | null;
+	const maxTotalChargeUsd = this.getNodeParameter('maxTotalChargeUsd', i, null) as number | null;
 	const build = this.getNodeParameter('build', i, '') as string;
 
 	let input: any;
@@ -33,6 +34,8 @@ export async function runTask(this: IExecuteFunctions, i: number): Promise<INode
 	const qs: Record<string, any> = {};
 	if (timeout != null) qs.timeout = timeout;
 	if (memory != null) qs.memory = memory;
+	// 0 or empty means no limit
+	if (maxTotalChargeUsd != null && maxTotalChargeUsd > 0) qs.maxTotalChargeUsd = maxTotalChargeUsd;
 	if (build) qs.build = build;
 	qs.waitForFinish = 0; // always start run without waiting
 
