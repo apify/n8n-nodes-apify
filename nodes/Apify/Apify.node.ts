@@ -16,7 +16,7 @@ export class Apify implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Apify',
 		name: 'apify',
-		icon: 'file:apify.svg',
+		icon: { light: 'file:apify-light.svg', dark: 'file:apify-dark.svg' },
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
