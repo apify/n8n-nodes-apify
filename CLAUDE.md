@@ -20,7 +20,7 @@ Community n8n node package (`@apify/n8n-nodes-apify`) that integrates the [Apify
 - `.github/workflows/publish.yml` — release-triggered build, version bump, npm publish.
 
 ## Technology Stack
-- **Language:** TypeScript 5.5 (CommonJS, target ES2019, strict mode).
+- **Language:** TypeScript 6 (CommonJS, target ES2019, strict mode).
 - **Runtime:** Node.js — `package.json` requires `>=22.0.0`; CI runs on `24.x`.
 - **Package manager:** npm `10.8.2`.
 - **n8n:** peer dep `n8n-workflow` is unpinned (`*`); build/dev tooling via `@n8n/node-cli`.
@@ -54,6 +54,7 @@ For trigger development on self-hosted n8n, export a public `WEBHOOK_URL` before
 - The `fix: prevent duplicate actor runs with multiple input items` change (commit `4a3836e`) is recent — be cautious about regressing input-iteration behavior in `resources/executeActor.ts` and related actor/task run handlers.
 - HTTP requests in `resources/genericFunctions.ts#apiRequest` carry a default `timeout` (`DEFAULT_REQUEST_TIMEOUT_MS`, 60s; overridable per request via `requestOptions.timeout`); dataset item downloads pass the longer `DATASET_REQUEST_TIMEOUT_MS` (10m). Network errors (no HTTP status, e.g. socket timeouts) are retried **only for idempotent `GET`** requests (`retryNetworkErrors: method === 'GET'`) — never widen this to POST, which could create duplicate Actor runs. All timeout constants live in `helpers/consts.ts`.
 - `pollRunStatus` is bounded: it caps polling at the run's own `timeoutSecs` plus `WAIT_FOR_FINISH_BUFFER_MS` (5m grace), falling back to `WAIT_FOR_FINISH_MAX_DURATION_MS` (24h) when the run has no timeout, and throws once exceeded. Don't reintroduce unbounded `while (true)` polling.
+- Both nodes declare theme-aware icons (`icon: { light: 'file:apify-light.svg', dark: 'file:apify-dark.svg' }`); `apify-light.svg` is the colored brand mark, `apify-dark.svg` a white monochrome variant. Keep icon SVGs under `nodes/` (or `credentials/`) — `gulpfile.js#build:icons` only copies `*.{png,svg}` from those two trees into `dist/`, so an asset placed elsewhere silently won't ship. `nodes.config.js#icon` separately points at `./nodes/Apify/apify-light.svg` for `@n8n/node-cli` codegen; update it alongside any icon rename.
 - Do not bump version manually; the release workflow owns `package.json` / `package-lock.json` version updates.
 - Don't commit `dist/`; it is built in CI/release and listed in `package.json#files` only for publish.
 - `Apify.node.ts#execute` carries an intentional `// eslint-disable ... require-continue-on-fail` — `continueOnFail` is handled inside `executeAndLinkItems` (`resources/genericFunctions.ts`), not in `execute`. Don't remove the disable.
