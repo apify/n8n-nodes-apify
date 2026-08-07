@@ -761,13 +761,14 @@ describe('Apify Node', () => {
 
 				const data = getTaskData(nodeResult);
 				expect(typeof data).toBe('object');
-				// Default output format is markdown, so only the markdown field is returned.
-				expect(data).toEqual({ markdown: mockItems[0].markdown });
+				// Default output format is markdown; other content formats are stripped.
+				const { text, html, markdown, ...metadata } = mockItems[0];
+				expect(data).toEqual({ ...metadata, markdown });
 
 				expect(scope.isDone()).toBe(true);
 			});
 
-			it('should return only the selected output format (html)', async () => {
+			it('should return metadata with only the selected output format (html)', async () => {
 				const mockRunActor = fixtures.runActorResult();
 				const mockFinishedRun = fixtures.getSuccessRunResult();
 				const mockItems = fixtures.getScrapeSingleUrlItemsResult();
@@ -801,12 +802,14 @@ describe('Apify Node', () => {
 				expect(nodeResult.executionStatus).toBe('success');
 
 				const data = getTaskData(nodeResult);
-				expect(data).toEqual({ html: mockItems[0].html });
+				// Metadata plus only the selected (html) content format - no markdown/text.
+				const { text, html, markdown, ...metadata } = mockItems[0];
+				expect(data).toEqual({ ...metadata, html });
 
 				expect(scope.isDone()).toBe(true);
 			});
 
-			it('should include metadata (without other content formats) when includeMetadata is enabled', async () => {
+			it('should return metadata with only the selected output format (text)', async () => {
 				const mockRunActor = fixtures.runActorResult();
 				const mockFinishedRun = fixtures.getSuccessRunResult();
 				const mockItems = fixtures.getScrapeSingleUrlItemsResult();
@@ -828,7 +831,7 @@ describe('Apify Node', () => {
 					...baseWorkflow,
 					nodes: baseWorkflow.nodes.map((node: any) =>
 						node.name === 'Scrape single URL'
-							? { ...node, parameters: { ...node.parameters, includeMetadata: true } }
+							? { ...node, parameters: { ...node.parameters, outputFormat: 'text' } }
 							: node,
 					),
 				};
@@ -840,9 +843,10 @@ describe('Apify Node', () => {
 				expect(nodeResult.executionStatus).toBe('success');
 
 				const data = getTaskData(nodeResult);
-				// Metadata plus only the default (markdown) content format - no html/text.
+				// text has no saveText actor input flag - it relies on the scraper
+				// returning every content field. Other formats are still stripped.
 				const { text, html, markdown, ...metadata } = mockItems[0];
-				expect(data).toEqual({ ...metadata, markdown });
+				expect(data).toEqual({ ...metadata, text });
 
 				expect(scope.isDone()).toBe(true);
 			});
