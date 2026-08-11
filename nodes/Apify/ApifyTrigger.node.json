@@ -3,9 +3,6 @@
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Development", "Data & Storage", "Utility"],
-	"subcategories": {
-		"AI": ["Tools"]
-	},
 	"resources": {
 		"credentialDocumentation": [
 			{
