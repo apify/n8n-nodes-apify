@@ -6,7 +6,7 @@ Community n8n node package (`@apify/n8n-nodes-apify`) that integrates the [Apify
 ## Repository Structure
 - `nodes/Apify/` — main node source.
   - `Apify.node.ts` / `Apify.node.json` — main Apify action node. AI Agent tool surfacing comes from `usableAsTool: true`, not from the codex — see the note below on `subcategories`.
-  - `ApifyTrigger.node.ts` / `ApifyTrigger.node.json` — trigger node (Actor / task run finished).
+  - `ApifyTrigger.node.ts` / `ApifyTrigger.node.json` — trigger node (Actor / task run finished). Also `usableAsTool: true`; its codex declares no `subcategories` at all.
   - `Apify.properties.ts`, `Apify.methods.ts`, `properties.json` — generated/maintained UI properties and methods.
   - `resources/` — per-resource handlers: `actors/`, `actor-tasks/`, `actor-runs/`, `datasets/`, `key-value-stores/`, plus `router.ts`, `executeActor.ts`, `genericFunctions.ts`, `hooks.ts`, and resource locators.
   - `helpers/` — shared `consts.ts`, `hooks.ts`, `methods.ts`.
