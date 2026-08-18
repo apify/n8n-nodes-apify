@@ -16,19 +16,20 @@ Community n8n node package (`@apify/n8n-nodes-apify`) that integrates the [Apify
 - `docs/` — README screenshots.
 - `nodes.config.js` — `@n8n/node-cli` config (package name, credentials, OpenAPI tags/excludes, name overrides).
 - `gulpfile.js`, `tsconfig.json`, `eslint.config.mjs`, `tslint.json`, `.eslintrc.prepublish.js`, `.prettierrc.js`, `jest.config.js` — build / lint / format / test config.
+- `.npmrc` — `min-release-age=1` (npm won't resolve package versions younger than 1 day) and `engine-strict=true` (`engines` violations are hard errors, not warnings).
 - `.github/workflows/ci.yml` — lint, type-check, build, test on push / PR to `master`.
 - `.github/workflows/publish.yml` — release-triggered build, version bump, npm publish.
 
 ## Technology Stack
-- **Language:** TypeScript 5.5 (CommonJS, target ES2019, strict mode).
+- **Language:** TypeScript 6.0 (CommonJS, target ES2019, strict mode).
 - **Runtime:** Node.js — `package.json` requires `>=22.0.0`; CI runs on `24.x`.
-- **Package manager:** npm `10.8.2`.
+- **Package manager:** npm — `packageManager` pins `npm@11.19.0`; `engines.npm` requires `>=11.10.0` (the floor at which `min-release-age` is honoured).
 - **n8n:** peer dep `n8n-workflow` is unpinned (`*`); build/dev tooling via `@n8n/node-cli`.
 - **Test:** Jest + ts-jest, with `nock` for HTTP mocking.
 - **Lint/format:** ESLint 9 (via `n8n-node lint`), Prettier 3.
 
 ## Build, Test & Run
-- `npm install` — install deps.
+- `npm install` — install deps. With `engine-strict=true`, this fails with `EBADENGINE` on Node `<22` or npm `<11.10.0`; `min-release-age=1` also makes fresh (<24h old) releases unresolvable.
 - `npm run build` — build via `n8n-node build` (output in `dist/`).
 - `npm run build:watch` — `tsc --watch` only.
 - `npm run dev` — start n8n dev server with this node linked (`n8n-node dev`).
@@ -48,7 +49,8 @@ For trigger development on self-hosted n8n, export a public `WEBHOOK_URL` before
 - Tests live in `nodes/Apify/__tests__/` matching `**/?(*.)+(spec).ts`; excluded from the TypeScript build via `tsconfig.json`. Specs drive nodes through the `executeWorkflow` harness (`__tests__/utils/executeWorkflow.ts`) with workflow fixtures in `__tests__/workflows/`; to test a non-default parameter, spread the fixture and override that node's `parameters`.
 
 ## Key Notes for AI Assistants
-- Node engine mismatch is intentional/known: `package.json` engines = `>=22.0.0`, README says 22.x, but CI (`ci.yml`, `publish.yml`) runs Node `24.x`. Don't "fix" one without checking the others.
+- Node engine mismatch is intentional/known: `package.json` engines = `>=22.0.0`, README says 22.x, but CI (`ci.yml`, `publish.yml`) runs Node `24.x`. Don't "fix" one without checking the others. The README's "npm 10.8.2 or higher" line is stale relative to `engines.npm >= 11.10.0`.
+- Supply-chain cooldown (`.npmrc`): the npm floor is load-bearing — npm `<11.10.0` silently ignores `min-release-age`, so `engines.npm` + `engine-strict=true` turn that no-op into a hard `EBADENGINE`. A `devEngines` variant of this floor was tried and reverted (`4108e0f`) — keep it in `engines.npm`. `npm ci` installs from the lockfile and is **not** gated by `min-release-age`; lockfile cooldown is Renovate's `minimumReleaseAge`.
 - `package.json#main` is `index.js` (empty stub); n8n loads compiled artifacts from `dist/` listed under the `n8n` field — always run `npm run build` before linking/testing in n8n.
 - Many node properties are generated from an OpenAPI spec via `nodes.config.js` + `npm run merge:api`. When changing operation surface, update the spec / `tags` list in `nodes.config.js` rather than hand-editing generated property files. Exception: hand-written operations such as `resources/actors/scrape-single-url/` keep their own `properties.ts` — edit those directly.
 - **Never put `"AI"` in a codex `subcategories` block.** n8n's node creator drops *every* action for a node whose `codex.subcategories.AI` contains `Tools` without `Root Nodes` (`generateNodeActions` in `useActionsGeneration.ts`), so the node is inserted straight onto the canvas with its default resource/operation instead of showing the action list. It also buys nothing: `subcategorizeItems` only reads `subcategories[X]` when `categories` also contains `X`, and neither node lists `"AI"` as a category. AI Agent tool placement comes for free from `usableAsTool: true` — n8n's backend clones the node into `apifyTool` and stamps the AI codex itself (`tool-generation/utils.js#setToolCodex`). `subcategories.Tools` is safe and is preserved onto that generated tool; it only picks the group inside the AI › Tools panel.
