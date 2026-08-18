@@ -21,8 +21,14 @@
 		"url": "https://github.com/apify/n8n-nodes-apify.git"
 	},
 	"engines": {
-		"node": ">=22.0.0",
-		"npm": ">=11.10.0"
+		"node": ">=22.0.0"
+	},
+	"devEngines": {
+		"packageManager": {
+			"name": "npm",
+			"version": ">=11.10.0",
+			"onFail": "error"
+		}
 	},
 	"packageManager": "npm@11.19.0",
 	"main": "index.js",
