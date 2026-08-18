@@ -19,7 +19,9 @@ export const properties: INodeProperties[] = [
 		displayName: 'Actor',
 		name: 'actorId',
 		required: true,
-		description: 'Actor ID or a tilde-separated username and Actor name',
+		description:
+			'The ID of the Actor to run, in the format "username~actor-name" (e.g. "apify~web-scraper") ' +
+			'or as a plain actor ID. Browse available Actors at https://apify.com/store',
 		default: 'janedoe~my-actor',
 		type: 'string',
 		displayOptions: {
@@ -35,7 +37,11 @@ export const properties: INodeProperties[] = [
 		type: 'json',
 		default: '{}',
 		description:
-			'JSON input for the Actor run, which you can find on the Actor input page in Apify Console. If empty, the run uses the input specified in the default run configuration. https://console.apify.com',
+			'JSON input for the Actor. Structure depends on the specific Actor being run. ' +
+			'For web scrapers, common fields include: startUrls (array of {"url": "..."} objects), ' +
+			'maxCrawlPages (number, limits pages crawled), and proxyConfiguration ({"useApifyProxy": true}). ' +
+			"Pass {} to use the Actor's default configuration. " +
+			'Find the exact input schema for any Actor at https://console.apify.com',
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
@@ -79,6 +85,23 @@ timeout specified in the default run configuration for the Actor.`,
 		default: 1024,
 		type: 'options',
 		options: helpers.consts.memoryOptions,
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Run actor'],
+			},
+		},
+	},
+	{
+		displayName: 'Maximum Cost per Run (USD)',
+		name: 'maxTotalChargeUsd',
+		description:
+			'Maximum total amount in USD that the run may be charged. Applies to Actors with pay-per-event or pay-per-result pricing; the run is aborted once the limit is reached. Leave empty for no limit.',
+		default: null,
+		type: 'number',
+		typeOptions: {
+			minValue: 0,
+		},
 		displayOptions: {
 			show: {
 				resource: ['Actors'],

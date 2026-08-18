@@ -53,7 +53,7 @@ const resourceLocatorProperty: INodeProperties = {
 				},
 			],
 			placeholder: 'WAtmhr6rhfBnwqKDY',
-			url: '=http:/console.apify.com/actors/{{ $value }}/runs/{{ $value }}#log',
+			url: '=https://console.apify.com/actors/runs/{{$value}}#log',
 		},
 	],
 };
@@ -89,7 +89,7 @@ export async function listRuns(this: ILoadOptionsFunctions): Promise<INodeListSe
 
 	return {
 		results: items.map((b: any) => {
-			const url = `https://console.apify.com/runs/${b.id}`;
+			const url = `https://console.apify.com/actors/runs/${b.id}`;
 
 			const readableDateTime = b.finishedAt
 				? `${new Date(b.finishedAt).toDateString()} ${new Date(b.finishedAt).toLocaleTimeString()}`

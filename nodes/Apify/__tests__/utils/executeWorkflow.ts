@@ -1,10 +1,12 @@
 import {
+	createRunExecutionData,
 	ICredentialsHelper,
 	IExecuteFunctions,
 	IExecuteSingleFunctions,
 	INodeExecutionData,
 	IRun,
 	ITaskData,
+	NodeApiError,
 } from 'n8n-workflow';
 import { nodeTypes } from './nodeTypesClass';
 import { IGetNodeParameterOptions } from 'n8n-workflow';
@@ -122,7 +124,8 @@ export const executeWorkflow = async ({
 			options?: IGetNodeParameterOptions,
 		) => {
 			if (options?.extractValue) return node.parameters[parameterName].value;
-			return node.parameters[parameterName];
+			// Mirror n8n: fall back to the provided default when the parameter is unset.
+			return node.parameters[parameterName] ?? fallbackValue;
 		},
 		getInputData: (): INodeExecutionData[] => {
 			// Provide at least one empty item so loops like `for (let i = 0; i < items.length; i++)`
@@ -161,15 +164,20 @@ export const executeWorkflow = async ({
 						body: JSON.stringify(response.data), // Needed by key-value tests
 					};
 				} catch (error: any) {
-					// Re-throw with the same structure as n8n would
+					// Mirror how n8n's real httpRequestWithAuthentication surfaces HTTP failures:
+					// it wraps them in a NodeApiError that preserves the parsed response body on
+					// `context.data` (and keeps the status on `httpCode`).
 					if (error.response) {
-						const err = new Error(error.response.statusText || 'Request failed');
-						(err as any).httpCode = error.response.status;
-						(err as any).response = {
-							body: error.response.data,
-							statusCode: error.response.status,
+						const rawError: any = new Error(
+							`Request failed with status code ${error.response.status}`,
+						);
+						rawError.httpCode = error.response.status;
+						rawError.response = {
+							data: error.response.data,
+							status: error.response.status,
+							statusText: error.response.statusText,
 						};
-						throw err;
+						throw new NodeApiError(this.getNode(), rawError);
 					}
 					throw error;
 				}
@@ -193,6 +201,7 @@ export const executeWorkflow = async ({
 	// Build fake ITaskData
 	const taskData: ITaskData = {
 		startTime: Date.now(),
+		executionIndex: 0,
 		executionTime: 1,
 		executionStatus: 'success',
 		data: { main: result as any },
@@ -207,16 +216,17 @@ export const executeWorkflow = async ({
 	const executionData: IRun = {
 		mode: 'manual',
 		status: 'success',
-		data: {
+		data: createRunExecutionData({
 			resultData: {
 				runData: {
 					[node.name]: [taskData],
 				},
 			},
-		},
+		}),
 		finished: true,
 		startedAt: new Date(),
 		stoppedAt: new Date(),
+		storedAt: 'db',
 	};
 
 	return { executionData };

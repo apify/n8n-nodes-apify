@@ -44,4 +44,34 @@ export const properties: INodeProperties[] = [
 			},
 		},
 	},
+	{
+		displayName: 'Output Format',
+		name: 'outputFormat',
+		type: 'options',
+		default: 'markdown',
+		description: 'Which content format to return. Markdown is recommended for AI agents and LLMs.',
+		options: [
+			{
+				name: 'Markdown',
+				value: 'markdown',
+				description: 'Clean markdown - best for AI agents and LLMs',
+			},
+			{
+				name: 'HTML',
+				value: 'html',
+				description: 'Raw HTML - best for programmatic processing',
+			},
+			{
+				name: 'Text',
+				value: 'text',
+				description: 'Plain text with no formatting',
+			},
+		],
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Scrape single URL'],
+			},
+		},
+	},
 ];

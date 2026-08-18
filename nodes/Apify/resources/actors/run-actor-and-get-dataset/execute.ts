@@ -1,6 +1,7 @@
 import { IExecuteFunctions, INodeExecutionData, NodeApiError } from 'n8n-workflow';
 import { apiRequest } from '../../genericFunctions';
 import { executeActor } from '../../executeActor';
+import { consts } from '../../../helpers';
 
 export async function runActorAndGetDataset(
 	this: IExecuteFunctions,
@@ -11,6 +12,7 @@ export async function runActorAndGetDataset(
 	}) as string;
 	const timeout = this.getNodeParameter('timeout', i) as number | null;
 	const memory = this.getNodeParameter('memory', i) as number | null;
+	const maxTotalChargeUsd = this.getNodeParameter('maxTotalChargeUsd', i, null) as number | null;
 	const buildParam = this.getNodeParameter('build', i) as string | null;
 	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
 
@@ -18,6 +20,7 @@ export async function runActorAndGetDataset(
 		actorId,
 		timeout,
 		memory,
+		maxTotalChargeUsd,
 		buildParam,
 		rawStringifiedInput,
 		waitForFinish: true,
@@ -39,6 +42,7 @@ export async function runActorAndGetDataset(
 		method: 'GET',
 		uri: `/v2/datasets/${lastRunData.defaultDatasetId}/items`,
 		qs: { format: 'json' },
+		timeout: consts.DATASET_REQUEST_TIMEOUT_MS,
 	});
 
 	return this.helpers.returnJsonArray(datasetItems);

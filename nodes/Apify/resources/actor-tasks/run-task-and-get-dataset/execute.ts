@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { apiRequest, customBodyParser, pollRunStatus } from '../../genericFunctions';
+import { consts } from '../../../helpers';
 
 export async function runTaskAndGetDataset(
 	this: IExecuteFunctions,
@@ -16,6 +17,7 @@ export async function runTaskAndGetDataset(
 	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
 	const timeout = this.getNodeParameter('timeout', i, null) as number | null;
 	const memory = this.getNodeParameter('memory', i, null) as number | null;
+	const maxTotalChargeUsd = this.getNodeParameter('maxTotalChargeUsd', i, null) as number | null;
 	const build = this.getNodeParameter('build', i, '') as string;
 
 	let input: any;
@@ -35,6 +37,8 @@ export async function runTaskAndGetDataset(
 	const qs: Record<string, any> = {};
 	if (timeout != null) qs.timeout = timeout;
 	if (memory != null) qs.memory = memory;
+	// 0 or empty means no limit
+	if (maxTotalChargeUsd != null && maxTotalChargeUsd > 0) qs.maxTotalChargeUsd = maxTotalChargeUsd;
 	if (build) qs.build = build;
 	qs.waitForFinish = 0; // always start run without waiting
 
@@ -70,6 +74,7 @@ export async function runTaskAndGetDataset(
 		method: 'GET',
 		uri: `/v2/datasets/${lastRunData.defaultDatasetId}/items`,
 		qs: { format: 'json' },
+		timeout: consts.DATASET_REQUEST_TIMEOUT_MS,
 	});
 
 	return this.helpers.returnJsonArray(datasetItems);

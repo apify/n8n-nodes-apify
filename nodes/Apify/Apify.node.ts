@@ -3,7 +3,6 @@
 
 import {
 	IExecuteFunctions,
-	INodeExecutionData,
 	INodeType,
 	INodeTypeDescription,
 	NodeConnectionType
@@ -17,7 +16,7 @@ export class Apify implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Apify',
 		name: 'apify',
-		icon: 'file:apify.svg',
+		icon: { light: 'file:apify-light.svg', dark: 'file:apify-dark.svg' },
 		group: ['transform'],
 		version: 1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
@@ -56,22 +55,11 @@ export class Apify implements INodeType {
 
 	methods = methods;
 
+	// continueOnFail is handled inside executeAndLinkItems (see resources/genericFunctions.ts).
+	// eslint-disable-next-line @n8n/community-nodes/require-continue-on-fail
 	async execute(this: IExecuteFunctions) {
-		return await executeAndLinkItems.call(this, async function (this: IExecuteFunctions) {
-			const items = this.getInputData();
-			const returnData: INodeExecutionData[] = [];
-
-			for (let i = 0; i < items.length; i++) {
-				const data = await resourceRouter.call(this, i);
-				// `data` may be an array of items or a single item, so we either push the spreaded array or the single item
-				if (Array.isArray(data)) {
-					returnData.push(...data);
-				} else {
-					returnData.push(data);
-				}
-			}
-
-			return returnData;
+		return await executeAndLinkItems.call(this, async function (this: IExecuteFunctions, itemIndex: number) {
+			return await resourceRouter.call(this, itemIndex);
 		});
 	}
 }

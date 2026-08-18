@@ -26,6 +26,18 @@ export class CredentialsHelper extends ICredentialsHelper {
 		return [];
 	}
 
+	isCredentialUsableByNode(credentialType: string, nodeType: string): boolean {
+		return true;
+	}
+
+	async runPreAuthentication(
+		helpers: IHttpRequestHelper,
+		credentials: ICredentialDataDecryptedObject,
+		typeName: string,
+	): Promise<ICredentialDataDecryptedObject | undefined> {
+		return undefined;
+	}
+
 	async authenticate(
 		credentials: ICredentialDataDecryptedObject,
 		typeName: string,
@@ -66,6 +78,13 @@ export class CredentialsHelper extends ICredentialsHelper {
 		nodeCredentials: INodeCredentialsDetails,
 		type: string,
 		data: ICredentialDataDecryptedObject,
+	): Promise<void> {}
+
+	async updateCredentialsOauthTokenData(
+		nodeCredentials: INodeCredentialsDetails,
+		type: string,
+		data: ICredentialDataDecryptedObject,
+		additionalData: IWorkflowExecuteAdditionalData,
 	): Promise<void> {}
 
 	getCredentialsProperties(type: string): INodeProperties[] {
