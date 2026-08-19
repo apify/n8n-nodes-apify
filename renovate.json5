@@ -3,59 +3,21 @@
 
   extends: [
     'config:recommended',
-    // This repo enforces Conventional Commits. config:recommended pulls in
-    // :semanticPrefixFixDepsChoreOthers, which labels production-dependency bumps
-    // `fix:`; dependency bumps are not user-facing fixes here.
+    // Dependency bumps are `chore:`, never `fix:`.
     ':semanticCommitTypeAll(chore)',
   ],
   semanticCommits: 'enabled',
 
   timezone: 'Europe/Prague',
   schedule: ['every weekday'],
+  labels: ['t-integration', 'dependencies'],
 
-  // --- Supply-chain cooldown (see #12) ---------------------------------------
-  // Mirrors `min-release-age=1` in .npmrc. Both layers are required: Renovate
-  // cannot read the package manager's setting, and `npm ci` does not apply
-  // min-release-age because it installs straight from the lockfile.
-  //
-  // Renovate also passes `--before=<now - 1 day>` to npm when it regenerates the
-  // lockfile, and uses the stricter of that and .npmrc's `min-release-age`, so the
-  // two settings compose rather than conflict.
-  minimumReleaseAge: '1 day',
-  // Also the current Renovate default. Set explicitly because the cooldown is only
-  // load-bearing with it: pending versions are held back instead of being shipped.
+  minimumReleaseAge: '3 days',
+  // Skip a version while it is still in cooldown instead of opening a pending PR.
   internalChecksFilter: 'strict',
 
-  // Regenerating the lockfile from scratch is what makes the cooldown apply to
-  // *transitive* dependencies — Renovate does not otherwise manage those.
+  // Weekly lockfile rebuild — the only time transitive dependencies are refreshed.
   lockFileMaintenance: {
     enabled: true,
-    schedule: ['before 4am on monday'],
   },
-
-  packageRules: [
-    // --- Update types that carry no release timestamp ------------------------
-    // minimumReleaseAgeBehaviour defaults to `timestamp-required`, so an update type
-    // Renovate cannot timestamp never satisfies the cooldown and is held back
-    // forever. These carve-outs mirror Renovate's own `security:minimumReleaseAge*`
-    // presets. Keep in sync with the support table in Renovate's docs:
-    // https://docs.renovatebot.com/key-concepts/minimum-release-age/
-    {
-      description: 'Lockfile maintenance is performed by npm, which applies its own min-release-age from .npmrc',
-      matchUpdateTypes: ['lockFileMaintenance'],
-      minimumReleaseAge: null,
-    },
-    {
-      description: 'Renovate provides no release timestamp for these update types',
-      matchUpdateTypes: ['bump', 'lockfileUpdate', 'rollback', 'pin', 'replacement'],
-      minimumReleaseAge: null,
-    },
-
-    // --- Floors, not versions to track ---------------------------------------
-    {
-      description: 'engines.node and engines.npm are consumer-facing minimums, not versions to keep current — raising them narrows who can install the published package',
-      matchDepTypes: ['engines'],
-      enabled: false,
-    },
-  ],
 }
