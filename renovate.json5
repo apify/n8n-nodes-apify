@@ -12,7 +12,7 @@
   // Cron (minutes must be `*` — Renovate has no minute granularity): all day Wednesday,
   // i.e. dependency PRs land at most once a week. Later.js text syntax is deprecated.
   schedule: ['* * * * 3'],
-  labels: ['t-integration', 'dependencies'],
+  labels: ['t-integrations', 'dependencies'],
 
   minimumReleaseAge: '3 days',
   // Skip a version while it is still in cooldown instead of opening a pending PR.
