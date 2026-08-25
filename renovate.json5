@@ -1,0 +1,24 @@
+{
+	$schema: 'https://docs.renovatebot.com/renovate-schema.json',
+
+	extends: [
+		'config:recommended',
+		// Dependency bumps are `chore:`, never `fix:`.
+		':semanticCommitTypeAll(chore)',
+	],
+	semanticCommits: 'enabled',
+
+	timezone: 'Europe/Prague',
+	schedule: ['* * * * 3'],
+	labels: ['t-integrations', 'dependencies'],
+
+	minimumReleaseAge: '3 days',
+	// Skip a version while it is still in cooldown instead of opening a pending PR.
+	internalChecksFilter: 'strict',
+
+	// Weekly lockfile rebuild — the only time transitive dependencies are refreshed.
+	lockFileMaintenance: {
+		enabled: true,
+		schedule: ['* * * * 3'],
+	},
+}
