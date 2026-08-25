@@ -1,27 +1,24 @@
 {
-  $schema: 'https://docs.renovatebot.com/renovate-schema.json',
+	$schema: 'https://docs.renovatebot.com/renovate-schema.json',
 
-  extends: [
-    'config:recommended',
-    // Dependency bumps are `chore:`, never `fix:`.
-    ':semanticCommitTypeAll(chore)',
-  ],
-  semanticCommits: 'enabled',
+	extends: [
+		'config:recommended',
+		// Dependency bumps are `chore:`, never `fix:`.
+		':semanticCommitTypeAll(chore)',
+	],
+	semanticCommits: 'enabled',
 
-  timezone: 'Europe/Prague',
-  // Cron (minutes must be `*` — Renovate has no minute granularity): all day Wednesday,
-  // i.e. dependency PRs land at most once a week. Later.js text syntax is deprecated.
-  schedule: ['* * * * 3'],
-  labels: ['t-integrations', 'dependencies'],
+	timezone: 'Europe/Prague',
+	schedule: ['* * * * 3'],
+	labels: ['t-integrations', 'dependencies'],
 
-  minimumReleaseAge: '3 days',
-  // Skip a version while it is still in cooldown instead of opening a pending PR.
-  internalChecksFilter: 'strict',
+	minimumReleaseAge: '3 days',
+	// Skip a version while it is still in cooldown instead of opening a pending PR.
+	internalChecksFilter: 'strict',
 
-  // Weekly lockfile rebuild — the only time transitive dependencies are refreshed.
-  lockFileMaintenance: {
-    enabled: true,
-    // Overrides the built-in default (`before 4am on monday`) so it follows the same weekly slot.
-    schedule: ['* * * * 3'],
-  },
+	// Weekly lockfile rebuild — the only time transitive dependencies are refreshed.
+	lockFileMaintenance: {
+		enabled: true,
+		schedule: ['* * * * 3'],
+	},
 }
