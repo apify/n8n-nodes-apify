@@ -9,7 +9,9 @@
   semanticCommits: 'enabled',
 
   timezone: 'Europe/Prague',
-  schedule: ['every weekday'],
+  // Cron (minutes must be `*` — Renovate has no minute granularity): all day Wednesday,
+  // i.e. dependency PRs land at most once a week. Later.js text syntax is deprecated.
+  schedule: ['* * * * 3'],
   labels: ['t-integration', 'dependencies'],
 
   minimumReleaseAge: '3 days',
@@ -19,5 +21,7 @@
   // Weekly lockfile rebuild — the only time transitive dependencies are refreshed.
   lockFileMaintenance: {
     enabled: true,
+    // Overrides the built-in default (`before 4am on monday`) so it follows the same weekly slot.
+    schedule: ['* * * * 3'],
   },
 }
