@@ -16,6 +16,8 @@ Community n8n node package (`@apify/n8n-nodes-apify`) that integrates the [Apify
 - `docs/` — README screenshots.
 - `nodes.config.js` — `@n8n/node-cli` config (package name, credentials, OpenAPI tags/excludes, name overrides).
 - `gulpfile.js`, `tsconfig.json`, `eslint.config.mjs`, `tslint.json`, `.eslintrc.prepublish.js`, `.prettierrc.js`, `jest.config.js` — build / lint / format / test config.
+- `.npmrc` — `min-release-age=3` (npm refuses packages published less than 3 days ago) and `engine-strict=true`.
+- `renovate.json5` — Renovate config: weekly (Wednesday) dependency PRs plus lockfile maintenance.
 - `.github/workflows/ci.yml` — lint, type-check, build, test on push / PR to `master`.
 - `.github/workflows/publish.yml` — release-triggered build, version bump, npm publish.
 
@@ -43,6 +45,7 @@ For trigger development on self-hosted n8n, export a public `WEBHOOK_URL` before
 ## Conventions
 - Default branch: `master`. PRs target `master`; CI must pass (lint, type-check, build, test).
 - Conventional Commits (`feat:`, `fix:`, `chore:`, `ci:`, `chore(release):`); `[skip ci]` suffix for release version-bump commits.
+- Dependency updates are automated by Renovate on a weekly Wednesday schedule (`Europe/Prague`), labelled `t-integrations` / `dependencies`, and always committed as `chore:` — never `fix:`. New versions must be ≥3 days old (`minimumReleaseAge`, mirroring `.npmrc`'s `min-release-age`); `internalChecksFilter: 'strict'` skips versions still in cooldown instead of opening pending PRs. Keep the two cooldown values in sync when changing either.
 - Releases: publish a GitHub Release with tag `vX.Y.Z`; the `publish.yml` workflow extracts the version, runs `npm version`, commits `chore(release): set version to X.Y.Z [skip ci]` to the target branch, and publishes `@apify/n8n-nodes-apify@X.Y.Z` to npm with `--provenance --access public` (skips if version already exists).
 - Two credential types: `apifyApi` (API key, all installs) and `apifyOAuth2Api` (n8n cloud only). `apifyApi` exposes an n8n credential `test` that `GET`s `/v2/users/me` against `APIFY_API_URL` — so `credentials/` imports from `nodes/Apify/helpers/consts`; keep base URLs in `consts.ts` rather than hard-coding them.
 - Tests live in `nodes/Apify/__tests__/` matching `**/?(*.)+(spec).ts`; excluded from the TypeScript build via `tsconfig.json`. Specs drive nodes through the `executeWorkflow` harness (`__tests__/utils/executeWorkflow.ts`) with workflow fixtures in `__tests__/workflows/`; to test a non-default parameter, spread the fixture and override that node's `parameters`.
