@@ -4,6 +4,7 @@ import { INodeProperties } from 'n8n-workflow';
 
 import { aggregateNodeMethods } from '../helpers/methods';
 import { runHooks } from './hooks';
+import { getActorInputFields } from './actorInputMapper';
 
 import * as actors from './actors';
 import * as actorTasks from './actor-tasks';
@@ -59,6 +60,7 @@ const { properties, methods: selfMethods } = runHooks(rawProperties);
 
 const methods = aggregateNodeMethods([
 	selfMethods,
+	{ resourceMapping: { getActorInputFields } },
 	actors.methods,
 	actorTasks.methods,
 	actorRuns.methods,

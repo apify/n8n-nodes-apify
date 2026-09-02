@@ -10,7 +10,7 @@ const rawOption: INodePropertyOptions = {
 	value: 'Run actor',
 	action: 'Run an Actor',
 	description:
-		'Runs an Actor. You can override the Actor’s input configuration by providing a custom body, which will override the prefilled input values.',
+		'Runs an Actor with input from its schema fields or a JSON object.',
 };
 
 const { properties, option } = runHooks(rawOption, rawProperties);
