@@ -1,9 +1,3 @@
-# Distributed to each repo by create-workflow-prs.sh in apify/integrations-team. Calls the reusable
-# workflow in apify/workflows, and supersedes claude-md-maintenance.yml, deleted in the same PR.
-#
-# Needs the standard layout, once per repo: AGENTS.md a regular file holding the doc, CLAUDE.md a
-# regular file whose first line is exactly `@AGENTS.md`. Any other shape fails the run.
-
 name: Keep AGENTS.md accurate
 
 on:
