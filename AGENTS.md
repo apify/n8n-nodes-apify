@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 ## Project Purpose
 Community n8n node package (`@apify/n8n-nodes-apify`) that integrates the [Apify](https://apify.com) platform with [n8n](https://n8n.io/) workflows. Provides nodes to run Apify Actors and tasks, fetch dataset / key-value-store data, and trigger workflows when Actor or task runs finish.
@@ -18,6 +18,7 @@ Community n8n node package (`@apify/n8n-nodes-apify`) that integrates the [Apify
 - `gulpfile.js`, `tsconfig.json`, `eslint.config.mjs`, `tslint.json`, `.eslintrc.prepublish.js`, `.prettierrc.js`, `jest.config.js` — build / lint / format / test config.
 - `.github/workflows/ci.yml` — lint, type-check, build, test on push / PR to `master`.
 - `.github/workflows/publish.yml` — release-triggered build, version bump, npm publish.
+- `AGENTS.md` — this file, the agent/contributor instruction doc; `CLAUDE.md` is only a one-line `@AGENTS.md` pointer. Put instructions in `AGENTS.md` and leave the pointer alone. `.github/workflows/agents-md-maintenance.yml` keeps this file in sync on every PR.
 
 ## Technology Stack
 - **Language:** TypeScript 5.5 (CommonJS, target ES2019, strict mode).
