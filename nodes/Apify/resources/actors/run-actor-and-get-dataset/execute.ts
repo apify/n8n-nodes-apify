@@ -1,6 +1,7 @@
 import { IExecuteFunctions, INodeExecutionData, NodeApiError } from 'n8n-workflow';
 import { apiRequest } from '../../genericFunctions';
 import { executeActor } from '../../executeActor';
+import { resolveActorInput } from '../../actorInputHelpers';
 import { consts } from '../../../helpers';
 
 export async function runActorAndGetDataset(
@@ -14,7 +15,7 @@ export async function runActorAndGetDataset(
 	const memory = this.getNodeParameter('memory', i) as number | null;
 	const maxTotalChargeUsd = this.getNodeParameter('maxTotalChargeUsd', i, null) as number | null;
 	const buildParam = this.getNodeParameter('build', i) as string | null;
-	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
+	const rawStringifiedInput = resolveActorInput.call(this, i);
 
 	const { runId, lastRunData } = await executeActor.call(this, {
 		actorId,

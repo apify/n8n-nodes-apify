@@ -1,5 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { executeActor } from '../../executeActor';
+import { resolveActorInput } from '../../actorInputHelpers';
 
 export async function runActor(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorId = this.getNodeParameter('actorId', i, undefined, {
@@ -10,7 +11,7 @@ export async function runActor(this: IExecuteFunctions, i: number): Promise<INod
 	const maxTotalChargeUsd = this.getNodeParameter('maxTotalChargeUsd', i, null) as number | null;
 	const buildParam = this.getNodeParameter('build', i) as string | null;
 	const waitForFinish = this.getNodeParameter('waitForFinish', i) as boolean;
-	const rawStringifiedInput = this.getNodeParameter('customBody', i, '{}') as string | object;
+	const rawStringifiedInput = resolveActorInput.call(this, i);
 
 	const { lastRunData } = await executeActor.call(this, {
 		actorId,

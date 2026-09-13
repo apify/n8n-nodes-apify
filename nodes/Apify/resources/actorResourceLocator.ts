@@ -64,6 +64,7 @@ const actorSourceProperty: INodeProperties = {
 	displayName: 'Actor Source',
 	name: 'actorSource',
 	type: 'options',
+	noDataExpression: true,
 	options: [
 		{
 			name: 'Recently Used Actors',
@@ -83,10 +84,16 @@ function mapProperty(property: INodeProperties): INodeProperties {
 	return {
 		...property,
 		...resourceLocatorProperty,
+		displayOptions: property.displayOptions,
+		required: property.required,
+		description: property.description,
+		...(property.noDataExpression !== undefined
+			? { noDataExpression: property.noDataExpression }
+			: {}),
 	};
 }
 
-function createActorSourceProperty(displayOptions: any): INodeProperties {
+function createActorSourceProperty(displayOptions: INodeProperties['displayOptions']): INodeProperties {
 	return {
 		...actorSourceProperty,
 		displayOptions,
