@@ -107,8 +107,9 @@ into the four terminal `ACTOR.RUN.*` events.
 
 1. Copy an existing operation folder; every property needs `displayOptions.show` for both
    `resource` and `operation`.
-2. Register it in the resource's `index.ts` (`operations` array and `rawProperties`) and in its
-   `router.ts` (import `name`, add a `case`).
+2. Register it in the resource's `index.ts` (the `operations` array — but `operationsV1` *and*
+   `operationsV2` under `actors/` — plus `rawProperties`) and in its `router.ts` (import `name`,
+   add a `case`).
 3. If it starts a run, go through `executeActor` and add `maxTotalChargeUsd`.
 4. Add a workflow fixture under `__tests__/workflows/<resource>/` and a `nock`-backed spec.
 
