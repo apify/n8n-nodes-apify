@@ -156,12 +156,12 @@ HTTP requests so `nock` can intercept them. Consequences:
   `helpers/consts.ts`, resolved through `apiRequest`'s absolute-URL branch) with a single POST
   and passes the response envelope (`url`, `fetch`, `metadata`, one key per requested `formats`
   entry) through verbatim — no `pollRunStatus`, no dataset fetch, no stripping. Web Fetch errors
-  are flat `{ code, error }` bodies and are mapped to a `NodeApiError` in the operation (the
-  custom message must go in the `options` arg — n8n rewrites messages set on the `errorResponse`
-  when an `httpCode` is present, and re-wrapping an existing `NodeApiError` returns the original
-  untouched). Headers are a JSON-type parameter defaulting to `'{}'` (empty-string would make
-  n8n's JSON editor throw "Unexpected end of JSON input"); invalid or non-object input throws
-  a `NodeOperationError` with an actionable message.
+  arrive as a flat `{ code, error }` or a nested `{ error: { message, type } }` body; both are
+  mapped to a `NodeApiError` in the operation (the custom message must go in the `options` arg —
+  n8n rewrites messages set on the `errorResponse` when an `httpCode` is present, and re-wrapping
+  an existing `NodeApiError` returns the original untouched). Headers are a JSON-type parameter
+  defaulting to `'{}'` (empty-string would make n8n's JSON editor throw "Unexpected end of JSON
+  input"); invalid or non-object input throws a `NodeOperationError` with an actionable message.
 - `key-value-stores/get-key-value-store-record` bypasses `apiRequest` and hard-codes `'apifyApi'`
   because it needs `returnFullResponse` + `encoding: 'arraybuffer'` for binary records, which
   `apiRequest`'s `json: true` precludes. It therefore ignores the `authentication` parameter.
