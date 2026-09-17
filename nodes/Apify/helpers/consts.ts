@@ -8,6 +8,10 @@ export const WAIT_FOR_FINISH_POLL_INTERVAL = 1000;
 export const DEFAULT_REQUEST_TIMEOUT_MS = 60_000;
 // Longer timeout for dataset item downloads, which can be large and slow to fully transfer.
 export const DATASET_REQUEST_TIMEOUT_MS = 10 * 60 * 1000;
+// Web Fetch renders a page in a single POST; a standby cold-start plus a slow page needs far
+// more than the default 60s, and apiRequest does not retry POST network errors. Modelled on
+// the dataset timeout and kept well above the 120s floor.
+export const WEB_FETCH_REQUEST_TIMEOUT_MS = 10 * 60 * 1000;
 // Grace period added on top of a run's own `timeoutSecs` when polling
 export const WAIT_FOR_FINISH_BUFFER_MS = 5 * 60 * 1000;
 // Absolute ceiling for polling when a run has no timeout of its own (timeoutSecs = 0).

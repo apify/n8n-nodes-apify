@@ -8,6 +8,7 @@ import getRunWorkflow from './workflows/actor-runs/get-run.workflow.json';
 import getUserRunsListWorkflow from './workflows/actor-runs/get-user-runs-list.workflow.json';
 import getRunsWorkflow from './workflows/actor-runs/get-runs.workflow.json';
 import runActorAndGetDatasetWorkflow from './workflows/actors/run-actor-and-get-dataset.workflow.json';
+import webFetchWorkflow from './workflows/actors/web-fetch.workflow.json';
 import runTaskAndGetDatasetWorkflow from './workflows/actor-tasks/run-task-and-get-dataset.workflow.json';
 import * as fixtures from './utils/fixtures';
 import * as helpers from '../helpers';
@@ -897,6 +898,166 @@ describe('Apify Node', () => {
 						}),
 					).rejects.toThrow(/Invalid URL/);
 				}
+			});
+		});
+
+		describe('web-fetch', () => {
+			// The apify/web-fetch Actor's standby endpoint (consts.WEB_FETCH_STANDBY_URL).
+			const WEB_FETCH_HOST = 'https://web-fetch.apify.actor';
+
+			// Spread the shared fixture and override the Web Fetch node's parameters,
+			// mirroring the scrape-single-url overrides above.
+			const makeWorkflow = (overrides: Record<string, any>) => ({
+				...webFetchWorkflow,
+				nodes: webFetchWorkflow.nodes.map((node: any) =>
+					node.name === 'Web Fetch'
+						? { ...node, parameters: { ...node.parameters, ...overrides } }
+						: node,
+				),
+			});
+
+			it('should run the web-fetch workflow (default formats = markdown)', async () => {
+				const scope = nock(WEB_FETCH_HOST).post('/').reply(200, fixtures.getWebFetchResult());
+
+				const { executionData } = await executeWorkflow({
+					credentialsHelper,
+					workflow: webFetchWorkflow,
+				});
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Web Fetch');
+				expect(nodeResults.length).toBe(1);
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+
+				const data = getTaskData(nodeResult);
+				// The stub injects `headers`/`body` onto any non-/items response, so match
+				// the fixture as a subset rather than asserting strict equality.
+				expect(data).toMatchObject(fixtures.getWebFetchResult());
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should POST the url and the selected formats', async () => {
+				let capturedBody: any;
+				const scope = nock(WEB_FETCH_HOST)
+					.post('/', (body) => {
+						capturedBody = body;
+						return true;
+					})
+					.reply(200, fixtures.getWebFetchResult());
+
+				const workflow = makeWorkflow({ formats: ['markdown', 'html'] });
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Web Fetch');
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+
+				expect(capturedBody.url).toBe('https://docs.apify.com/academy/web-scraping-for-beginners');
+				expect(capturedBody.formats).toEqual(['markdown', 'html']);
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should forward custom JSON headers when provided', async () => {
+				let capturedBody: any;
+				const scope = nock(WEB_FETCH_HOST)
+					.post('/', (body) => {
+						capturedBody = body;
+						return true;
+					})
+					.reply(200, fixtures.getWebFetchResult());
+
+				const workflow = makeWorkflow({ headers: '{"Accept-Language":"fr-FR"}' });
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Web Fetch');
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+
+				expect(capturedBody.headers).toEqual({ 'Accept-Language': 'fr-FR' });
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should omit the headers key when none are provided (default {})', async () => {
+				let capturedBody: any;
+				const scope = nock(WEB_FETCH_HOST)
+					.post('/', (body) => {
+						capturedBody = body;
+						return true;
+					})
+					.reply(200, fixtures.getWebFetchResult());
+
+				// The base workflow sets no `headers`, so the handler default `'{}'` applies.
+				const { executionData } = await executeWorkflow({
+					credentialsHelper,
+					workflow: webFetchWorkflow,
+				});
+
+				const nodeResults = getRunTaskDataByNodeName(executionData, 'Web Fetch');
+				const [nodeResult] = nodeResults;
+				expect(nodeResult.executionStatus).toBe('success');
+
+				expect(capturedBody).not.toHaveProperty('headers');
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should reject un-parseable headers before calling the API', async () => {
+				const workflow = makeWorkflow({ headers: '{not json}' });
+
+				await expect(executeWorkflow({ credentialsHelper, workflow })).rejects.toThrow(
+					/Invalid Headers/,
+				);
+			});
+
+			it('should reject an obviously invalid URL before calling the API', async () => {
+				for (const badUrl of ['https://bla', 'not-a-url', 'ftp://example.com']) {
+					await expect(
+						executeWorkflow({ credentialsHelper, workflow: makeWorkflow({ url: badUrl }) }),
+					).rejects.toThrow(/Invalid URL/);
+				}
+			});
+
+			// The two error-envelope cases below are the coverage the reviewer
+			// specifically called out on web-fetch/execute.ts.
+			it('should map the flat { code, error } error envelope to a NodeApiError', async () => {
+				const scope = nock(WEB_FETCH_HOST)
+					.post('/')
+					.reply(400, { code: 'BAD_REQUEST', error: 'Something failed' });
+
+				let thrown: any;
+				try {
+					await executeWorkflow({ credentialsHelper, workflow: webFetchWorkflow });
+				} catch (error) {
+					thrown = error;
+				}
+
+				expect(thrown).toBeDefined();
+				expect(thrown.message).toContain('Something failed');
+				expect(thrown.description).toContain('Web Fetch error code: BAD_REQUEST');
+
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should map the nested { error: { message, type } } error envelope to a NodeApiError', async () => {
+				const scope = nock(WEB_FETCH_HOST)
+					.post('/')
+					.reply(401, { error: { message: 'Unauthorized', type: 'auth' } });
+
+				let thrown: any;
+				try {
+					await executeWorkflow({ credentialsHelper, workflow: webFetchWorkflow });
+				} catch (error) {
+					thrown = error;
+				}
+
+				expect(thrown).toBeDefined();
+				expect(thrown.message).toContain('Unauthorized');
+				expect(thrown.description).toContain('Web Fetch error type: auth');
+
+				expect(scope.isDone()).toBe(true);
 			});
 		});
 	});

@@ -59,6 +59,9 @@ export async function webFetch(
 				formats,
 				...(Object.keys(headers).length > 0 ? { headers } : {}),
 			},
+			// A single page fetch can be slow (standby cold-start + slow page); the shared
+			// 60s default plus no POST network-error retries would make that a hard failure.
+			timeout: consts.WEB_FETCH_REQUEST_TIMEOUT_MS,
 		});
 
 		// The standby API returns the fetch metadata plus exactly the requested
