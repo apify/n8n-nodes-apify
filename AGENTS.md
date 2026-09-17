@@ -55,13 +55,12 @@ constants live in `helpers/consts.ts`.
 
 `executeAndLinkItems` owns the per-input-item loop, `pairedItem` linking, and `continueOnFail()`.
 Input iteration there and in `executeActor` has caused duplicate-run regressions before, so
-change it carefully. Because `continueOnFail` lives there, `Apify.node.ts#execute` carries an
-intentional `require-continue-on-fail` eslint-disable — leave it.
+change it carefully.
 
 ### Node → resource → operation tree
 
 `Apify.node.ts` is thin: properties from `Apify.properties.ts`, methods from `resources/index.ts`,
-`execute` delegating to `resources/router.ts`. Both nodes set `usableAsTool: true`.
+`execute` delegating to `resources/router.ts`. Only the action node sets `usableAsTool: true`.
 
 Every level of `nodes/Apify/resources/` repeats the same shape:
 
