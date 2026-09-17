@@ -151,7 +151,6 @@ export class ApifyTrigger implements INodeType {
 				description: 'The status of the Actor or task run that should trigger the workflow',
 			},
 		]),
-		usableAsTool: true,
 	};
 
 	webhookMethods = {
