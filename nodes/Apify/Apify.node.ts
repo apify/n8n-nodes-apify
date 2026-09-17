@@ -18,7 +18,7 @@ export class Apify implements INodeType {
 		name: 'apify',
 		icon: { light: 'file:apify-light.svg', dark: 'file:apify-dark.svg' },
 		group: ['transform'],
-		version: 1,
+		version: [1, 2],
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Access Apify tools for web scraping, data extraction, and automation.',
 		defaults: {

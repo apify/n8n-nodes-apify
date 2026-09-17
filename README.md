@@ -126,7 +126,8 @@ This node supports a wide range of Apify operations, organized by resource type:
   - Configurable timeout and memory limits
   - Build version selection
 - **Run Actor and get dataset items**: Execute an Actor, wait for it to finish, and return the dataset items
-- **Scrape Single URL**: Quick scraping of a single URL
+- **Web Fetch**: Fetch a single URL and get its content in exactly the requested formats (markdown, text, HTML, links, or raw), with optional custom headers
+- **Scrape Single URL** (deprecated): Quick scraping of a single URL - use Web Fetch instead
 - **Get Last Run**: Retrieve information about the most recent Actor run
 
 ### Actor tasks

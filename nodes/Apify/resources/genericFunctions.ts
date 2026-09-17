@@ -55,7 +55,9 @@ export async function apiRequest(
 	const { method, qs, uri, ...rest } = requestOptions;
 
 	const query = qs || {};
-	const endpoint = `https://api.apify.com${uri}`;
+	// An absolute URL (e.g. an Actor's standby endpoint) is used as-is, otherwise
+	// the path is resolved against the Apify API base URL.
+	const endpoint = uri?.startsWith('http') ? uri : `https://api.apify.com${uri}`;
 
 	const headers: Record<string, string> = {
 		'x-apify-integration-platform': 'n8n',
@@ -149,6 +151,34 @@ export async function apiRequest(
 }
 
 /**
+ * Validate that a value is a full http(s) URL with a proper domain name,
+ * throwing a NodeOperationError with an actionable message otherwise.
+ */
+export function validateUrl(
+	this: IHookFunctions | IExecuteFunctions | ILoadOptionsFunctions,
+	url: string,
+	itemIndex: number,
+): void {
+	const isValidHostname = (hostname: string): boolean =>
+		/^(?=.{1,253}$)((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63}$/.test(hostname);
+	try {
+		const parsedUrl = new URL(url);
+		if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+			throw new Error('Unsupported protocol');
+		}
+		if (!isValidHostname(parsedUrl.hostname)) {
+			throw new Error('Invalid hostname');
+		}
+	} catch {
+		throw new NodeOperationError(
+			this.getNode(),
+			`Invalid URL: "${url}". Provide a full, valid URL including a domain name, e.g. https://example.com.`,
+			{ itemIndex },
+		);
+	}
+}
+
+/**
  * Checks if the given status code is retryable
  * Status codes 429 (rate limit) and 500+ are retried,
  * Other status codes 300-499 (except 429) are not retried,
@@ -197,8 +227,7 @@ export async function retryWithExponentialBackoff(
 			// A missing/non-numeric status code usually means a network-level error
 			// (timeout, connection reset, DNS) rather than an HTTP response.
 			const isNetworkError = Number.isNaN(status);
-			const shouldRetry =
-				isStatusCodeRetryable(status) || (retryNetworkErrors && isNetworkError);
+			const shouldRetry = isStatusCodeRetryable(status) || (retryNetworkErrors && isNetworkError);
 			if (shouldRetry) {
 				//Generate a new sleep time based from interval * exponential^i function
 				const sleepTimeSecs = interval * Math.pow(exponential, i);

@@ -2,6 +2,20 @@ import { INodeProperties } from 'n8n-workflow';
 
 export const properties: INodeProperties[] = [
 	{
+		displayName:
+			'Deprecated: This action will be removed in the future, please use Web Fetch action instead',
+		name: 'notice',
+		type: 'notice',
+		default: '',
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Scrape single URL'],
+				'@version': [1],
+			},
+		},
+	},
+	{
 		displayName: 'URL',
 		name: 'url',
 		description: 'URL to be scraped. Must start with http:// or https:// and be a valid URL.',
@@ -11,6 +25,7 @@ export const properties: INodeProperties[] = [
 			show: {
 				resource: ['Actors'],
 				operation: ['Scrape single URL'],
+				'@version': [1],
 			},
 		},
 	},
@@ -41,6 +56,7 @@ export const properties: INodeProperties[] = [
 			show: {
 				resource: ['Actors'],
 				operation: ['Scrape single URL'],
+				'@version': [1],
 			},
 		},
 	},
@@ -71,6 +87,7 @@ export const properties: INodeProperties[] = [
 			show: {
 				resource: ['Actors'],
 				operation: ['Scrape single URL'],
+				'@version': [1],
 			},
 		},
 	},
