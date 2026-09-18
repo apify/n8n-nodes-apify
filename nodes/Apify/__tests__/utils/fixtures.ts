@@ -639,6 +639,38 @@ export const getScrapeSingleUrlItemsResult = () => {
 	];
 };
 
+// Response envelope of the Web Fetch standby API (https://web-fetch.apify.actor/):
+// fetch metadata, page metadata, and one key per requested format - here markdown only.
+export const getWebFetchResult = () => {
+	return {
+		url: 'https://docs.apify.com/academy/web-scraping-for-beginners',
+		fetch: {
+			loadedUrl: 'https://docs.apify.com/academy/web-scraping-for-beginners',
+			loadedTime: '2026-09-15T16:31:10.723Z',
+			httpStatusCode: 200,
+			contentLengthBytes: 1256,
+			contentType: 'text/html; charset=utf-8',
+		},
+		metadata: {
+			canonicalUrl: 'https://docs.apify.com/academy/web-scraping-for-beginners',
+			title: 'Web scraping basics for JavaScript devs | Academy | Apify Documentation',
+			description:
+				'Learn how to develop web scrapers with this comprehensive and practical course. Go from beginner to expert, all in one place.',
+			author: null,
+			keywords: null,
+			languageCode: 'en',
+			jsonLd: null,
+			headers: {
+				'content-type': 'text/html; charset=utf-8',
+				date: 'Tue, 15 Sep 2026 16:31:10 GMT',
+				server: 'cloudflare',
+			},
+		},
+		markdown:
+			'# Web scraping basics for JavaScript devs\n\nLearn how to develop web scrapers with this comprehensive and practical course. Go from beginner to expert, all in one place.',
+	};
+};
+
 
 export const abortRunResult = () => {
 	return {
