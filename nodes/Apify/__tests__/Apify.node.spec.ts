@@ -1012,6 +1012,24 @@ describe('Apify Node', () => {
 				);
 			});
 
+			it('should reject non-object headers (array) from AI tool calls', async () => {
+				await expect(
+					executeWorkflow({
+						credentialsHelper,
+						workflow: makeWorkflow({ headers: [1, 2, 3] }),
+					}),
+				).rejects.toThrow(/Invalid Headers/);
+			});
+
+			it('should reject non-object headers (number) from AI tool calls', async () => {
+				await expect(
+					executeWorkflow({
+						credentialsHelper,
+						workflow: makeWorkflow({ headers: 42 }),
+					}),
+				).rejects.toThrow(/Invalid Headers/);
+			});
+
 			it('should reject an obviously invalid URL before calling the API', async () => {
 				for (const badUrl of ['https://bla', 'not-a-url', 'ftp://example.com']) {
 					await expect(

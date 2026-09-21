@@ -17,7 +17,7 @@ function parseHeaders(rawHeaders: string | object): object {
 		if (rawHeaders && typeof rawHeaders === 'object' && !Array.isArray(rawHeaders)) {
 			return rawHeaders;
 		}
-		return {};
+throw new Error('not an object');
 	}
 	const trimmed = rawHeaders.trim();
 	if (!trimmed) return {};
