@@ -6,11 +6,16 @@ import { runHooks } from './hooks';
 export const scrapeSingleUrlName = 'Scrape single URL';
 
 const rawOption: INodePropertyOptions = {
-	name: 'Scrape Single URL',
+	name: '(Deprecated) Scrape Single URL',
 	value: scrapeSingleUrlName,
 	action: scrapeSingleUrlName,
 	description:
-		'Scrape a single URL using the Apify Website Content Crawler Actor and get its content as text, markdown, and HTML',
+		'This operation is deprecated and will be removed in a future release. Use the Web Fetch operation instead.',
+	displayOptions: {
+		show: {
+			'@version': [1],
+		},
+	},
 };
 
 const { properties, option } = runHooks(rawOption, rawProperties);

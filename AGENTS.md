@@ -106,8 +106,9 @@ into the four terminal `ACTOR.RUN.*` events.
 
 1. Copy an existing operation folder; every property needs `displayOptions.show` for both
    `resource` and `operation`.
-2. Register it in the resource's `index.ts` (`operations` array and `rawProperties`) and in its
-   `router.ts` (import `name`, add a `case`).
+2. Register it in the resource's `index.ts` (the `operations` array — but `operationsV1` *and*
+   `operationsV2` under `actors/` — plus `rawProperties`) and in its `router.ts` (import `name`,
+   add a `case`).
 3. If it starts a run, go through `executeActor` and add `maxTotalChargeUsd`.
 4. Add a workflow fixture under `__tests__/workflows/<resource>/` and a `nock`-backed spec.
 
@@ -144,10 +145,32 @@ HTTP requests so `nock` can intercept them. Consequences:
   (`markdown` default / `html` / `text`). The scraper returns all three regardless of the
   `saveHtml`/`saveMarkdown` flags, so `execute.ts` strips them and re-adds the chosen one — keep
   that when adding fields, or the lean AI-tool output contract breaks. An `includeMetadata`
-  toggle existed briefly and was reverted; don't re-add it.
+  toggle existed briefly and was reverted; don't re-add it. The operation is **deprecated**
+  in favor of `Web Fetch` via light versioning: `Apify.node.ts` sets `version: [1, 2]` so new
+  nodes are `typeVersion: 2`. The scrape option and all its properties carry `'@version': [1]`
+  in `displayOptions.show` (the action is hidden from new v2 nodes but existing typeVersion-1
+  workflows still execute it), and a `notice` property shows the deprecation copy. Its value
+  `'Scrape single URL'` must never be renamed — existing workflows store it.
+- `Actors → Web Fetch` calls the Web Fetch standby Actor (`WEB_FETCH_STANDBY_URL` in
+  `helpers/consts.ts`, resolved through `apiRequest`'s absolute-URL branch) with a single POST
+  and passes the response envelope (`url`, `fetch`, `metadata`, one key per requested `formats`
+  entry) through verbatim — no `pollRunStatus`, no dataset fetch, no stripping. Web Fetch errors
+  arrive as a flat `{ code, error }` or a nested `{ error: { message, type } }` body; both are
+  mapped to a `NodeApiError` in the operation (the custom message must go in the `options` arg —
+  n8n rewrites messages set on the `errorResponse` when an `httpCode` is present, and re-wrapping
+  an existing `NodeApiError` returns the original untouched). Headers are a JSON-type parameter
+  defaulting to `'{}'` (empty-string would make n8n's JSON editor throw "Unexpected end of JSON
+  input"); invalid or non-object input throws a `NodeOperationError` with an actionable message.
 - `key-value-stores/get-key-value-store-record` bypasses `apiRequest` and hard-codes `'apifyApi'`
   because it needs `returnFullResponse` + `encoding: 'arraybuffer'` for binary records, which
   `apiRequest`'s `json: true` precludes. It therefore ignores the `authentication` parameter.
+- n8n's node-creator action sidebar (via `useActionsGeneration.ts` → `resourceCategories()`)
+  filters operation *properties* by `@version` but maps every *option* unconditionally —
+  option-level `displayOptions` (including `'@version'`) is never evaluated there. This is why
+  `Actors` ships two `operation` selects: one with `'@version': [2]` (4 options, no scrape)
+  for new nodes, and one with `'@version': [1]` (all 5, incl. the deprecated option) for
+  typeVersion-1 workflows. If a future v3 changes the operation list, the `[2]` gate on the v2
+  select must be widened to `[2, 3]`.
 - Keep base URLs in `helpers/consts.ts`; `ApifyApi.credentials.ts` imports `APIFY_API_URL` from
   there for its `/v2/users/me` credential test.
 - Conventional Commits (`feat:`, `fix:`, `chore:`, `ci:`, `docs:`); PRs target `master`.
