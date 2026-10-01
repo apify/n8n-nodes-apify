@@ -21,7 +21,11 @@ import {
 	WAIT_FOR_FINISH_POLL_INTERVAL,
 } from '../helpers/consts';
 
-type IApiRequestOptions = Omit<IHttpRequestOptions, 'url'> & { uri?: string };
+type IApiRequestOptions = Omit<IHttpRequestOptions, 'url'> & {
+	uri?: string;
+	/** Skip the 429/5xx retries, e.g. for Server Actor calls that may charge per request. */
+	disableRetries?: boolean;
+};
 
 /** Escape a string for interpolation into HTML markup. */
 function escapeHtml(value: string): string {
@@ -52,7 +56,7 @@ export async function apiRequest(
 	this: IHookFunctions | IExecuteFunctions | ILoadOptionsFunctions,
 	requestOptions: IApiRequestOptions,
 ): Promise<any> {
-	const { method, qs, uri, ...rest } = requestOptions;
+	const { method, qs, uri, disableRetries, ...rest } = requestOptions;
 
 	const query = qs || {};
 	// An absolute URL (e.g. an Actor's standby endpoint) is used as-is, otherwise
@@ -93,8 +97,12 @@ export async function apiRequest(
 			);
 		}
 
+		const send = () =>
+			this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, options);
+		if (disableRetries) return await send();
+
 		return await retryWithExponentialBackoff(
-			() => this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, options),
+			send,
 			// Only retry timeouts/network errors for idempotent GET requests. Retrying a
 			// non-idempotent POST (e.g. starting an Actor run) could create duplicate runs.
 			{ retryNetworkErrors: method === 'GET' },

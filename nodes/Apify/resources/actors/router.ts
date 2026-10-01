@@ -6,10 +6,12 @@ import { name as runActorAndGetDatasetOperationName } from './run-actor-and-get-
 import { webFetchName as webFetchOperationName } from './web-fetch';
 import { scrapeSingleUrlName as scrapeSingleUrlOperationName } from './scrape-single-url';
 import { name as getLastRunOperationName } from './get-last-run';
+import { name as callServerActorOperationName } from './call-server-actor';
 import { runActor } from './run-actor/execute';
 import { webFetch } from './web-fetch/execute';
 import { scrapeSingleUrl } from './scrape-single-url/execute';
 import { getLastRun } from './get-last-run/execute';
+import { callServerActor } from './call-server-actor/execute';
 import { runActorAndGetDataset } from './run-actor-and-get-dataset/execute';
 
 export async function actorsRouter(
@@ -37,6 +39,8 @@ export async function actorsRouter(
 			return await scrapeSingleUrl.call(this, i);
 		case getLastRunOperationName:
 			return await getLastRun.call(this, i);
+		case callServerActorOperationName:
+			return await callServerActor.call(this, i);
 
 		default:
 			throw new NodeOperationError(

@@ -154,6 +154,11 @@ export const executeWorkflow = async ({
 						headers: options.headers,
 					});
 
+					// Mirror n8n's `returnFullResponse` shape (binary reads keep the legacy shape below).
+					if (options.returnFullResponse && options.encoding !== 'arraybuffer') {
+						return { body: response.data, headers: response.headers, statusCode: response.status };
+					}
+
 					// For /items endpoint just return data
 					if (options.url.includes('/items')) return response.data;
 

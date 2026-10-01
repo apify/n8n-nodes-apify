@@ -1,8 +1,35 @@
 import { INodeProperties } from 'n8n-workflow';
 
 import * as helpers from '../../../helpers';
+import { serverEndpointProperties } from '../../serverActor';
 
 export const properties: INodeProperties[] = [
+	{
+		displayName: 'Interface',
+		name: 'interface',
+		type: 'options',
+		noDataExpression: true,
+		options: [
+			{
+				name: 'Input',
+				value: 'input',
+				description: 'Start a run with an input and get its results',
+			},
+			{
+				name: 'Endpoint',
+				value: 'endpoint',
+				description:
+					'Call the server interface of a Server Actor and get its response straight back, without a run',
+			},
+		],
+		default: 'input',
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Run actor'],
+			},
+		},
+	},
 	{
 		displayName: 'Actor Source',
 		name: 'actorSource',
@@ -46,6 +73,7 @@ export const properties: INodeProperties[] = [
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
+				interface: ['input'],
 			},
 		},
 	},
@@ -60,6 +88,7 @@ export const properties: INodeProperties[] = [
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
+				interface: ['input'],
 			},
 		},
 	},
@@ -74,6 +103,7 @@ timeout specified in the default run configuration for the Actor.`,
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
+				interface: ['input'],
 			},
 		},
 	},
@@ -89,6 +119,7 @@ timeout specified in the default run configuration for the Actor.`,
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
+				interface: ['input'],
 			},
 		},
 	},
@@ -106,6 +137,7 @@ timeout specified in the default run configuration for the Actor.`,
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
+				interface: ['input'],
 			},
 		},
 	},
@@ -120,7 +152,15 @@ configuration for the Actor (typically \`latest\`).`,
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
+				interface: ['input'],
 			},
 		},
 	},
+	...serverEndpointProperties({
+		show: {
+			resource: ['Actors'],
+			operation: ['Run actor'],
+			interface: ['endpoint'],
+		},
+	}),
 ];

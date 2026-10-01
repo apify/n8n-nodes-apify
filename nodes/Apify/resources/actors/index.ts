@@ -6,6 +6,7 @@ import * as webFetch from './web-fetch';
 import * as scrapeSingleUrl from './scrape-single-url';
 import * as getLastRun from './get-last-run';
 import * as runActorAndGetDataset from './run-actor-and-get-dataset';
+import * as callServerActor from './call-server-actor';
 
 export const name = 'Actors';
 
@@ -15,6 +16,7 @@ const operationsV1: INodePropertyOptions[] = [
 	webFetch.option,
 	scrapeSingleUrl.option,
 	getLastRun.option,
+	callServerActor.option,
 ];
 
 const operationsV2: INodePropertyOptions[] = [
@@ -22,6 +24,7 @@ const operationsV2: INodePropertyOptions[] = [
 	runActorAndGetDataset.option,
 	webFetch.option,
 	getLastRun.option,
+	callServerActor.option,
 ];
 
 const operationSelectV1: INodeProperties = {
@@ -65,6 +68,7 @@ export const rawProperties: INodeProperties[] = [
 	...webFetch.properties,
 	...scrapeSingleUrl.properties,
 	...getLastRun.properties,
+	...callServerActor.properties,
 ];
 
 const { properties, methods } = runHooks(rawProperties);

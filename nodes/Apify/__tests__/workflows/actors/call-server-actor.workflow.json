@@ -1,0 +1,42 @@
+{
+	"name": "Call Server Actor workflow",
+	"nodes": [
+		{
+			"parameters": {
+				"resource": "Actors",
+				"operation": "Call Server Actor",
+				"actorId": {
+					"__rl": true,
+					"value": "serverActorId",
+					"mode": "id"
+				},
+				"endpoint": "GET /items",
+				"queryParameters": "{\"limit\": 2}"
+			},
+			"id": "5b1c2d3e-4f5a-4b6c-8d7e-9f0a1b2c3d4e",
+			"name": "Call Server Actor",
+			"type": "n8n-nodes-apify.apify",
+			"typeVersion": 2,
+			"position": [920, 460],
+			"credentials": {
+				"apifyApi": {
+					"id": "dJAynKkN2pRqy3Ko",
+					"name": "Apify account"
+				}
+			}
+		}
+	],
+	"pinData": {},
+	"connections": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "1d2e3f4a-5b6c-4d7e-8f9a-0b1c2d3e4f5a",
+	"meta": {
+		"templateCredsSetupCompleted": true,
+		"instanceId": "3f65ba173ae28613be507e94c0a98de4375527c55e31b7fc173a4edee4e2ded3"
+	},
+	"id": "cS4aCt0rW0rkFl0w",
+	"tags": []
+}

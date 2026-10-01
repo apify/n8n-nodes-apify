@@ -1,7 +1,12 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { executeActor } from '../../executeActor';
+import { callServerActor } from '../../serverActor';
 
 export async function runActor(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
+	if (this.getNodeParameter('interface', i, 'input') === 'endpoint') {
+		return await callServerActor.call(this, i);
+	}
+
 	const actorId = this.getNodeParameter('actorId', i, undefined, {
 		extractValue: true,
 	}) as string;
