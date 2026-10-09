@@ -90,6 +90,9 @@ Shared by `actors/run-actor`, `actors/run-actor-and-get-dataset`, `actor-tasks/r
 `actor-tasks/run-task-and-get-dataset`: parse the input JSON (`customBodyParser` tolerates an
 object, which AI Agent tool calls sometimes send), fetch the Actor, resolve the build, assemble
 the query string, POST with `waitForFinish=0`, then poll separately when the caller waits.
+The two `actors/` operations read input through `getActorInput` (`resources/actorInput.ts`):
+`actorInputMode` `json` (default, `customBody`) or `schema`, an `actorInput` resource mapper whose
+fields `getActorInputFields` loads from the default build's input schema.
 
 `maxTotalChargeUsd` ("Maximum Cost per Run (USD)", `default: null`, `minValue: 0`) is hand-written
 on all four and sent **only when non-null and `> 0`** — `0`/empty deliberately means no limit.
@@ -121,8 +124,8 @@ HTTP requests so `nock` can intercept them. Consequences:
 
 - Fixtures are exported n8n workflow JSON. To test a non-default parameter, spread the fixture
   and override that node's `parameters` (see the `maxTotalChargeUsd` cases) — don't add a fixture.
-- The stub's `getNodeParameter` mirrors n8n by falling back to the caller-supplied default
-  (`node.parameters[name] ?? fallbackValue`). Don't "simplify" it to a bare lookup, or handlers
+- The stub's `getNodeParameter` mirrors n8n by resolving dotted paths (`actorInput.value`) and
+  falling back to the caller-supplied default. Don't "simplify" it to a bare lookup, or handlers
   that rely on defaults will see `undefined` in tests only.
 - It wraps HTTP failures in a `NodeApiError` keeping the parsed body on `error.context.data`,
   which is what the permission-approval handling reads.
