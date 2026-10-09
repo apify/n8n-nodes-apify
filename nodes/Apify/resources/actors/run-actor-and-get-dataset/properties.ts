@@ -32,6 +32,64 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
+		displayName: 'Input Mode',
+		name: 'actorInputMode',
+		type: 'options',
+		noDataExpression: true,
+		options: [
+			{
+				name: 'JSON',
+				value: 'json',
+				description: 'Provide the whole Actor input as a JSON object',
+			},
+			{
+				name: 'Schema Fields',
+				value: 'schema',
+				description:
+					"Fill in fields loaded from the Actor's input schema. Requires an Actor selected from the list, by URL or by ID.",
+			},
+		],
+		default: 'json',
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Run actor and get dataset'],
+			},
+		},
+	},
+	{
+		displayName: 'Input Fields',
+		name: 'actorInput',
+		type: 'resourceMapper',
+		noDataExpression: true,
+		default: {
+			mappingMode: 'defineBelow',
+			value: null,
+		},
+		typeOptions: {
+			loadOptionsDependsOn: ['actorId.value'],
+			resourceMapper: {
+				resourceMapperMethod: 'getActorInputFields',
+				mode: 'add',
+				valuesLabel: 'Actor Input',
+				fieldWords: {
+					singular: 'input field',
+					plural: 'input fields',
+				},
+				addAllFields: true,
+				multiKeyMatch: false,
+				supportAutoMap: false,
+			},
+		},
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Run actor and get dataset'],
+				actorInputMode: ['schema'],
+			},
+		},
+	},
+	{
 		displayName: 'Input JSON',
 		name: 'customBody',
 		type: 'json',
@@ -40,12 +98,13 @@ export const properties: INodeProperties[] = [
 			'JSON input for the Actor. Structure depends on the specific Actor being run. ' +
 			'For web scrapers, common fields include: startUrls (array of {"url": "..."} objects), ' +
 			'maxCrawlPages (number, limits pages crawled), and proxyConfiguration ({"useApifyProxy": true}). ' +
-			"Pass {} to use the Actor's default configuration. " +
+			"Inputs you leave out (e.g. {}) use the Actor's input schema defaults; required inputs without a default must be provided. " +
 			'Find the exact input schema for any Actor at https://console.apify.com',
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor and get dataset'],
+				actorInputMode: ['json'],
 			},
 		},
 	},

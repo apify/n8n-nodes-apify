@@ -1,4 +1,9 @@
-import { IExecuteFunctions, NodeApiError, NodeOperationError } from 'n8n-workflow';
+import {
+	IExecuteFunctions,
+	ILoadOptionsFunctions,
+	NodeApiError,
+	NodeOperationError,
+} from 'n8n-workflow';
 import { apiRequest, customBodyParser, pollRunStatus } from './genericFunctions';
 
 export interface ActorExecutionParams {
@@ -119,7 +124,10 @@ export async function getBuildByTag(
 	return buildResp.data;
 }
 
-export async function getDefaultBuild(this: IExecuteFunctions, actorId: string) {
+export async function getDefaultBuild(
+	this: IExecuteFunctions | ILoadOptionsFunctions,
+	actorId: string,
+) {
 	const defaultBuildResp = await apiRequest.call(this, {
 		method: 'GET',
 		uri: `/v2/acts/${actorId}/builds/default`,

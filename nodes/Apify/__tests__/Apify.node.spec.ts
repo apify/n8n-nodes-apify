@@ -1,7 +1,7 @@
 import nock from 'nock';
-import { NodeOperationError } from 'n8n-workflow';
+import { ILoadOptionsFunctions, NodeOperationError, ResourceMapperFields } from 'n8n-workflow';
 import { Apify } from '../Apify.node';
-import { executeWorkflow } from './utils/executeWorkflow';
+import { createLoadOptionsFunctions, executeWorkflow } from './utils/executeWorkflow';
 import { CredentialsHelper } from './utils/credentialHelper';
 import { getRunTaskDataByNodeName, getTaskData } from './utils/getNodeResultData';
 import getRunWorkflow from './workflows/actor-runs/get-run.workflow.json';
@@ -59,6 +59,250 @@ describe('Apify Node', () => {
 			);
 			// unset must mean no limit
 			maxCostProperties.forEach((property) => expect(property.default).toBeNull());
+		});
+
+		it('should default Actor input to JSON with optional schema fields on run-actor operations', () => {
+			const operationsOf = (name: string) =>
+				apifyNode.description.properties
+					.filter((property) => property.name === name)
+					.map((property) => property.displayOptions?.show?.operation)
+					.flat();
+			const runActorOperations = ['Run actor', 'Run actor and get dataset'];
+
+			expect(operationsOf('actorInputMode')).toEqual(runActorOperations);
+			expect(operationsOf('actorInput')).toEqual(runActorOperations);
+
+			apifyNode.description.properties
+				.filter((property) => property.name === 'actorInputMode')
+				.forEach((property) => expect(property.default).toBe('json'));
+			apifyNode.description.properties
+				.filter((property) => property.name === 'actorInput')
+				.forEach((property) => {
+					expect(property.type).toBe('resourceMapper');
+					expect(property.displayOptions?.show?.actorInputMode).toEqual(['schema']);
+				});
+			apifyNode.description.properties
+				.filter(
+					(property) =>
+						property.name === 'customBody' &&
+						runActorOperations.includes(property.displayOptions?.show?.operation?.[0] as string),
+				)
+				.forEach((property) =>
+					expect(property.displayOptions?.show?.actorInputMode).toEqual(['json']),
+				);
+		});
+	});
+
+	describe('actor input fields (resource mapper)', () => {
+		const getActorInputFields = () =>
+			apifyNode.methods!.resourceMapping!.getActorInputFields as (
+				this: ILoadOptionsFunctions,
+			) => Promise<ResourceMapperFields>;
+
+		const createNode = (actorId: unknown) => ({
+			name: 'Run actor',
+			type: 'n8n-nodes-apify.apify',
+			typeVersion: 2,
+			parameters: {
+				authentication: 'apifyApi',
+				resource: 'Actors',
+				operation: 'Run actor',
+				actorId,
+			},
+		});
+
+		const buildWithInputSchema = (input: object) => ({ data: { actorDefinition: { input } } });
+
+		it('should ask to select an Actor when none is set, without calling the API', async () => {
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: '' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.fields).toEqual([]);
+			expect(result.emptyFieldsNotice).toMatch(/select an actor/i);
+		});
+
+		it("should map the default build's input schema to resource mapper fields", async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(
+					200,
+					buildWithInputSchema({
+						type: 'object',
+						properties: {
+							startUrls: {
+								title: 'Start URLs',
+								type: 'array',
+								prefill: [{ url: 'https://apify.com' }],
+							},
+							maxPages: { title: 'Max pages', type: 'integer', prefill: 10 },
+							proxy: { title: 'Proxy', type: 'object', prefill: { useApifyProxy: true } },
+							saveHtml: { title: 'Save HTML', type: 'boolean', default: false },
+							format: {
+								title: 'Format',
+								type: 'string',
+								enum: ['md', 'txt'],
+								enumTitles: ['Markdown', 'Text'],
+							},
+							query: { type: 'string' },
+							mode: { title: 'Mode', type: 'string', default: 'fast' },
+						},
+						required: ['startUrls', 'query', 'mode'],
+					}),
+				);
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			const common = { defaultMatch: false, display: true };
+			expect(result.fields).toEqual([
+				{
+					...common,
+					id: 'startUrls',
+					displayName: 'Start URLs',
+					type: 'array',
+					required: true,
+					removed: false,
+					defaultValue: JSON.stringify([{ url: 'https://apify.com' }], null, 2),
+				},
+				{
+					...common,
+					id: 'maxPages',
+					displayName: 'Max pages',
+					type: 'number',
+					required: false,
+					removed: false,
+					defaultValue: 10,
+				},
+				{
+					...common,
+					id: 'proxy',
+					displayName: 'Proxy',
+					type: 'object',
+					required: false,
+					removed: false,
+					defaultValue: JSON.stringify({ useApifyProxy: true }, null, 2),
+				},
+				{
+					...common,
+					id: 'saveHtml',
+					displayName: 'Save HTML',
+					type: 'boolean',
+					required: false,
+					removed: true,
+				},
+				{
+					...common,
+					id: 'format',
+					displayName: 'Format',
+					type: 'options',
+					options: [
+						{ name: 'Markdown', value: 'md' },
+						{ name: 'Text', value: 'txt' },
+					],
+					required: false,
+					removed: true,
+				},
+				// required without a schema default: n8n must ask for it
+				{
+					...common,
+					id: 'query',
+					displayName: 'query',
+					type: 'string',
+					required: true,
+					removed: false,
+				},
+				// required but Apify applies the schema default, so it stays optional
+				{
+					...common,
+					id: 'mode',
+					displayName: 'Mode',
+					type: 'string',
+					required: false,
+					removed: true,
+				},
+			]);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should fall back to the stringified inputSchema of older builds', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(200, {
+					data: {
+						inputSchema: JSON.stringify({
+							properties: { query: { title: 'Query', type: 'string', prefill: 'apify' } },
+						}),
+					},
+				});
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'id', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.fields.map((field) => [field.id, field.defaultValue])).toEqual([
+				['query', 'apify'],
+			]);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should throw when the default build cannot be fetched', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(200, {});
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			await expect(getActorInputFields().call(context)).rejects.toThrow(
+				'Could not fetch default build for actor nFJndFXA5zjCTuudP',
+			);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should throw a clear error when the input schema is not valid JSON', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(200, { data: { inputSchema: '{ not json' } });
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			await expect(getActorInputFields().call(context)).rejects.toThrow(
+				'Could not parse the input schema of actor nFJndFXA5zjCTuudP',
+			);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should point to JSON input when the Actor has no input schema', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(200, { data: {} });
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.fields).toEqual([]);
+			expect(result.emptyFieldsNotice).toMatch(/json/i);
+			expect(scope.isDone()).toBe(true);
 		});
 	});
 
@@ -493,6 +737,59 @@ describe('Apify Node', () => {
 				expect(scope.isDone()).toBe(true);
 			});
 
+			it('should send the schema field values as Actor input, omitting unset ones', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockBuild = fixtures.getBuildResult();
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs', {
+						queries: 'javascript',
+						resultsPerPage: 2,
+						focusOnPaidAds: false,
+						includeUnfilteredResults: [],
+					})
+					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
+					.reply(200, mockRunActor);
+
+				const baseWorkflow = require('./workflows/actors/run-actor.workflow.json');
+				const workflow = {
+					...baseWorkflow,
+					nodes: baseWorkflow.nodes.map((node: any) =>
+						node.name === 'Run actor'
+							? {
+									...node,
+									parameters: {
+										...node.parameters,
+										actorInputMode: 'schema',
+										actorInput: {
+											mappingMode: 'defineBelow',
+											value: {
+												queries: 'javascript',
+												resultsPerPage: 2,
+												focusOnPaidAds: false,
+												includeUnfilteredResults: [],
+												// e.g. expressions resolving to nothing: let the Actor's defaults apply
+												maxPagesPerQuery: null,
+												countryCode: '',
+											},
+										},
+									},
+								}
+							: node,
+					),
+				};
+
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Run actor');
+				expect(nodeResult.executionStatus).toBe('success');
+				expect(scope.isDone()).toBe(true);
+			});
+
 			it('should run the run-actor workflow and wait for finish', async () => {
 				const mockRunActor = fixtures.runActorResult();
 				const mockBuild = fixtures.getBuildResult();
@@ -701,6 +998,49 @@ describe('Apify Node', () => {
 				expect(Array.isArray(data)).toBe(true);
 				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockItems);
 
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should send the schema field values as Actor input', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockBuild = fixtures.getBuildResult();
+				const mockFinishedRun = fixtures.getSuccessRunResult();
+				const mockItems = fixtures.getItemsResult();
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs', { queries: 'javascript' })
+					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
+					.reply(200, mockRunActor)
+					.get(`/v2/actor-runs/${mockRunActor.data.id}`)
+					.reply(200, mockFinishedRun)
+					.get(`/v2/datasets/${mockFinishedRun.data.defaultDatasetId}/items`)
+					.query({ format: 'json' })
+					.reply(200, mockItems);
+
+				const workflow = {
+					...runActorAndGetDatasetWorkflow,
+					nodes: runActorAndGetDatasetWorkflow.nodes.map((node: any) =>
+						node.name === 'Run actor and get dataset'
+							? {
+									...node,
+									parameters: {
+										...node.parameters,
+										actorInputMode: 'schema',
+										actorInput: { mappingMode: 'defineBelow', value: { queries: 'javascript' } },
+									},
+								}
+							: node,
+					),
+				};
+
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Run actor and get dataset');
+				expect(nodeResult.executionStatus).toBe('success');
 				expect(scope.isDone()).toBe(true);
 			});
 
