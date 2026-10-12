@@ -93,7 +93,8 @@ export async function apiRequest(
 			);
 		}
 
-		return await retryWithExponentialBackoff(
+		return await retryWithExponentialBackoff.call(
+			this,
 			() => this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, options),
 			// Only retry timeouts/network errors for idempotent GET requests. Retrying a
 			// non-idempotent POST (e.g. starting an Actor run) could create duplicate runs.
@@ -134,10 +135,8 @@ export async function apiRequest(
 				error.description = `${cta}: <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
 			}
 			if (Array.isArray(error.messages)) error.messages = [error.message];
-			throw error;
+			throw new NodeApiError(this.getNode(), error);
 		}
-
-		if (error instanceof NodeApiError) throw error;
 
 		if (error.response && error.response.body) {
 			throw new NodeApiError(this.getNode(), error, {
@@ -146,6 +145,7 @@ export async function apiRequest(
 			});
 		}
 
+		// Re-wrapping an existing NodeApiError returns the same instance untouched.
 		throw new NodeApiError(this.getNode(), error);
 	}
 }
@@ -207,6 +207,7 @@ interface RetryOptions {
  * is set, errors without an HTTP status code (e.g. socket timeouts) are retried too.
  */
 export async function retryWithExponentialBackoff(
+	this: IHookFunctions | IExecuteFunctions | ILoadOptionsFunctions,
 	fn: () => Promise<any>,
 	options: RetryOptions = {},
 ): Promise<any> {
@@ -237,11 +238,11 @@ export async function retryWithExponentialBackoff(
 
 				continue;
 			}
-			throw error;
+			throw new NodeApiError(this.getNode(), error);
 		}
 	}
 	//In case all of the calls failed with no status or isStatusCodeRetryable, throw the last error
-	throw lastError;
+	throw new NodeApiError(this.getNode(), lastError);
 }
 
 export async function apiRequestAllItems(
@@ -421,7 +422,7 @@ export async function executeAndLinkItems<T extends INodeExecutionData | INodeEx
 				});
 			} else {
 				// Propagade the error further
-				throw error;
+				throw new NodeApiError(this.getNode(), error);
 			}
 		}
 	}
