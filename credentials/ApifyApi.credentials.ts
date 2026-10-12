@@ -12,6 +12,8 @@ export class ApifyApi implements ICredentialType {
 
 	displayName = 'Apify API';
 
+	icon = 'file:../nodes/Apify/apify-light.svg' as const;
+
 	documentationUrl = 'https://docs.apify.com/platform/integrations/api#api-token';
 
 	properties: INodeProperties[] = [
