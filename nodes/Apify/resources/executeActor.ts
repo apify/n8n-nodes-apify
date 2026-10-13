@@ -101,7 +101,7 @@ export async function executeActor(
 }
 
 export async function getBuildByTag(
-	this: IExecuteFunctions,
+	this: IExecuteFunctions | ILoadOptionsFunctions,
 	actorId: string,
 	buildTag: string,
 	actorData: any,

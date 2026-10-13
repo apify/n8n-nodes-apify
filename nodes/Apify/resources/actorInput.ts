@@ -5,11 +5,13 @@ import {
 	ILoadOptionsFunctions,
 	INodeParameterResourceLocator,
 	INodePropertyOptions,
+	NodeApiError,
 	ResourceMapperField,
 	NodeOperationError,
 	ResourceMapperFields,
 } from 'n8n-workflow';
-import { getDefaultBuild } from './executeActor';
+import { getBuildByTag, getDefaultBuild } from './executeActor';
+import { apiRequest, escapeHtml } from './genericFunctions';
 
 interface ActorInputSchemaProperty {
 	title?: string;
@@ -104,9 +106,30 @@ function getInputSchema(
 	}
 }
 
+function getErrorReason(error: unknown): string {
+	if (!(error instanceof Error)) return String(error);
+	// NodeApiError keeps the API's own message (e.g. "Actor build was not found") in `description`.
+	const description = (error as { description?: unknown }).description;
+	return typeof description === 'string' && description && description !== error.message
+		? `${error.message} (${description})`
+		: error.message;
+}
+
+/** Resolves the build the same way `executeActor` does, so the fields match the run. */
+async function getBuild(this: ILoadOptionsFunctions, actorId: string) {
+	const buildTag = this.getNodeParameter('build', '') as string;
+	if (!buildTag) return await getDefaultBuild.call(this, actorId);
+
+	const actor = await apiRequest.call(this, { method: 'GET', uri: `/v2/acts/${actorId}` });
+	if (!actor?.data) {
+		throw new NodeApiError(this.getNode(), { message: `Actor ${actorId} not found` });
+	}
+	return await getBuildByTag.call(this, actorId, buildTag, actor.data);
+}
+
 /**
- * Loads the input schema of the selected Actor's default build as resource mapper fields,
- * pre-filled with the values the Apify Console would prefill.
+ * Loads the input schema of the build the run will use (the `build` tag, else the default build)
+ * as resource mapper fields, pre-filled with the values the Apify Console would prefill.
  */
 export async function getActorInputFields(
 	this: ILoadOptionsFunctions,
@@ -125,8 +148,18 @@ export async function getActorInputFields(
 	}
 
 	const actorId = this.getNodeParameter('actorId', '', { extractValue: true }) as string;
-	const build = (await getDefaultBuild.call(this, actorId)) as ActorBuild;
-	const schema = getInputSchema.call(this, actorId, build);
+	let schema: ActorInputSchema | undefined;
+	try {
+		const build = (await getBuild.call(this, actorId)) as ActorBuild;
+		schema = getInputSchema.call(this, actorId, build);
+	} catch (error) {
+		// n8n's editor drops errors thrown here and, with `supportAutoMap: false`, shows nothing,
+		// so return the reason as a notice instead. The notice is rendered as HTML.
+		return {
+			fields: [],
+			emptyFieldsNotice: `Could not load the Actor's input fields: ${escapeHtml(getErrorReason(error))}. Make sure the Actor has a successful build in Apify Console, or use JSON input instead.`,
+		};
+	}
 
 	const requiredIds = new Set(schema?.required ?? []);
 	const fields = Object.entries(schema?.properties ?? {}).map(([id, property]) =>

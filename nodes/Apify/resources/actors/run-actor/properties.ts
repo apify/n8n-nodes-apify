@@ -67,7 +67,7 @@ export const properties: INodeProperties[] = [
 			value: null,
 		},
 		typeOptions: {
-			loadOptionsDependsOn: ['actorId.value'],
+			loadOptionsDependsOn: ['actorId.value', 'build'],
 			resourceMapper: {
 				resourceMapperMethod: 'getActorInputFields',
 				mode: 'add',

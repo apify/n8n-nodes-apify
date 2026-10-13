@@ -79,6 +79,8 @@ describe('Apify Node', () => {
 				.filter((property) => property.name === 'actorInput')
 				.forEach((property) => {
 					expect(property.type).toBe('resourceMapper');
+					// fields must follow the build the run will use
+					expect(property.typeOptions?.loadOptionsDependsOn).toEqual(['actorId.value', 'build']);
 					expect(property.displayOptions?.show?.actorInputMode).toEqual(['schema']);
 				});
 			apifyNode.description.properties
@@ -256,7 +258,81 @@ describe('Apify Node', () => {
 			expect(scope.isDone()).toBe(true);
 		});
 
-		it('should throw when the default build cannot be fetched', async () => {
+		it('should load the fields from the build selected by the build tag', async () => {
+			const actor = fixtures.getActorResult();
+			const { buildId } = actor.data.taggedBuilds.latest;
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP')
+				.reply(200, actor)
+				.get(`/v2/actor-builds/${buildId}`)
+				.reply(
+					200,
+					buildWithInputSchema({
+						properties: { query: { title: 'Query', type: 'string', prefill: 'tagged' } },
+					}),
+				);
+
+			const node = createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' });
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: { ...node, parameters: { ...node.parameters, build: 'latest' } },
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.fields.map((field) => [field.id, field.defaultValue])).toEqual([
+				['query', 'tagged'],
+			]);
+			// the default build must not be used when a tag is set
+			expect(scope.isDone()).toBe(true);
+			expect(nock.pendingMocks()).toEqual([]);
+		});
+
+		// n8n's editor drops errors thrown by a resource mapper method, so failures must come back
+		// as a notice - the only feedback shown with `supportAutoMap: false`.
+		const expectLoadFailureNotice = (result: ResourceMapperFields, reason: string) => {
+			expect(result.fields).toEqual([]);
+			expect(result.emptyFieldsNotice).toContain("Could not load the Actor's input fields");
+			expect(result.emptyFieldsNotice).toContain(reason);
+			expect(result.emptyFieldsNotice).toMatch(/use JSON input/i);
+		};
+
+		it('should explain when the Actor has no default build (e.g. never built)', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(404, {
+					error: { type: 'record-not-found', message: 'Actor build was not found' },
+				});
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expectLoadFailureNotice(result, 'Actor build was not found');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should explain when the build tag does not exist', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP')
+				.reply(200, fixtures.getActorResult());
+
+			const node = createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' });
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: { ...node, parameters: { ...node.parameters, build: 'beta' } },
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expectLoadFailureNotice(result, "Build tag &#39;beta&#39; does not exist");
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should explain when the default build cannot be fetched', async () => {
 			const scope = nock('https://api.apify.com')
 				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
 				.reply(200, {});
@@ -266,13 +342,13 @@ describe('Apify Node', () => {
 				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
 			});
 
-			await expect(getActorInputFields().call(context)).rejects.toThrow(
-				'Could not fetch default build for actor nFJndFXA5zjCTuudP',
-			);
+			const result = await getActorInputFields().call(context);
+
+			expectLoadFailureNotice(result, 'Could not fetch default build for actor nFJndFXA5zjCTuudP');
 			expect(scope.isDone()).toBe(true);
 		});
 
-		it('should throw a clear error when the input schema is not valid JSON', async () => {
+		it('should explain when the input schema is not valid JSON', async () => {
 			const scope = nock('https://api.apify.com')
 				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
 				.reply(200, { data: { inputSchema: '{ not json' } });
@@ -282,9 +358,26 @@ describe('Apify Node', () => {
 				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
 			});
 
-			await expect(getActorInputFields().call(context)).rejects.toThrow(
-				'Could not parse the input schema of actor nFJndFXA5zjCTuudP',
-			);
+			const result = await getActorInputFields().call(context);
+
+			expectLoadFailureNotice(result, 'Could not parse the input schema of actor nFJndFXA5zjCTuudP');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should escape API error text, since the notice is rendered as HTML', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(404, { error: { type: 'record-not-found', message: '<img src=x onerror=alert(1)>' } });
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.emptyFieldsNotice).not.toContain('<img');
+			expect(result.emptyFieldsNotice).toContain('&lt;img src=x onerror=alert(1)&gt;');
 			expect(scope.isDone()).toBe(true);
 		});
 
