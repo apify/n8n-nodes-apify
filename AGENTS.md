@@ -92,7 +92,7 @@ object, which AI Agent tool calls sometimes send), fetch the Actor, resolve the 
 the query string, POST with `waitForFinish=0`, then poll separately when the caller waits.
 The two `actors/` operations read input through `getActorInput` (`resources/actorInput.ts`):
 `actorInputMode` `json` (default, `customBody`) or `schema`, an `actorInput` resource mapper whose
-fields `getActorInputFields` loads from the default build's input schema.
+fields `getActorInputFields` loads from the input schema of the `build` tag's build, else the default.
 
 `maxTotalChargeUsd` ("Maximum Cost per Run (USD)", `default: null`, `minValue: 0`) is hand-written
 on all four and sent **only when non-null and `> 0`** — `0`/empty deliberately means no limit.
