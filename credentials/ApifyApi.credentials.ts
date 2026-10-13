@@ -18,11 +18,20 @@ export class ApifyApi implements ICredentialType {
 
 	properties: INodeProperties[] = [
 		{
+			displayName:
+				'Get your API token in <a href="https://console.apify.com/settings/integrations?utm_source=n8n&utm_medium=integrations" target="_blank">Apify Console → Settings → API &amp; Integrations</a>.',
+			name: 'consoleNotice',
+			type: 'notice',
+			default: '',
+		},
+		{
 			displayName: 'API Key',
 			name: 'apiKey',
 			type: 'string',
 			typeOptions: { password: true },
 			default: '',
+			description:
+				'Your Apify API token. Find it in <a href="https://console.apify.com/settings/integrations?utm_source=n8n&utm_medium=integrations" target="_blank">Apify Console → Settings → API &amp; Integrations</a>.',
 		},
 	];
 
