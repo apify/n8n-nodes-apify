@@ -187,10 +187,9 @@ export function getActorInput(this: IExecuteFunctions, i: number): string | obje
 
 	// Reading `.value` makes n8n validate the fields and parse JSON strings of object/array fields.
 	const values = this.getNodeParameter('actorInput.value', i, {}) as IDataObject | null;
-	// Leave unset fields out so the Actor's own defaults apply.
+	// Leave unset fields out so the Actor's own defaults apply. n8n already prunes fields the
+	// user cleared; an explicit '' (e.g. from an expression) is sent to override a default.
 	return Object.fromEntries(
-		Object.entries(values ?? {}).filter(
-			([, value]) => value !== null && value !== undefined && value !== '',
-		),
+		Object.entries(values ?? {}).filter(([, value]) => value !== null && value !== undefined),
 	);
 }

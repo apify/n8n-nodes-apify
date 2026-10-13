@@ -830,7 +830,7 @@ describe('Apify Node', () => {
 				expect(scope.isDone()).toBe(true);
 			});
 
-			it('should send the schema field values as Actor input, omitting unset ones', async () => {
+			it('should send the schema field values as Actor input, omitting null ones', async () => {
 				const mockRunActor = fixtures.runActorResult();
 				const mockBuild = fixtures.getBuildResult();
 
@@ -844,6 +844,8 @@ describe('Apify Node', () => {
 						resultsPerPage: 2,
 						focusOnPaidAds: false,
 						includeUnfilteredResults: [],
+						// an explicit empty string (e.g. from `{{ "" }}`) overrides the Actor's default
+						countryCode: '',
 					})
 					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
 					.reply(200, mockRunActor);
@@ -865,7 +867,7 @@ describe('Apify Node', () => {
 												resultsPerPage: 2,
 												focusOnPaidAds: false,
 												includeUnfilteredResults: [],
-												// e.g. expressions resolving to nothing: let the Actor's defaults apply
+												// e.g. an expression resolving to null: let the Actor's default apply
 												maxPagesPerQuery: null,
 												countryCode: '',
 											},
