@@ -20,14 +20,69 @@ export const properties: INodeProperties[] = [
 		name: 'actorId',
 		required: true,
 		description:
-			'The ID of the Actor to run, in the format "username~actor-name" (e.g. "apify~web-scraper") ' +
-			'or as a plain actor ID. Browse available Actors at https://apify.com/store',
-		default: 'janedoe~my-actor',
+			'The Actor to run. Choose from the list, or set via expression. ' +
+			'For field-by-field input (Actor Schema mode), select a fixed Actor so its schema can be loaded.',
+		default: { mode: 'list', value: '' },
 		type: 'string',
 		displayOptions: {
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor and get dataset'],
+			},
+		},
+	},
+	{
+		displayName: 'Actor Input',
+		name: 'actorInputMode',
+		type: 'options',
+		noDataExpression: true,
+		options: [
+			{
+				name: 'Using JSON',
+				value: 'json',
+				description: 'Provide the full Actor input as a JSON object.',
+			},
+			{
+				name: 'Using Actor Schema',
+				value: 'schema',
+				description:
+					'Show separate fields from the Actor’s input schema. Requires a fixed Actor selection (recommended for AI Agent tools).',
+			},
+		],
+		default: 'json',
+		description: 'How to provide input for the selected Actor.',
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Run actor and get dataset'],
+			},
+		},
+	},
+	{
+		displayName: 'Actor Input Fields',
+		name: 'actorInput',
+		type: 'resourceMapper',
+		noDataExpression: true,
+		default: { mappingMode: 'defineBelow', value: null },
+		typeOptions: {
+			loadOptionsDependsOn: ['actorId.value'],
+			resourceMapper: {
+				resourceMapperMethod: 'getActorInputFields',
+				mode: 'add',
+				valuesLabel: 'Actor input',
+				fieldWords: { singular: 'input field', plural: 'input fields' },
+				addAllFields: true,
+				multiKeyMatch: false,
+				supportAutoMap: false,
+				noFieldsError:
+					'No input fields loaded — select a fixed Actor first, or switch to "Using JSON".',
+			},
+		},
+		displayOptions: {
+			show: {
+				resource: ['Actors'],
+				operation: ['Run actor and get dataset'],
+				actorInputMode: ['schema'],
 			},
 		},
 	},
@@ -46,6 +101,7 @@ export const properties: INodeProperties[] = [
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor and get dataset'],
+				actorInputMode: ['json'],
 			},
 		},
 	},

@@ -13,6 +13,7 @@
 					"cachedResultName": "Google Search Results Scraper",
 					"cachedResultUrl": "https://console.com/actors/nFJndFXA5zjCTuudP/input"
 				},
+				"actorInputMode": "json",
 				"waitForFinish": true,
 				"customBody": "{\n    \"maxPagesPerQuery\": 1,\n    \"resultsPerPage\": 2,\n    \"queries\": \"javascript\\ntypescript\"\n}"
 			},
