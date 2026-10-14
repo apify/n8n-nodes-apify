@@ -5,7 +5,7 @@ import type {
 	INodeProperties,
 } from 'n8n-workflow';
 
-import { APIFY_API_URL } from '../nodes/Apify/helpers/consts';
+import { APIFY_API_URL, WEB_FETCH_STANDBY_URL } from '../nodes/Apify/helpers/consts';
 // eslint-disable-next-line
 export class ApifyApi implements ICredentialType {
 	name = 'apifyApi';
@@ -24,6 +24,18 @@ export class ApifyApi implements ICredentialType {
 			typeOptions: { password: true },
 			default: '',
 		},
+		{
+			displayName: 'Base URL',
+			name: 'baseUrl',
+			type: 'hidden',
+			default: APIFY_API_URL,
+		},
+		{
+			displayName: 'Web Fetch Base URL',
+			name: 'webFetchBaseUrl',
+			type: 'hidden',
+			default: WEB_FETCH_STANDBY_URL,
+		},
 	];
 
 	authenticate: IAuthenticateGeneric = {
@@ -37,7 +49,7 @@ export class ApifyApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: APIFY_API_URL,
+			baseURL: '={{$credentials.baseUrl}}',
 			url: '/v2/users/me',
 		},
 	};

@@ -46,7 +46,7 @@ const operationSelectV2: INodeProperties = {
 	displayOptions: {
 		show: {
 			resource: ['Actors'],
-			'@version': [2],
+			'@version': [2, 2.1],
 		},
 	},
 	default: '',

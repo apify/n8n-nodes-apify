@@ -42,6 +42,18 @@ describe('Apify Node', () => {
 			expect(apifyNode.description.credentials).toBeDefined();
 		});
 
+		it('should show the v2 Actors operations on version 2.1', () => {
+			expect(apifyNode.description.defaultVersion).toBe(2.1);
+			const actorOperationSelects = apifyNode.description.properties.filter(
+				(property) =>
+					property.name === 'operation' &&
+					property.displayOptions?.show?.resource?.includes('Actors'),
+			);
+			expect(
+				actorOperationSelects.map((property) => property.displayOptions?.show?.['@version']),
+			).toEqual(expect.arrayContaining([[2, 2.1], [1]]));
+		});
+
 		it('should expose maxTotalChargeUsd on every operation that starts a run', () => {
 			const maxCostProperties = apifyNode.description.properties.filter(
 				(property) => property.name === 'maxTotalChargeUsd',
@@ -1143,6 +1155,94 @@ describe('Apify Node', () => {
 
 				expect(scope.isDone()).toBe(true);
 			});
+		});
+	});
+
+	describe('base URLs', () => {
+		const GATEWAY_HOST = 'https://gateway.example.com';
+		const runId = 'c7Orwz5b830Tbp784';
+
+		const withParameters = (workflow: any, overrides: Record<string, any>) => ({
+			...workflow,
+			nodes: workflow.nodes.map((node: any) => ({
+				...node,
+				parameters: { ...node.parameters, ...overrides },
+			})),
+		});
+
+		beforeEach(() => {
+			credentialsHelper = new CredentialsHelper({
+				apifyApi: {
+					apiToken: 'test-token',
+					// Trailing slashes are stripped
+					baseUrl: `${GATEWAY_HOST}/v1/gateway/apify/`,
+					webFetchBaseUrl: `${GATEWAY_HOST}/v1/gateway/apifyWebFetch/`,
+				},
+				apifyOAuth2Api: {},
+			});
+		});
+
+		it('should send API requests to the credential base URL', async () => {
+			const scope = nock(GATEWAY_HOST)
+				.get(`/v1/gateway/apify/v2/actor-runs/${runId}`)
+				.reply(200, fixtures.getRunResult());
+
+			const { executionData } = await executeWorkflow({
+				credentialsHelper,
+				workflow: getRunWorkflow,
+			});
+
+			const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Get run');
+			expect(nodeResult.executionStatus).toBe('success');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should fetch key-value store records from the credential base URL', async () => {
+			const storeId = 'yTfMu13hDFe9bRjx6';
+			const recordKey = 'INPUT';
+			const scope = nock(GATEWAY_HOST)
+				.get(`/v1/gateway/apify/v2/key-value-stores/${storeId}/records/${recordKey}`)
+				.reply(200, fixtures.getKeyValueStoreRecordResult());
+
+			const getKeyValueStoreRecordWorkflow = require('./workflows/key-value-stores/get-key-value-store-record.workflow.json');
+			const { executionData } = await executeWorkflow({
+				credentialsHelper,
+				workflow: getKeyValueStoreRecordWorkflow,
+			});
+
+			const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Get Key-Value Store Record');
+			expect(nodeResult.executionStatus).toBe('success');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should send Web Fetch requests to the credential Web Fetch base URL', async () => {
+			const scope = nock(GATEWAY_HOST)
+				.post('/v1/gateway/apifyWebFetch/')
+				.reply(200, fixtures.getWebFetchResult());
+
+			const { executionData } = await executeWorkflow({
+				credentialsHelper,
+				workflow: webFetchWorkflow,
+			});
+
+			const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Web Fetch');
+			expect(nodeResult.executionStatus).toBe('success');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should use the default Apify hosts with OAuth2', async () => {
+			const scope = nock('https://api.apify.com')
+				.get(`/v2/actor-runs/${runId}`)
+				.reply(200, fixtures.getRunResult());
+
+			const { executionData } = await executeWorkflow({
+				credentialsHelper,
+				workflow: withParameters(getRunWorkflow, { authentication: 'apifyOAuth2Api' }),
+			});
+
+			const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Get run');
+			expect(nodeResult.executionStatus).toBe('success');
+			expect(scope.isDone()).toBe(true);
 		});
 	});
 

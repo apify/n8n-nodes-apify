@@ -11,6 +11,7 @@ import {
 	INodeExecutionData,
 } from 'n8n-workflow';
 import {
+	APIFY_API_URL,
 	DEFAULT_EXP_BACKOFF_EXPONENTIAL,
 	DEFAULT_EXP_BACKOFF_INTERVAL,
 	DEFAULT_EXP_BACKOFF_RETRIES,
@@ -19,6 +20,7 @@ import {
 	WAIT_FOR_FINISH_BUFFER_MS,
 	WAIT_FOR_FINISH_MAX_DURATION_MS,
 	WAIT_FOR_FINISH_POLL_INTERVAL,
+	WEB_FETCH_STANDBY_URL,
 } from '../helpers/consts';
 
 type IApiRequestOptions = Omit<IHttpRequestOptions, 'url'> & { uri?: string };
@@ -46,6 +48,27 @@ function toSafeHttpUrl(value: unknown): string | undefined {
 }
 
 /**
+ * Base URLs for the node's current authentication method. The API key credential can
+ * override them (e.g. so n8n can route requests through its gateway); OAuth2 always
+ * uses the default Apify hosts.
+ */
+export async function getBaseUrls(
+	this: IHookFunctions | IExecuteFunctions | ILoadOptionsFunctions,
+): Promise<{ apiBaseUrl: string; webFetchBaseUrl: string }> {
+	const authenticationMethod = this.getNodeParameter('authentication', 0) as string;
+	const credentials =
+		authenticationMethod === 'apifyOAuth2Api' ? {} : await this.getCredentials('apifyApi');
+
+	return {
+		apiBaseUrl: ((credentials.baseUrl as string) || APIFY_API_URL).replace(/\/+$/, ''),
+		webFetchBaseUrl: ((credentials.webFetchBaseUrl as string) || WEB_FETCH_STANDBY_URL).replace(
+			/\/+$/,
+			'',
+		),
+	};
+}
+
+/**
  * Make an API request to Apify
  */
 export async function apiRequest(
@@ -55,9 +78,6 @@ export async function apiRequest(
 	const { method, qs, uri, ...rest } = requestOptions;
 
 	const query = qs || {};
-	// An absolute URL (e.g. an Actor's standby endpoint) is used as-is, otherwise
-	// the path is resolved against the Apify API base URL.
-	const endpoint = uri?.startsWith('http') ? uri : `https://api.apify.com${uri}`;
 
 	const headers: Record<string, string> = {
 		'x-apify-integration-platform': 'n8n',
@@ -67,14 +87,13 @@ export async function apiRequest(
 		headers['x-apify-integration-ai-tool'] = 'true';
 	}
 
-	const options: IHttpRequestOptions = {
+	const options: Omit<IHttpRequestOptions, 'url'> = {
 		json: true,
 		// Can be overridden per request via `requestOptions.timeout`.
 		timeout: DEFAULT_REQUEST_TIMEOUT_MS,
 		...rest,
 		method,
 		qs: query,
-		url: endpoint,
 		headers,
 	};
 
@@ -93,9 +112,18 @@ export async function apiRequest(
 			);
 		}
 
+		// An absolute URL (e.g. an Actor's standby endpoint) is used as-is, otherwise
+		// the path is resolved against the Apify API base URL.
+		const { apiBaseUrl } = await getBaseUrls.call(this);
+		const url = uri?.startsWith('http') ? uri : `${apiBaseUrl}${uri}`;
+
 		return await retryWithExponentialBackoff.call(
 			this,
-			() => this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, options),
+			() =>
+				this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, {
+					...options,
+					url,
+				}),
 			// Only retry timeouts/network errors for idempotent GET requests. Retrying a
 			// non-idempotent POST (e.g. starting an Actor run) could create duplicate runs.
 			{ retryNetworkErrors: method === 'GET' },
