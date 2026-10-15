@@ -46,6 +46,17 @@ function toSafeHttpUrl(value: unknown): string | undefined {
 }
 
 /**
+ * Whether `error` is a NodeApiError - including one from n8n's own copy of n8n-workflow, for
+ * which `instanceof` fails when another copy is installed next to this node.
+ */
+function isNodeApiError(error: unknown): boolean {
+	return (
+		error instanceof NodeApiError ||
+		(error instanceof Error && error.constructor?.name === 'NodeApiError')
+	);
+}
+
+/**
  * Make an API request to Apify
  */
 export async function apiRequest(
@@ -137,6 +148,8 @@ export async function apiRequest(
 			if (Array.isArray(error.messages)) error.messages = [error.message];
 			throw new NodeApiError(this.getNode(), error);
 		}
+
+		if (isNodeApiError(error)) throw error;
 
 		if (error.response && error.response.body) {
 			throw new NodeApiError(this.getNode(), error, {
