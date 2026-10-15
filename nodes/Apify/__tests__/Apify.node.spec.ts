@@ -1,5 +1,10 @@
 import nock from 'nock';
-import { ILoadOptionsFunctions, NodeOperationError, ResourceMapperFields } from 'n8n-workflow';
+import {
+	ILoadOptionsFunctions,
+	NodeApiError,
+	NodeOperationError,
+	ResourceMapperFields,
+} from 'n8n-workflow';
 import { Apify } from '../Apify.node';
 import { createLoadOptionsFunctions, executeWorkflow } from './utils/executeWorkflow';
 import { CredentialsHelper } from './utils/credentialHelper';
@@ -1086,7 +1091,58 @@ describe('Apify Node', () => {
 
 				expect(scope.isDone()).toBe(true);
 			});
+
+			describe('missing default build', () => {
+				const runWithDefaultBuildError = async (status: number, error: object) => {
+					const scope = nock('https://api.apify.com')
+						.get('/v2/acts/nFJndFXA5zjCTuudP')
+						.reply(200, fixtures.getActorResult())
+						.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+						.reply(status, { error });
+
+					const runActorWorkflow = require('./workflows/actors/run-actor.workflow.json');
+
+					let thrown: any;
+					try {
+						await executeWorkflow({ credentialsHelper, workflow: runActorWorkflow });
+					} catch (e) {
+						thrown = e;
+					}
+					expect(scope.isDone()).toBe(true);
+					return thrown;
+				};
+
+				it('should explain a missing default build instead of a credentials error', async () => {
+					const apifyMessage =
+						'Build with tag "latest" was not found. Has the Actor been built already?';
+
+					const thrown = await runWithDefaultBuildError(403, {
+						type: helpers.consts.MISSING_DEFAULT_BUILD_ERROR_TYPE,
+						message: apifyMessage,
+					});
+
+					expect(thrown).toBeInstanceOf(NodeApiError);
+					expect(thrown.message).toBe(
+						'Actor nFJndFXA5zjCTuudP has no build for its default build tag',
+					);
+					expect(thrown.message).not.toMatch(/credentials/i);
+					expect(thrown.description).toContain(apifyMessage);
+					expect(thrown.description).toContain('Build the Actor in Apify Console');
+					expect(thrown.httpCode).toBe('403');
+				});
+
+				it('should keep other 403 errors from the default build request unchanged', async () => {
+					const thrown = await runWithDefaultBuildError(403, {
+						type: 'insufficient-permissions',
+						message: 'You do not have permission to perform this action.',
+					});
+
+					expect(thrown).toBeInstanceOf(NodeApiError);
+					expect(thrown.message).toBe('Forbidden - perhaps check your credentials?');
+				});
+			});
 		});
+
 		describe('run-actor-and-get-dataset', () => {
 			it('should run the run-actor-and-get-dataset workflow', async () => {
 				const mockRunActor = fixtures.runActorResult();

@@ -1,5 +1,7 @@
 export const WEB_CONTENT_SCRAPER_ACTOR_ID = 'aYG0l9s7dbB7j3gbS';
 export const APIFY_API_URL = 'https://api.apify.com';
+// Apify's 403 error type when the Actor's default build tag has no build.
+export const MISSING_DEFAULT_BUILD_ERROR_TYPE = 'unknown-build-tag';
 // Standby endpoint of the apify/web-fetch Actor (per the integrations-team contract).
 export const WEB_FETCH_STANDBY_URL = 'https://web-fetch.apify.actor/';
 export const TERMINAL_RUN_STATUSES = ['SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'];
