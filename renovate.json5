@@ -11,6 +11,12 @@
 	timezone: 'Europe/Prague',
 	schedule: ['* * * * 3'],
 	labels: ['t-integrations', 'dependencies'],
+	reviewers: ['drobnikj', 'protoss70'],
+
+	// Merge once CI is green and the PR is approved — the master ruleset requires 1 approval,
+	// so GitHub auto-merge waits for a review instead of merging unreviewed.
+	automerge: true,
+	platformAutomerge: true,
 
 	minimumReleaseAge: '3 days',
 	// Skip a version while it is still in cooldown instead of opening a pending PR.
