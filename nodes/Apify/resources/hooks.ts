@@ -13,6 +13,7 @@ import {
 	overrideKeyValueStoreRecordKeyProperties,
 } from './keyValueStoreRecordKeyResourceLocator';
 import { compose } from './genericFunctions';
+import { getActorInputFields } from './actorInput';
 
 export function runHooks(properties: INodeProperties[]): {
 	properties: INodeProperties[];
@@ -37,6 +38,9 @@ export function runHooks(properties: INodeProperties[]): {
 				listKeyValueStores,
 				listKeyValueStoreRecordKeys,
 				listUserActors,
+			},
+			resourceMapping: {
+				getActorInputFields,
 			},
 		},
 	};
