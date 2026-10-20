@@ -104,7 +104,7 @@ function getInputSchema(
 	} catch {
 		throw new NodeOperationError(
 			this.getNode(),
-			`Could not parse the input schema of actor ${actorId}`,
+			`Could not parse the input schema of Actor ${actorId}`,
 		);
 	}
 }
