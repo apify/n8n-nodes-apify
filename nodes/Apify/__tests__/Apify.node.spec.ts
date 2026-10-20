@@ -8,6 +8,7 @@ import {
 import { Apify } from '../Apify.node';
 import { createLoadOptionsFunctions, executeWorkflow } from './utils/executeWorkflow';
 import { getDefaultBuild } from '../resources/executeActor';
+import { apiRequest } from '../resources/genericFunctions';
 import { CredentialsHelper } from './utils/credentialHelper';
 import { getRunTaskDataByNodeName, getTaskData } from './utils/getNodeResultData';
 import getRunWorkflow from './workflows/actor-runs/get-run.workflow.json';
@@ -1730,6 +1731,51 @@ describe('Apify Node', () => {
 			await expect(getDefaultBuild.call(context, 'nFJndFXA5zjCTuudP')).rejects.toThrow(
 				'Actor nFJndFXA5zjCTuudP has no build for its default build tag',
 			);
+		});
+
+		it("should keep the approval message on a NodeApiError from n8n's own n8n-workflow copy", async () => {
+			const approvalUrl =
+				'https://console.apify.com/actors/nFJndFXA5zjCTuudP?approvePermissions=true';
+			// Same class name, different class, as in the test above.
+			const { NodeApiError: ForeignNodeApiError } = {
+				NodeApiError: class extends Error {
+					httpCode = '403';
+					context = {
+						data: {
+							error: {
+								type: 'full-permission-actor-not-approved',
+								message: `This Actor requires full access to your account. You must approve its permissions before running it: ${approvalUrl}`,
+								data: { approvalUrl },
+							},
+						},
+					};
+				},
+			};
+			const node = {
+				name: 'Run actor',
+				type: 'n8n-nodes-apify.apify',
+				typeVersion: 2,
+				parameters: { authentication: 'apifyApi' },
+			};
+			const context = {
+				...createLoadOptionsFunctions({ credentialsHelper, node }),
+				helpers: {
+					httpRequestWithAuthentication: async () => {
+						throw new ForeignNodeApiError('Forbidden - perhaps check your credentials?');
+					},
+				},
+			} as unknown as ILoadOptionsFunctions;
+
+			let thrown: any;
+			try {
+				await apiRequest.call(context, { method: 'POST', uri: '/v2/acts/nFJndFXA5zjCTuudP/runs' });
+			} catch (error) {
+				thrown = error;
+			}
+
+			expect(thrown).toBeDefined();
+			expect(thrown.message).toContain('You must approve its permissions');
+			expect(thrown.description).toContain(`href="${approvalUrl}"`);
 		});
 	});
 });
