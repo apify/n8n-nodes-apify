@@ -400,7 +400,7 @@ describe('Apify Node', () => {
 
 			expectLoadFailureNotice(
 				result,
-				'Could not parse the input schema of actor nFJndFXA5zjCTuudP',
+				'Could not parse the input schema of Actor nFJndFXA5zjCTuudP',
 			);
 			expect(scope.isDone()).toBe(true);
 		});
