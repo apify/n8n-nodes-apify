@@ -234,6 +234,37 @@ describe('Apify Node', () => {
 			expect(scope.isDone()).toBe(true);
 		});
 
+		it('should keep enum titles paired with their values when non-primitive values are dropped', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(
+					200,
+					buildWithInputSchema({
+						properties: {
+							format: {
+								title: 'Format',
+								type: 'string',
+								enum: [null, 'a', 'b'],
+								enumTitles: ['None', 'A', 'B'],
+							},
+						},
+					}),
+				);
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'id', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.fields[0].options).toEqual([
+				{ name: 'A', value: 'a' },
+				{ name: 'B', value: 'b' },
+			]);
+			expect(scope.isDone()).toBe(true);
+		});
+
 		it('should fall back to the stringified inputSchema of older builds', async () => {
 			const scope = nock('https://api.apify.com')
 				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')

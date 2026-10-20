@@ -34,11 +34,14 @@ interface ActorBuild {
 
 function getEnumOptions(property: ActorInputSchemaProperty): INodePropertyOptions[] {
 	return (property.enum ?? [])
+		.map((value, index) => ({ value, title: property.enumTitles?.[index] }))
 		.filter(
-			(value): value is string | number | boolean =>
-				typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean',
+			(entry): entry is { value: string | number | boolean; title: string | undefined } =>
+				typeof entry.value === 'string' ||
+				typeof entry.value === 'number' ||
+				typeof entry.value === 'boolean',
 		)
-		.map((value, index) => ({ name: property.enumTitles?.[index] ?? String(value), value }));
+		.map(({ value, title }) => ({ name: title ?? String(value), value }));
 }
 
 function getFieldType(property: ActorInputSchemaProperty): FieldType {
