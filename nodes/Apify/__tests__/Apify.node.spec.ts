@@ -382,7 +382,7 @@ describe('Apify Node', () => {
 
 			const result = await getActorInputFields().call(context);
 
-			expectLoadFailureNotice(result, 'Could not fetch default build for actor nFJndFXA5zjCTuudP');
+			expectLoadFailureNotice(result, 'Could not fetch default build for Actor nFJndFXA5zjCTuudP');
 			expect(scope.isDone()).toBe(true);
 		});
 

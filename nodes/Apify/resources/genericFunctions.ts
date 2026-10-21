@@ -47,7 +47,7 @@ function toSafeHttpUrl(value: unknown): string | undefined {
 }
 
 /**
- * Whether `error` is a NodeApiError - including one from n8n's own copy of n8n-workflow, for
+ * Whether `error` is a NodeApiError, including one from n8n's own copy of n8n-workflow, for
  * which `instanceof` fails when another copy is installed next to this node.
  */
 function isNodeApiError(error: unknown): boolean {
@@ -440,7 +440,7 @@ export async function executeAndLinkItems<T extends INodeExecutionData | INodeEx
 					pairedItem: { item: i },
 				});
 			} else {
-				// Propagade the error further
+				// Propagate the error further
 				throw toNodeApiError(this.getNode(), error);
 			}
 		}
