@@ -9,6 +9,15 @@ import { Apify } from '../Apify.node';
 import { createLoadOptionsFunctions, executeWorkflow } from './utils/executeWorkflow';
 import { getDefaultBuild } from '../resources/executeActor';
 import { apiRequest } from '../resources/genericFunctions';
+import { abortRun } from '../resources/actor-runs/abort-run/execute';
+import { getActorRuns } from '../resources/actor-runs/get-actor-runs/execute';
+import { getRun } from '../resources/actor-runs/get-run/execute';
+import { getUserRunsList } from '../resources/actor-runs/get-user-runs-list/execute';
+import { getLastRun } from '../resources/actors/get-last-run/execute';
+import { scrapeSingleUrl } from '../resources/actors/scrape-single-url/execute';
+import { webFetch } from '../resources/actors/web-fetch/execute';
+import { getItems } from '../resources/datasets/get-items/execute';
+import { getKeyValueStoreRecord } from '../resources/key-value-stores/get-key-value-store-record/execute';
 import { CredentialsHelper } from './utils/credentialHelper';
 import { getRunTaskDataByNodeName, getTaskData } from './utils/getNodeResultData';
 import getRunWorkflow from './workflows/actor-runs/get-run.workflow.json';
@@ -1776,6 +1785,78 @@ describe('Apify Node', () => {
 			expect(thrown).toBeDefined();
 			expect(thrown.message).toContain('You must approve its permissions');
 			expect(thrown.description).toContain(`href="${approvalUrl}"`);
+		});
+
+		describe("operations pass on a NodeApiError from n8n's own n8n-workflow copy unchanged", () => {
+			// Same class name, different class, as in the tests above.
+			const { NodeApiError: ForeignNodeApiError } = {
+				NodeApiError: class extends Error {
+					httpCode = '404';
+					context = {
+						data: { error: { type: 'record-not-found', message: 'Record was not found' } },
+					};
+				},
+			};
+			const node = {
+				name: 'Apify',
+				type: 'n8n-nodes-apify.apify',
+				typeVersion: 2,
+				parameters: {
+					authentication: 'apifyApi',
+					runId: { value: 'runId123' },
+					abortRunId: 'runId123',
+					userActorId: { value: 'nFJndFXA5zjCTuudP' },
+					datasetId: 'datasetId123',
+					storeId: { value: 'storeId123' },
+					recordKey: { value: 'INPUT' },
+					url: 'https://example.com',
+					status: '',
+				},
+			};
+			// `body` replaces the response body on the error.
+			const operations: Array<{
+				name: string;
+				operation: (this: any, i: number) => Promise<unknown>;
+				body?: unknown;
+			}> = [
+				{
+					name: 'getDefaultBuild',
+					operation: function (this: any) {
+						return getDefaultBuild.call(this, 'nFJndFXA5zjCTuudP');
+					},
+				},
+				{ name: 'get-run', operation: getRun },
+				{ name: 'get-actor-runs', operation: getActorRuns },
+				{ name: 'get-user-runs-list', operation: getUserRunsList },
+				{ name: 'abort-run', operation: abortRun },
+				{ name: 'datasets/get-items', operation: getItems },
+				{ name: 'get-key-value-store-record', operation: getKeyValueStoreRecord },
+				{ name: 'scrape-single-url', operation: scrapeSingleUrl },
+				{ name: 'get-last-run', operation: getLastRun },
+				// Web Fetch maps its own error envelopes; a plain-text body reaches the fallback.
+				{ name: 'web-fetch', operation: webFetch, body: 'Bad Gateway' },
+			];
+
+			it.each(operations)('$name', async ({ operation, body }) => {
+				const original = new ForeignNodeApiError(
+					'The resource you are requesting could not be found',
+				);
+				if (body !== undefined) original.context = { data: body } as any;
+				const loadOptionsFunctions = createLoadOptionsFunctions({ credentialsHelper, node });
+				const context = {
+					...loadOptionsFunctions,
+					// Operations call the execute signature, which takes the item index second.
+					getNodeParameter: (name: string, _itemIndex: number, fallback?: any, options?: any) =>
+						loadOptionsFunctions.getNodeParameter(name, fallback, options),
+					helpers: {
+						httpRequestWithAuthentication: async () => {
+							throw original;
+						},
+					},
+				};
+
+				await expect(operation.call(context, 0)).rejects.toBe(original);
+			});
 		});
 	});
 });

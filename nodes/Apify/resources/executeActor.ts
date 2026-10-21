@@ -1,11 +1,10 @@
 import {
 	IExecuteFunctions,
 	ILoadOptionsFunctions,
-	JsonObject,
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, customBodyParser, pollRunStatus } from './genericFunctions';
+import { apiRequest, customBodyParser, pollRunStatus, toNodeApiError } from './genericFunctions';
 import { MISSING_DEFAULT_BUILD_ERROR_TYPE } from '../helpers/consts';
 
 export interface ActorExecutionParams {
@@ -153,8 +152,7 @@ export async function getDefaultBuild(
 				},
 			);
 		}
-		// Re-wrapping an existing NodeApiError returns it unchanged.
-		throw new NodeApiError(this.getNode(), error as JsonObject);
+		throw toNodeApiError(this.getNode(), error);
 	}
 	if (!defaultBuildResp || !defaultBuildResp.data) {
 		throw new NodeApiError(this.getNode(), {

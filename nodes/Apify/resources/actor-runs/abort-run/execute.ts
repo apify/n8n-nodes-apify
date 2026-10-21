@@ -1,10 +1,9 @@
 import {
   IExecuteFunctions,
   INodeExecutionData,
-  NodeApiError,
   NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest } from '../../../resources/genericFunctions';
+import { apiRequest, toNodeApiError } from '../../../resources/genericFunctions';
 
 export async function abortRun(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
   const runId = this.getNodeParameter('abortRunId', i) as string;
@@ -23,6 +22,6 @@ export async function abortRun(this: IExecuteFunctions, i: number): Promise<INod
 
     return { json: { ...apiResult.data } };
   } catch (error) {
-    throw new NodeApiError(this.getNode(), error);
+    throw toNodeApiError(this.getNode(), error);
   }
 }
