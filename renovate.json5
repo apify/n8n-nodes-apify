@@ -18,7 +18,7 @@
 	automerge: true,
 	platformAutomerge: true,
 
-	minimumReleaseAge: '3 days',
+	minimumReleaseAge: '7 days',
 	// Skip a version while it is still in cooldown instead of opening a pending PR.
 	internalChecksFilter: 'strict',
 

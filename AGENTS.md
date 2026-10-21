@@ -27,8 +27,8 @@ Single test: `npx jest -t '<test name>'` or `npx jest <path>`.
 
 CI runs lint → `tsc --noEmit` → build → test on Node 24.x for PRs to `master`. The version
 spread is known: `package.json` engines say Node `>=22`, the README says 22.x, CI runs 24.x —
-check all three before "fixing" any one of them. `.npmrc` sets `min-release-age=3`, so
-installing a package published in the last 3 days fails; Renovate opens weekly `chore:`
+check all three before "fixing" any one of them. `.npmrc` sets `min-release-age=7`, so
+installing a package published in the last 7 days fails; Renovate opens weekly `chore:`
 dependency PRs with a matching cooldown.
 
 For trigger work on self-hosted n8n, export a public `WEBHOOK_URL` before `npm run dev` — n8n
