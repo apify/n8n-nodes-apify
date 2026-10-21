@@ -158,7 +158,7 @@ export async function getDefaultBuild(
 	}
 	if (!defaultBuildResp || !defaultBuildResp.data) {
 		throw new NodeApiError(this.getNode(), {
-			message: `Could not fetch default build for actor ${actorId}`,
+			message: `Could not fetch default build for Actor ${actorId}`,
 		});
 	}
 	return defaultBuildResp.data;
