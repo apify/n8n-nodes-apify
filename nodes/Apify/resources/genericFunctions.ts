@@ -61,7 +61,7 @@ function isNodeApiError(error: unknown): boolean {
  * Wrap `error` in a NodeApiError unless it already is one. NodeApiError's own pass-through uses
  * `instanceof`, so it would re-wrap one from n8n's copy and lose its message and `context`.
  */
-function toNodeApiError(node: INode, error: any): Error {
+export function toNodeApiError(node: INode, error: any): Error {
 	return isNodeApiError(error) ? error : new NodeApiError(node, error);
 }
 
