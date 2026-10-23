@@ -18,7 +18,9 @@ export class Apify implements INodeType {
 		name: 'apify',
 		icon: 'file:apify-light.svg',
 		group: ['transform'],
-		version: [1, 2],
+		// 2.1: requests go to the credential's base URLs instead of hardcoded hosts
+		version: [1, 2, 2.1],
+		defaultVersion: 2.1,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Access Apify tools for web scraping, data extraction, and automation.',
 		defaults: {

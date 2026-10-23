@@ -149,13 +149,13 @@ HTTP requests so `nock` can intercept them. Consequences:
   `saveHtml`/`saveMarkdown` flags, so `execute.ts` strips them and re-adds the chosen one — keep
   that when adding fields, or the lean AI-tool output contract breaks. An `includeMetadata`
   toggle existed briefly and was reverted; don't re-add it. The operation is **deprecated**
-  in favor of `Web Fetch` via light versioning: `Apify.node.ts` sets `version: [1, 2]` so new
-  nodes are `typeVersion: 2`. The scrape option and all its properties carry `'@version': [1]`
+  in favor of `Web Fetch` via light versioning: `Apify.node.ts` sets `version: [1, 2, 2.1]` so new
+  nodes are `typeVersion: 2.1`. The scrape option and all its properties carry `'@version': [1]`
   in `displayOptions.show` (the action is hidden from new v2 nodes but existing typeVersion-1
   workflows still execute it), and a `notice` property shows the deprecation copy. Its value
   `'Scrape single URL'` must never be renamed — existing workflows store it.
-- `Actors → Web Fetch` calls the Web Fetch standby Actor (`WEB_FETCH_STANDBY_URL` in
-  `helpers/consts.ts`, resolved through `apiRequest`'s absolute-URL branch) with a single POST
+- `Actors → Web Fetch` calls the Web Fetch standby Actor (`webFetchBaseUrl` from `getBaseUrls`,
+  resolved through `apiRequest`'s absolute-URL branch) with a single POST
   and passes the response envelope (`url`, `fetch`, `metadata`, one key per requested `formats`
   entry) through verbatim — no `pollRunStatus`, no dataset fetch, no stripping. Web Fetch errors
   arrive as a flat `{ code, error }` or a nested `{ error: { message, type } }` body; both are
@@ -164,18 +164,23 @@ HTTP requests so `nock` can intercept them. Consequences:
   an existing `NodeApiError` returns the original untouched). Headers are a JSON-type parameter
   defaulting to `'{}'` (empty-string would make n8n's JSON editor throw "Unexpected end of JSON
   input"); invalid or non-object input throws a `NodeOperationError` with an actionable message.
-- `key-value-stores/get-key-value-store-record` bypasses `apiRequest` and hard-codes `'apifyApi'`
-  because it needs `returnFullResponse` + `encoding: 'arraybuffer'` for binary records, which
-  `apiRequest`'s `json: true` precludes. It therefore ignores the `authentication` parameter.
+- `key-value-stores/get-key-value-store-record` bypasses `apiRequest` because it needs
+  `returnFullResponse` + `encoding: 'arraybuffer'` for binary records, which `apiRequest`'s
+  `json: true` precludes. It resolves the `authentication` parameter and `getBaseUrls` itself.
 - n8n's node-creator action sidebar (via `useActionsGeneration.ts` → `resourceCategories()`)
   filters operation *properties* by `@version` but maps every *option* unconditionally —
   option-level `displayOptions` (including `'@version'`) is never evaluated there. This is why
-  `Actors` ships two `operation` selects: one with `'@version': [2]` (4 options, no scrape)
+  `Actors` ships two `operation` selects: one with `'@version': [2, 2.1]` (4 options, no scrape)
   for new nodes, and one with `'@version': [1]` (all 5, incl. the deprecated option) for
-  typeVersion-1 workflows. If a future v3 changes the operation list, the `[2]` gate on the v2
-  select must be widened to `[2, 3]`.
-- Keep base URLs in `helpers/consts.ts`; `ApifyApi.credentials.ts` imports `APIFY_API_URL` from
-  there for its `/v2/users/me` credential test.
+  typeVersion-1 workflows. If a future v3 changes the operation list, the `[2, 2.1]` gate on the
+  v2 select must be widened to `[2, 2.1, 3]`.
+- Version 2.1 (the default) is a marker only: requests go to the credential's base URLs instead
+  of hardcoded hosts, behaviour is identical across versions.
+- Base URLs: `apifyApi` has hidden `baseUrl` / `webFetchBaseUrl` fields (defaults
+  `APIFY_API_URL` / `WEB_FETCH_STANDBY_URL` from `helpers/consts.ts`) so n8n can route the node
+  through its gateway; the credential test uses `baseUrl`. `getBaseUrls` in `genericFunctions.ts`
+  resolves them for the node's `authentication` mode — OAuth2 always uses the defaults. Don't
+  hardcode hosts in operations.
 - Conventional Commits (`feat:`, `fix:`, `chore:`, `ci:`, `docs:`); PRs target `master`.
 - Never bump the version by hand. Publishing a GitHub Release tagged `vX.Y.Z` triggers
   `publish.yml`: build, test, `npm version`, a signed `chore(release): … [skip ci]` commit, and
