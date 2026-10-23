@@ -4,7 +4,8 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, customBodyParser, pollRunStatus } from './genericFunctions';
+import { apiRequest, customBodyParser, pollRunStatus, toNodeApiError } from './genericFunctions';
+import { MISSING_DEFAULT_BUILD_ERROR_TYPE } from '../helpers/consts';
 
 export interface ActorExecutionParams {
 	actorId: string;
@@ -128,13 +129,34 @@ export async function getDefaultBuild(
 	this: IExecuteFunctions | ILoadOptionsFunctions,
 	actorId: string,
 ) {
-	const defaultBuildResp = await apiRequest.call(this, {
-		method: 'GET',
-		uri: `/v2/acts/${actorId}/builds/default`,
-	});
+	let defaultBuildResp: any;
+	try {
+		defaultBuildResp = await apiRequest.call(this, {
+			method: 'GET',
+			uri: `/v2/acts/${actorId}/builds/default`,
+		});
+	} catch (error) {
+		// n8n titles every 403 as a credentials error; give a missing build a clear message.
+		const apifyError = error?.context?.data?.error;
+		if (apifyError?.type === MISSING_DEFAULT_BUILD_ERROR_TYPE) {
+			// The message must go in the options, or n8n replaces it with the status-code title.
+			const message = `Actor ${actorId} has no build for its default build tag`;
+			throw new NodeApiError(
+				this.getNode(),
+				{ message },
+				{
+					message,
+					description:
+						`${apifyError.message ?? ''} Build the Actor in Apify Console, or set the Build Tag of an existing build.`.trim(),
+					httpCode: error.httpCode != null ? String(error.httpCode) : undefined,
+				},
+			);
+		}
+		throw toNodeApiError(this.getNode(), error);
+	}
 	if (!defaultBuildResp || !defaultBuildResp.data) {
 		throw new NodeApiError(this.getNode(), {
-			message: `Could not fetch default build for actor ${actorId}`,
+			message: `Could not fetch default build for Actor ${actorId}`,
 		});
 	}
 	return defaultBuildResp.data;

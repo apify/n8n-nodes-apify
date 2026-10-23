@@ -1,5 +1,10 @@
 import { IExecuteFunctions, INodeExecutionData, NodeApiError } from 'n8n-workflow';
-import { apiRequest, pollRunStatus, validateUrl } from '../../../resources/genericFunctions';
+import {
+	apiRequest,
+	pollRunStatus,
+	validateUrl,
+	toNodeApiError,
+} from '../../../resources/genericFunctions';
 import { consts } from '../../../helpers';
 
 export async function scrapeSingleUrl(
@@ -80,6 +85,6 @@ export async function scrapeSingleUrl(
 
 		return { json: { ...metadata, ...content } };
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error);
+		throw toNodeApiError(this.getNode(), error);
 	}
 }

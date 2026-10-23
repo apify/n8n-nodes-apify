@@ -1,10 +1,5 @@
-import {
-	IExecuteFunctions,
-	INodeExecutionData,
-	NodeApiError,
-	NodeOperationError,
-} from 'n8n-workflow';
-import { apiRequest } from '../../../resources/genericFunctions';
+import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-workflow';
+import { apiRequest, toNodeApiError } from '../../../resources/genericFunctions';
 import { consts } from '../../../helpers';
 
 function normalizeCommaSeparatedList(value: string): string {
@@ -48,6 +43,6 @@ export async function getItems(this: IExecuteFunctions, i: number): Promise<INod
 
 		return this.helpers.returnJsonArray(itemsArray);
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error);
+		throw toNodeApiError(this.getNode(), error);
 	}
 }
