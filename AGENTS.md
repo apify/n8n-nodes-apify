@@ -130,6 +130,8 @@ HTTP requests so `nock` can intercept them. Consequences:
 - It wraps HTTP failures in a `NodeApiError` keeping the parsed body on `error.context.data`,
   which is what the permission-approval handling reads.
 - Assert via `__tests__/utils/getNodeResultData.ts` and always check `scope.isDone()`.
+- `nock` is held at v14 by a `packageRules` entry in `renovate.json5`: v15 is ESM-only and the
+  Jest/ts-jest setup is CommonJS. Lift the hold only together with moving Jest to ESM.
 
 ## Conventions and gotchas
 

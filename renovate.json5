@@ -27,4 +27,14 @@
 		enabled: true,
 		schedule: ['* * * * 3'],
 	},
+
+	packageRules: [
+		{
+			// nock 15 (and its @mswjs/interceptors dependency) is ESM-only, while Jest runs ts-jest in
+			// CommonJS, so the specs fail to load with `Must use import to load ES Module`. Keep 14.x
+			// updates flowing; drop this rule once the Jest setup runs in ESM mode.
+			matchPackageNames: ['nock'],
+			allowedVersions: '<15',
+		},
+	],
 }
