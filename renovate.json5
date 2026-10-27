@@ -22,6 +22,16 @@
 	// Skip a version while it is still in cooldown instead of opening a pending PR.
 	internalChecksFilter: 'strict',
 
+	packageRules: [
+		{
+			// Hold eslint on v9: `@n8n/node-cli` bundles ESLint 9 and the n8n-nodes-base
+			// lint config, which do not support ESLint 10. Only 9.x updates are offered;
+			// remove this rule once n8n's tooling supports ESLint 10.
+			matchPackageNames: ['eslint'],
+			allowedVersions: '<10',
+		},
+	],
+
 	// Weekly lockfile rebuild — the only time transitive dependencies are refreshed.
 	lockFileMaintenance: {
 		enabled: true,
