@@ -22,13 +22,20 @@
 	// Skip a version while it is still in cooldown instead of opening a pending PR.
 	internalChecksFilter: 'strict',
 
-	// Weekly lockfile rebuild — the only time transitive dependencies are refreshed.
-	lockFileMaintenance: {
-		enabled: true,
-		schedule: ['* * * * 3'],
-	},
-
 	packageRules: [
+		{
+			// Hold eslint on v9: `@n8n/node-cli` bundles ESLint 9 and the n8n-nodes-base
+			// lint config, which do not support ESLint 10. Only 9.x updates are offered;
+			// remove this rule once n8n's tooling supports ESLint 10.
+			matchPackageNames: ['eslint'],
+			allowedVersions: '<10',
+		},
+		{
+			// TypeScript 7 is the Go port and ships no JS compiler API; ts-jest@29 (`<7`) and
+			// typescript-eslint@8 (`<6.1.0`) exclude it in their peer ranges. Lift once they support v7.
+			matchPackageNames: ['typescript'],
+			allowedVersions: '<7',
+		},
 		{
 			// nock 15 (and its @mswjs/interceptors dependency) is ESM-only, while Jest runs ts-jest in
 			// CommonJS, so the specs fail to load with `Must use import to load ES Module`. Keep 14.x
@@ -37,4 +44,10 @@
 			allowedVersions: '<15',
 		},
 	],
+
+	// Weekly lockfile rebuild — the only time transitive dependencies are refreshed.
+	lockFileMaintenance: {
+		enabled: true,
+		schedule: ['* * * * 3'],
+	},
 }
