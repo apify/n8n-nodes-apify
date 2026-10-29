@@ -49,6 +49,11 @@ creates duplicate Actor runs.
 message. The approval URL is validated and goes only in `description` — n8n rewrites any
 `message` containing an error code — as plain text for AI tools and an escaped `<a>` for the UI.
 
+Rethrow caught errors with `toNodeApiError`, never a bare `new NodeApiError(node, error)`.
+`NodeApiError` only passes through its own instances (`instanceof`), so when a second
+`n8n-workflow` copy sits next to the node (a linked dev setup, some manual installs), n8n's error
+is rebuilt and loses `context`, which the missing-build and approval handling read.
+
 `pollRunStatus` is bounded — the run's own `timeoutSecs` plus a 5m grace, falling back to 24h
 when the run reports no timeout, then it throws. Don't reintroduce unbounded polling. Timeout
 constants live in `helpers/consts.ts`.
@@ -162,8 +167,8 @@ HTTP requests so `nock` can intercept them. Consequences:
   entry) through verbatim — no `pollRunStatus`, no dataset fetch, no stripping. Web Fetch errors
   arrive as a flat `{ code, error }` or a nested `{ error: { message, type } }` body; both are
   mapped to a `NodeApiError` in the operation (the custom message must go in the `options` arg —
-  n8n rewrites messages set on the `errorResponse` when an `httpCode` is present, and re-wrapping
-  an existing `NodeApiError` returns the original untouched). Headers are a JSON-type parameter
+  n8n rewrites messages set on the `errorResponse` when an `httpCode` is present, so build a fresh
+  `NodeApiError` instead of wrapping the caught one). Headers are a JSON-type parameter
   defaulting to `'{}'` (empty-string would make n8n's JSON editor throw "Unexpected end of JSON
   input"); invalid or non-object input throws a `NodeOperationError` with an actionable message.
 - `key-value-stores/get-key-value-store-record` bypasses `apiRequest` and hard-codes `'apifyApi'`

@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, validateUrl } from '../../../resources/genericFunctions';
+import { apiRequest, validateUrl, toNodeApiError } from '../../../resources/genericFunctions';
 import { consts } from '../../../helpers';
 
 function toHttpCode(value: unknown): string | undefined {
@@ -103,6 +103,6 @@ export async function webFetch(
 		}
 		// Not a Web Fetch error envelope - rethrow as-is (a no-op passthrough
 		// when `error` is already a NodeApiError).
-		throw new NodeApiError(this.getNode(), error);
+		throw toNodeApiError(this.getNode(), error);
 	}
 }

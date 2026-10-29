@@ -1,7 +1,23 @@
 import nock from 'nock';
-import { ILoadOptionsFunctions, NodeOperationError, ResourceMapperFields } from 'n8n-workflow';
+import {
+	ILoadOptionsFunctions,
+	NodeApiError,
+	NodeOperationError,
+	ResourceMapperFields,
+} from 'n8n-workflow';
 import { Apify } from '../Apify.node';
 import { createLoadOptionsFunctions, executeWorkflow } from './utils/executeWorkflow';
+import { getDefaultBuild } from '../resources/executeActor';
+import { apiRequest } from '../resources/genericFunctions';
+import { abortRun } from '../resources/actor-runs/abort-run/execute';
+import { getActorRuns } from '../resources/actor-runs/get-actor-runs/execute';
+import { getRun } from '../resources/actor-runs/get-run/execute';
+import { getUserRunsList } from '../resources/actor-runs/get-user-runs-list/execute';
+import { getLastRun } from '../resources/actors/get-last-run/execute';
+import { scrapeSingleUrl } from '../resources/actors/scrape-single-url/execute';
+import { webFetch } from '../resources/actors/web-fetch/execute';
+import { getItems } from '../resources/datasets/get-items/execute';
+import { getKeyValueStoreRecord } from '../resources/key-value-stores/get-key-value-store-record/execute';
 import { CredentialsHelper } from './utils/credentialHelper';
 import { getRunTaskDataByNodeName, getTaskData } from './utils/getNodeResultData';
 import getRunWorkflow from './workflows/actor-runs/get-run.workflow.json';
@@ -359,7 +375,7 @@ describe('Apify Node', () => {
 
 			const result = await getActorInputFields().call(context);
 
-			expectLoadFailureNotice(result, "Build tag &#39;beta&#39; does not exist");
+			expectLoadFailureNotice(result, 'Build tag &#39;beta&#39; does not exist');
 			expect(scope.isDone()).toBe(true);
 		});
 
@@ -375,7 +391,7 @@ describe('Apify Node', () => {
 
 			const result = await getActorInputFields().call(context);
 
-			expectLoadFailureNotice(result, 'Could not fetch default build for actor nFJndFXA5zjCTuudP');
+			expectLoadFailureNotice(result, 'Could not fetch default build for Actor nFJndFXA5zjCTuudP');
 			expect(scope.isDone()).toBe(true);
 		});
 
@@ -391,14 +407,19 @@ describe('Apify Node', () => {
 
 			const result = await getActorInputFields().call(context);
 
-			expectLoadFailureNotice(result, 'Could not parse the input schema of actor nFJndFXA5zjCTuudP');
+			expectLoadFailureNotice(
+				result,
+				'Could not parse the input schema of Actor nFJndFXA5zjCTuudP',
+			);
 			expect(scope.isDone()).toBe(true);
 		});
 
 		it('should escape API error text, since the notice is rendered as HTML', async () => {
 			const scope = nock('https://api.apify.com')
 				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
-				.reply(404, { error: { type: 'record-not-found', message: '<img src=x onerror=alert(1)>' } });
+				.reply(404, {
+					error: { type: 'record-not-found', message: '<img src=x onerror=alert(1)>' },
+				});
 
 			const context = createLoadOptionsFunctions({
 				credentialsHelper,
@@ -1086,7 +1107,58 @@ describe('Apify Node', () => {
 
 				expect(scope.isDone()).toBe(true);
 			});
+
+			describe('missing default build', () => {
+				const runWithDefaultBuildError = async (status: number, error: object) => {
+					const scope = nock('https://api.apify.com')
+						.get('/v2/acts/nFJndFXA5zjCTuudP')
+						.reply(200, fixtures.getActorResult())
+						.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+						.reply(status, { error });
+
+					const runActorWorkflow = require('./workflows/actors/run-actor.workflow.json');
+
+					let thrown: any;
+					try {
+						await executeWorkflow({ credentialsHelper, workflow: runActorWorkflow });
+					} catch (e) {
+						thrown = e;
+					}
+					expect(scope.isDone()).toBe(true);
+					return thrown;
+				};
+
+				it('should explain a missing default build instead of a credentials error', async () => {
+					const apifyMessage =
+						'Build with tag "latest" was not found. Has the Actor been built already?';
+
+					const thrown = await runWithDefaultBuildError(403, {
+						type: helpers.consts.MISSING_DEFAULT_BUILD_ERROR_TYPE,
+						message: apifyMessage,
+					});
+
+					expect(thrown).toBeInstanceOf(NodeApiError);
+					expect(thrown.message).toBe(
+						'Actor nFJndFXA5zjCTuudP has no build for its default build tag',
+					);
+					expect(thrown.message).not.toMatch(/credentials/i);
+					expect(thrown.description).toContain(apifyMessage);
+					expect(thrown.description).toContain('Build the Actor in Apify Console');
+					expect(thrown.httpCode).toBe('403');
+				});
+
+				it('should keep other 403 errors from the default build request unchanged', async () => {
+					const thrown = await runWithDefaultBuildError(403, {
+						type: 'insufficient-permissions',
+						message: 'You do not have permission to perform this action.',
+					});
+
+					expect(thrown).toBeInstanceOf(NodeApiError);
+					expect(thrown.message).toBe('Forbidden - perhaps check your credentials?');
+				});
+			});
 		});
+
 		describe('run-actor-and-get-dataset', () => {
 			it('should run the run-actor-and-get-dataset workflow', async () => {
 				const mockRunActor = fixtures.runActorResult();
@@ -1632,6 +1704,159 @@ describe('Apify Node', () => {
 			});
 
 			expect(scope.isDone()).toBe(true);
+		});
+
+		it("should pass on a NodeApiError from n8n's own n8n-workflow copy unchanged", async () => {
+			// Same class name, different class: what n8n throws when the node has its own copy of
+			// n8n-workflow installed next to it, so `instanceof NodeApiError` is false.
+			const { NodeApiError: ForeignNodeApiError } = {
+				NodeApiError: class extends Error {
+					httpCode = '403';
+					context = {
+						data: {
+							error: {
+								type: helpers.consts.MISSING_DEFAULT_BUILD_ERROR_TYPE,
+								message: 'Build with tag "latest" was not found. Has the Actor been built already?',
+							},
+						},
+					};
+				},
+			};
+			const node = {
+				name: 'Run actor',
+				type: 'n8n-nodes-apify.apify',
+				typeVersion: 2,
+				parameters: { authentication: 'apifyApi' },
+			};
+			const context = {
+				...createLoadOptionsFunctions({ credentialsHelper, node }),
+				helpers: {
+					httpRequestWithAuthentication: async () => {
+						throw new ForeignNodeApiError('Forbidden - perhaps check your credentials?');
+					},
+				},
+			} as unknown as ILoadOptionsFunctions;
+
+			await expect(getDefaultBuild.call(context, 'nFJndFXA5zjCTuudP')).rejects.toThrow(
+				'Actor nFJndFXA5zjCTuudP has no build for its default build tag',
+			);
+		});
+
+		it("should keep the approval message on a NodeApiError from n8n's own n8n-workflow copy", async () => {
+			const approvalUrl =
+				'https://console.apify.com/actors/nFJndFXA5zjCTuudP?approvePermissions=true';
+			// Same class name, different class, as in the test above.
+			const { NodeApiError: ForeignNodeApiError } = {
+				NodeApiError: class extends Error {
+					httpCode = '403';
+					context = {
+						data: {
+							error: {
+								type: 'full-permission-actor-not-approved',
+								message: `This Actor requires full access to your account. You must approve its permissions before running it: ${approvalUrl}`,
+								data: { approvalUrl },
+							},
+						},
+					};
+				},
+			};
+			const node = {
+				name: 'Run actor',
+				type: 'n8n-nodes-apify.apify',
+				typeVersion: 2,
+				parameters: { authentication: 'apifyApi' },
+			};
+			const context = {
+				...createLoadOptionsFunctions({ credentialsHelper, node }),
+				helpers: {
+					httpRequestWithAuthentication: async () => {
+						throw new ForeignNodeApiError('Forbidden - perhaps check your credentials?');
+					},
+				},
+			} as unknown as ILoadOptionsFunctions;
+
+			let thrown: any;
+			try {
+				await apiRequest.call(context, { method: 'POST', uri: '/v2/acts/nFJndFXA5zjCTuudP/runs' });
+			} catch (error) {
+				thrown = error;
+			}
+
+			expect(thrown).toBeDefined();
+			expect(thrown.message).toContain('You must approve its permissions');
+			expect(thrown.description).toContain(`href="${approvalUrl}"`);
+		});
+
+		describe("operations pass on a NodeApiError from n8n's own n8n-workflow copy unchanged", () => {
+			// Same class name, different class, as in the tests above.
+			const { NodeApiError: ForeignNodeApiError } = {
+				NodeApiError: class extends Error {
+					httpCode = '404';
+					context = {
+						data: { error: { type: 'record-not-found', message: 'Record was not found' } },
+					};
+				},
+			};
+			const node = {
+				name: 'Apify',
+				type: 'n8n-nodes-apify.apify',
+				typeVersion: 2,
+				parameters: {
+					authentication: 'apifyApi',
+					runId: { value: 'runId123' },
+					abortRunId: 'runId123',
+					userActorId: { value: 'nFJndFXA5zjCTuudP' },
+					datasetId: 'datasetId123',
+					storeId: { value: 'storeId123' },
+					recordKey: { value: 'INPUT' },
+					url: 'https://example.com',
+					status: '',
+				},
+			};
+			// `body` replaces the response body on the error.
+			const operations: Array<{
+				name: string;
+				operation: (this: any, i: number) => Promise<unknown>;
+				body?: unknown;
+			}> = [
+				{
+					name: 'getDefaultBuild',
+					operation: function (this: any) {
+						return getDefaultBuild.call(this, 'nFJndFXA5zjCTuudP');
+					},
+				},
+				{ name: 'get-run', operation: getRun },
+				{ name: 'get-actor-runs', operation: getActorRuns },
+				{ name: 'get-user-runs-list', operation: getUserRunsList },
+				{ name: 'abort-run', operation: abortRun },
+				{ name: 'datasets/get-items', operation: getItems },
+				{ name: 'get-key-value-store-record', operation: getKeyValueStoreRecord },
+				{ name: 'scrape-single-url', operation: scrapeSingleUrl },
+				{ name: 'get-last-run', operation: getLastRun },
+				// Web Fetch maps its own error envelopes; a plain-text body reaches the fallback.
+				{ name: 'web-fetch', operation: webFetch, body: 'Bad Gateway' },
+			];
+
+			it.each(operations)('$name', async ({ operation, body }) => {
+				const original = new ForeignNodeApiError(
+					'The resource you are requesting could not be found',
+				);
+				if (body !== undefined) original.context = { data: body } as any;
+				const loadOptionsFunctions = createLoadOptionsFunctions({ credentialsHelper, node });
+				const context = {
+					...loadOptionsFunctions,
+					// Operations call the execute signature, which takes the item index second.
+					getNodeParameter: (name: string, _itemIndex: number, fallback?: any, options?: any) =>
+						loadOptionsFunctions.getNodeParameter(name, fallback, options),
+					helpers: {
+						httpRequestWithAuthentication: async () => {
+							throw original;
+						},
+					},
+				};
+
+				await expect(operation.call(context, 0)).rejects.toBe(original);
+			});
 		});
 	});
 });

@@ -1,10 +1,5 @@
-import {
-	IExecuteFunctions,
-	INodeExecutionData,
-	NodeApiError,
-	NodeOperationError,
-} from 'n8n-workflow';
-import { apiRequest } from '../../../resources/genericFunctions';
+import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-workflow';
+import { apiRequest, toNodeApiError } from '../../../resources/genericFunctions';
 
 export async function getLastRun(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorId = this.getNodeParameter('userActorId', i) as { value: string };
@@ -23,6 +18,6 @@ export async function getLastRun(this: IExecuteFunctions, i: number): Promise<IN
 
 		return { json: { ...apiResult.data } };
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error);
+		throw toNodeApiError(this.getNode(), error);
 	}
 }
