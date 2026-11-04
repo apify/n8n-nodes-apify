@@ -113,9 +113,9 @@ function getErrorReason(error: unknown): string {
 	if (!(error instanceof Error)) return String(error);
 	// NodeApiError keeps the API's own message (e.g. "Actor build was not found") in `description`.
 	const rawDescription = (error as { description?: unknown }).description;
-	// Drop link markup meant for the error view; the notice escapes it and would show raw tags.
+	// Drop link tags meant for the error view; the notice escapes them and would show raw tags.
 	const description =
-		typeof rawDescription === 'string' ? rawDescription.replace(/<[^>]*>/g, '') : undefined;
+		typeof rawDescription === 'string' ? rawDescription.replace(/<\/?a\b[^>]*>/g, '') : undefined;
 	return description && description !== error.message
 		? `${error.message} (${description})`
 		: error.message;
