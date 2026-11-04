@@ -25,8 +25,9 @@ npm run format         # prettier on nodes/ and credentials/
 
 Single test: `npx jest -t '<test name>'` or `npx jest <path>`.
 
-CI runs lint → `tsc --noEmit` → build → test on Node 24.x for PRs to `master`. The version
-spread is known: `package.json` engines say Node `>=22`, the README says 22.x, CI runs 24.x —
+CI runs lint → `tsc --noEmit` → build → test on Node 24.22.1 for PRs to `master`. The version
+spread is known: `package.json` engines say Node `>=22`, the README says 22.x, CI and
+`publish.yml` pin 24.22.1 (for CVE-2026-111497) —
 check all three before "fixing" any one of them. `.npmrc` sets `min-release-age=7`, so
 installing a package published in the last 7 days fails; Renovate opens weekly `chore:`
 dependency PRs with a matching cooldown.
