@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, validateUrl } from '../../../resources/genericFunctions';
+import { apiRequest, getBaseUrls, validateUrl } from '../../../resources/genericFunctions';
 import { consts } from '../../../helpers';
 
 function toHttpCode(value: unknown): string | undefined {
@@ -51,9 +51,10 @@ export async function webFetch(
 	}
 
 	try {
+		const { webFetchBaseUrl } = await getBaseUrls.call(this);
 		const response = await apiRequest.call(this, {
 			method: 'POST',
-			uri: consts.WEB_FETCH_STANDBY_URL,
+			uri: `${webFetchBaseUrl}/`,
 			body: {
 				url,
 				formats,
