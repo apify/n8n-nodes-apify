@@ -145,6 +145,10 @@ describe('Server Actors (Run actor, Interface = Endpoint)', () => {
 			expect(endpoint.typeOptions?.loadOptionsDependsOn).toEqual(['actorId.value']);
 			const [fields] = propertiesNamed('endpointParameters');
 			expect(fields.typeOptions?.loadOptionsDependsOn).toEqual(['actorId.value', 'endpoint']);
+			// No empty Parameters box before a documented endpoint is chosen.
+			expect(fields.displayOptions?.hide?.endpoint).toEqual(
+				expect.arrayContaining(['', CUSTOM_ENDPOINT, NO_SERVER_INTERFACE, MCP_ONLY]),
+			);
 		});
 
 		it('should keep the Actor input resource mapper registered next to the endpoint one', () => {

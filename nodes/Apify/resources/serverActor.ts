@@ -270,7 +270,8 @@ export function serverActorProperties(show: IDisplayOptions['show']): INodePrope
 			},
 			displayOptions: {
 				show: { ...show },
-				hide: { endpoint: [CUSTOM_ENDPOINT, NO_ACTOR_SELECTED, NO_SERVER_INTERFACE, MCP_ONLY] },
+				// Shown only once a documented endpoint is chosen.
+				hide: { endpoint: ['', CUSTOM_ENDPOINT, NO_ACTOR_SELECTED, NO_SERVER_INTERFACE, MCP_ONLY] },
 			},
 		},
 	];
