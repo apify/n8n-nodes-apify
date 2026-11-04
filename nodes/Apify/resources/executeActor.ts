@@ -4,8 +4,15 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, customBodyParser, pollRunStatus, toNodeApiError } from './genericFunctions';
-import { MISSING_DEFAULT_BUILD_ERROR_TYPE } from '../helpers/consts';
+import {
+	apiRequest,
+	customBodyParser,
+	escapeHtml,
+	isUsedAsAiTool,
+	pollRunStatus,
+	toNodeApiError,
+} from './genericFunctions';
+import { APIFY_CONSOLE_URL, MISSING_DEFAULT_BUILD_ERROR_TYPE } from '../helpers/consts';
 
 export interface ActorExecutionParams {
 	actorId: string;
@@ -141,13 +148,13 @@ export async function getDefaultBuild(
 		if (apifyError?.type === MISSING_DEFAULT_BUILD_ERROR_TYPE) {
 			// The message must go in the options, or n8n replaces it with the status-code title.
 			const message = `Actor ${actorId} has no build for its default build tag`;
+			const hint = `${apifyError.message ?? ''} Build the Actor, or set Build Tag to an existing build.`.trim();
 			throw new NodeApiError(
 				this.getNode(),
 				{ message },
 				{
 					message,
-					description:
-						`${apifyError.message ?? ''} Build the Actor in Apify Console, or set the Build Tag of an existing build.`.trim(),
+					description: `${hint}${getBuildsLink(this.getNode().type, actorId)}`,
 					httpCode: error.httpCode != null ? String(error.httpCode) : undefined,
 				},
 			);
@@ -160,6 +167,17 @@ export async function getDefaultBuild(
 		});
 	}
 	return defaultBuildResp.data;
+}
+
+/**
+ * Link to the Actor's builds in Apify Console. The UI renders `description` as HTML; an AI tool
+ * gets it appended as plain text.
+ */
+function getBuildsLink(nodeType: string, actorId: string): string {
+	const url = `${APIFY_CONSOLE_URL}/actors/${actorId}/builds`;
+	if (isUsedAsAiTool(nodeType)) return ` Check builds in Apify Console: ${url}`;
+	const safeUrl = escapeHtml(url);
+	return ` Check builds in Apify Console: <a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`;
 }
 
 export async function runActorApi(

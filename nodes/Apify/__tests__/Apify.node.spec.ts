@@ -362,6 +362,32 @@ describe('Apify Node', () => {
 			expect(scope.isDone()).toBe(true);
 		});
 
+		it('should explain a missing default build without the Console link markup', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(403, {
+					error: {
+						type: helpers.consts.MISSING_DEFAULT_BUILD_ERROR_TYPE,
+						message: 'Build with tag "latest" was not found. Has the Actor been built already?',
+					},
+				});
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expectLoadFailureNotice(result, 'has no build for its default build tag');
+			// The notice escapes the error text, so link markup would show up as raw tags.
+			expect(result.emptyFieldsNotice).toContain(
+				'Check builds in Apify Console: https://console.apify.com/actors/nFJndFXA5zjCTuudP/builds',
+			);
+			expect(result.emptyFieldsNotice).not.toContain('&lt;a ');
+			expect(scope.isDone()).toBe(true);
+		});
+
 		it('should explain when the build tag does not exist', async () => {
 			const scope = nock('https://api.apify.com')
 				.get('/v2/acts/nFJndFXA5zjCTuudP')
@@ -1109,14 +1135,21 @@ describe('Apify Node', () => {
 			});
 
 			describe('missing default build', () => {
-				const runWithDefaultBuildError = async (status: number, error: object) => {
+				const runWithDefaultBuildError = async (
+					status: number,
+					error: object,
+					nodeType?: string,
+				) => {
 					const scope = nock('https://api.apify.com')
 						.get('/v2/acts/nFJndFXA5zjCTuudP')
 						.reply(200, fixtures.getActorResult())
 						.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
 						.reply(status, { error });
 
-					const runActorWorkflow = require('./workflows/actors/run-actor.workflow.json');
+					const runActorWorkflow = JSON.parse(
+						JSON.stringify(require('./workflows/actors/run-actor.workflow.json')),
+					);
+					if (nodeType) runActorWorkflow.nodes[0].type = nodeType;
 
 					let thrown: any;
 					try {
@@ -1143,10 +1176,31 @@ describe('Apify Node', () => {
 					);
 					expect(thrown.message).not.toMatch(/credentials/i);
 					expect(thrown.description).toContain(apifyMessage);
-					expect(thrown.description).toContain('Build the Actor in Apify Console');
+					expect(thrown.description).toContain(
+						'Build the Actor, or set Build Tag to an existing build.',
+					);
+					expect(thrown.description).toContain(
+						'Check builds in Apify Console: <a href="https://console.apify.com/actors/nFJndFXA5zjCTuudP/builds" target="_blank" rel="noopener noreferrer">https://console.apify.com/actors/nFJndFXA5zjCTuudP/builds</a>',
+					);
 					expect(thrown.httpCode).toBe('403');
 				});
 
+				it('should give an AI tool a plain-text link to the Actor builds', async () => {
+					const thrown = await runWithDefaultBuildError(
+						403,
+						{
+							type: helpers.consts.MISSING_DEFAULT_BUILD_ERROR_TYPE,
+							message: 'Build with tag "latest" was not found. Has the Actor been built already?',
+						},
+						'n8n-nodes-apify.apifyTool',
+					);
+
+					expect(thrown).toBeInstanceOf(NodeApiError);
+					expect(thrown.description).toContain(
+						'Check builds in Apify Console: https://console.apify.com/actors/nFJndFXA5zjCTuudP/builds',
+					);
+					expect(thrown.description).not.toContain('<a ');
+				});
 				it('should keep other 403 errors from the default build request unchanged', async () => {
 					const thrown = await runWithDefaultBuildError(403, {
 						type: 'insufficient-permissions',
