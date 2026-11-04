@@ -12,6 +12,10 @@ export const DATASET_REQUEST_TIMEOUT_MS = 10 * 60 * 1000;
 // more than the default 60s, and apiRequest does not retry POST network errors. Modelled on
 // the dataset timeout and kept well above the 120s floor.
 export const WEB_FETCH_REQUEST_TIMEOUT_MS = 10 * 60 * 1000;
+// A Server Actor request (Run actor, Interface = Endpoint). Apify answers with a 504 after 300 s
+// without a response; n8n's own 300 s default would fire ~0.4 s earlier with a misleading
+// "server is offline" error, so wait a little longer and let Apify's answer arrive.
+export const SERVER_ACTOR_REQUEST_TIMEOUT_MS = 310_000;
 // Grace period added on top of a run's own `timeoutSecs` when polling
 export const WAIT_FOR_FINISH_BUFFER_MS = 5 * 60 * 1000;
 // Absolute ceiling for polling when a run has no timeout of its own (timeoutSecs = 0).

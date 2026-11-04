@@ -14,6 +14,7 @@ import {
 } from './keyValueStoreRecordKeyResourceLocator';
 import { compose } from './genericFunctions';
 import { getActorInputFields } from './actorInput';
+import { getServerActorEndpointFields, listServerActorEndpoints } from './serverActor';
 
 export function runHooks(properties: INodeProperties[]): {
 	properties: INodeProperties[];
@@ -39,8 +40,12 @@ export function runHooks(properties: INodeProperties[]): {
 				listKeyValueStoreRecordKeys,
 				listUserActors,
 			},
+			loadOptions: {
+				listServerActorEndpoints,
+			},
 			resourceMapping: {
 				getActorInputFields,
+				getServerActorEndpointFields,
 			},
 		},
 	};

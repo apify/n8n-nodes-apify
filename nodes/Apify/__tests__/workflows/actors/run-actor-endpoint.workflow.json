@@ -1,0 +1,54 @@
+{
+	"name": "Run actor endpoint workflow",
+	"nodes": [
+		{
+			"parameters": {
+				"resource": "Actors",
+				"operation": "Run actor",
+				"actorId": {
+					"__rl": true,
+					"value": "UE4RePbgER1Xt3ZVb",
+					"mode": "list",
+					"cachedResultName": "Server Actor spike (jan.hranicky/server-actor-spike)",
+					"cachedResultUrl": "https://console.apify.com/actors/UE4RePbgER1Xt3ZVb/input"
+				},
+				"interface": "endpoint",
+				"endpoint": "POST /echo",
+				"endpointParameters": {
+					"mappingMode": "defineBelow",
+					"value": {
+						"query:probe": "n8n-test",
+						"body:text": "hello",
+						"body:count": 2,
+						"body:tags": ["a", "b"]
+					},
+					"matchingColumns": [],
+					"schema": []
+				}
+			},
+			"id": "5c1f8f8e-2a4b-4d0e-9a51-0d1a7a0c3b11",
+			"name": "Run actor",
+			"type": "n8n-nodes-apify.apify",
+			"typeVersion": 2,
+			"position": [920, 460],
+			"credentials": {
+				"apifyApi": {
+					"id": "dJAynKkN2pRqy3Ko",
+					"name": "Apify account"
+				}
+			}
+		}
+	],
+	"pinData": {},
+	"connections": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "0f3b9d4e-6a7c-4e21-8f0a-3d2c1b4a5e6f",
+	"meta": {
+		"templateCredsSetupCompleted": true
+	},
+	"id": "SrvActEndpoint01",
+	"tags": []
+}

@@ -99,6 +99,26 @@ fields `getActorInputFields` loads from the input schema of the `build` tag's bu
 on all four and sent **only when non-null and `> 0`** — `0`/empty deliberately means no limit.
 `Apify.node.spec.ts` asserts every run-starting operation exposes it, so add it to any new one.
 
+### Server Actors — `resources/serverActor.ts`, `resources/serverActorOpenApi.ts`
+
+`Run actor` has an `interface` select: `input` (default, so saved nodes keep starting runs)
+or `endpoint`, which hides every run field and sends one request to the Actor's `standbyUrl`.
+A Server Actor is `actorStandby.isEnabled` plus an `https://*.apify.actor` `standbyUrl` (the
+token never goes elsewhere). The `endpoint` options come from `webServerSchema` (OpenAPI) of
+the default build plus `__custom__`; MCP-only Actors (`webServerMcpPath`, no OpenAPI) and Actors
+without a server interface get placeholder values whose execution throws the user message.
+Typed fields are the `endpointParameters` resource mapper, with ids prefixed by where the value
+goes (`path:`, `query:`, `body:`, or a lone `body` for a non-object body); keep that convention.
+Custom Path uses `endpointMethod`/`endpointPath`/`endpointQuery`/`endpointBody` — not
+`customBody`, which is Run actor's Input JSON.
+
+The request uses `disableRetries`, `ignoreHttpStatusErrors`, `encoding: 'arraybuffer'` and
+`SERVER_ACTOR_REQUEST_TIMEOUT_MS` (310 s, above Apify's 300 s so its 504 wins over n8n's
+misleading "server is offline"). Errors carry the Actor's own message; never add retries or
+wording that suggests Retry On Fail, since every request may be charged. Binary responses throw.
+`methods` are merged shallowly in `helpers/methods.ts`, so register `loadOptions` and
+`resourceMapping` in `resources/hooks.ts`, not in a resource's `hooks.ts`.
+
 ### Trigger node — `ApifyTrigger.node.ts`
 
 Self-contained: its own properties (reusing the Actor/task locator overrides) plus

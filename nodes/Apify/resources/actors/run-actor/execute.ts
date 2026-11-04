@@ -1,8 +1,15 @@
 import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
 import { executeActor } from '../../executeActor';
 import { getActorInput } from '../../actorInput';
+import { callServerActor } from '../../serverActor';
+import { ENDPOINT_INTERFACE } from './properties';
 
 export async function runActor(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
+	// Nodes saved before the Interface field existed have no value and start a run.
+	if (this.getNodeParameter('interface', i, 'input') === ENDPOINT_INTERFACE) {
+		return await callServerActor.call(this, i);
+	}
+
 	const actorId = this.getNodeParameter('actorId', i, undefined, {
 		extractValue: true,
 	}) as string;

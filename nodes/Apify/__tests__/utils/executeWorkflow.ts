@@ -47,13 +47,25 @@ const makeHttpRequest = (options: any): Promise<any> => {
 		}
 
 		const req = protocol.request(reqOptions, (res) => {
-			let data = '';
+			const chunks: Buffer[] = [];
 
 			res.on('data', (chunk) => {
-				data += chunk;
+				chunks.push(Buffer.from(chunk));
 			});
 
 			res.on('end', () => {
+				const raw = Buffer.concat(chunks);
+				const data = raw.toString('utf8');
+				// Mirror axios with `validateStatus: () => true` and `responseType: 'arraybuffer'`,
+				// as Server Actor requests use them: every status resolves with the raw bytes.
+				if (options.ignoreHttpStatusErrors) {
+					resolve({
+						data: options.encoding === 'arraybuffer' ? raw : data,
+						status: res.statusCode,
+						headers: res.headers,
+					});
+					return;
+				}
 				try {
 					const parsedData = data ? JSON.parse(data) : {};
 
@@ -119,7 +131,15 @@ const httpRequestWithAuthentication = async function (
 			params: options.qs,
 			data: options.body,
 			headers: options.headers,
+			encoding: options.encoding,
+			ignoreHttpStatusErrors: options.ignoreHttpStatusErrors,
 		});
+
+		// n8n's `returnFullResponse` shape, used by Server Actor requests. Key-value store reads
+		// (`returnFullResponse` without `ignoreHttpStatusErrors`) keep the legacy shape below.
+		if (options.returnFullResponse && options.ignoreHttpStatusErrors) {
+			return { body: response.data, headers: response.headers, statusCode: response.status };
+		}
 
 		// For /items endpoint just return data
 		if (options.url.includes('/items')) return response.data;
