@@ -195,14 +195,6 @@ export function serverActorProperties(show: IDisplayOptions['show']): INodePrope
 
 	return [
 		{
-			displayName:
-				'The request goes to the Actor\'s server and its response comes back straight away, with no run. Each request may be charged, so it is sent once and never retried; leave "Retry On Fail" off. Apify waits up to 300 s for the Actor to answer.',
-			name: 'serverActorNotice',
-			type: 'notice',
-			default: '',
-			displayOptions: withShow(),
-		},
-		{
 			displayName: 'Endpoint Name or ID',
 			name: 'endpoint',
 			type: 'options',
