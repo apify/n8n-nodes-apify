@@ -4,7 +4,15 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, customBodyParser, pollRunStatus } from './genericFunctions';
+import {
+	apiRequest,
+	customBodyParser,
+	escapeHtml,
+	isUsedAsAiTool,
+	pollRunStatus,
+	toNodeApiError,
+} from './genericFunctions';
+import { APIFY_CONSOLE_URL, MISSING_DEFAULT_BUILD_ERROR_TYPE } from '../helpers/consts';
 
 export interface ActorExecutionParams {
 	actorId: string;
@@ -128,16 +136,48 @@ export async function getDefaultBuild(
 	this: IExecuteFunctions | ILoadOptionsFunctions,
 	actorId: string,
 ) {
-	const defaultBuildResp = await apiRequest.call(this, {
-		method: 'GET',
-		uri: `/v2/acts/${actorId}/builds/default`,
-	});
+	let defaultBuildResp: any;
+	try {
+		defaultBuildResp = await apiRequest.call(this, {
+			method: 'GET',
+			uri: `/v2/acts/${actorId}/builds/default`,
+		});
+	} catch (error) {
+		// n8n titles every 403 as a credentials error; give a missing build a clear message.
+		const apifyError = error?.context?.data?.error;
+		if (apifyError?.type === MISSING_DEFAULT_BUILD_ERROR_TYPE) {
+			// The message must go in the options, or n8n replaces it with the status-code title.
+			const message = `Actor ${actorId} has no build for its default build tag`;
+			const hint = `${apifyError.message ?? ''} Build the Actor, or set Build Tag to an existing build.`.trim();
+			throw new NodeApiError(
+				this.getNode(),
+				{ message },
+				{
+					message,
+					description: `${hint}${getBuildsLink(this.getNode().type, actorId)}`,
+					httpCode: error.httpCode != null ? String(error.httpCode) : undefined,
+				},
+			);
+		}
+		throw toNodeApiError(this.getNode(), error);
+	}
 	if (!defaultBuildResp || !defaultBuildResp.data) {
 		throw new NodeApiError(this.getNode(), {
-			message: `Could not fetch default build for actor ${actorId}`,
+			message: `Could not fetch default build for Actor ${actorId}`,
 		});
 	}
 	return defaultBuildResp.data;
+}
+
+/**
+ * Link to the Actor's builds in Apify Console. The UI renders `description` as HTML; an AI tool
+ * gets it appended as plain text.
+ */
+function getBuildsLink(nodeType: string, actorId: string): string {
+	const url = `${APIFY_CONSOLE_URL}/actors/${actorId}/builds`;
+	if (isUsedAsAiTool(nodeType)) return ` Check builds in Apify Console: ${url}`;
+	const safeUrl = escapeHtml(url);
+	return ` Check builds in Apify Console: <a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`;
 }
 
 export async function runActorApi(

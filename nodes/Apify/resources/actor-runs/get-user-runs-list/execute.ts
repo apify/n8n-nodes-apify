@@ -1,5 +1,5 @@
-import { IExecuteFunctions, INodeExecutionData, NodeApiError } from 'n8n-workflow';
-import { apiRequest } from '../../../resources/genericFunctions';
+import { IExecuteFunctions, INodeExecutionData } from 'n8n-workflow';
+import { apiRequest, toNodeApiError } from '../../../resources/genericFunctions';
 
 export async function getUserRunsList(
 	this: IExecuteFunctions,
@@ -19,6 +19,6 @@ export async function getUserRunsList(
 
 		return this.helpers.returnJsonArray(apiResult.data?.items ?? []);
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error);
+		throw toNodeApiError(this.getNode(), error);
 	}
 }

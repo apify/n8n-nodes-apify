@@ -8,6 +8,7 @@ import {
 	type IHookFunctions,
 	type ILoadOptionsFunctions,
 	IHttpRequestOptions,
+	type INode,
 	INodeExecutionData,
 } from 'n8n-workflow';
 import {
@@ -43,6 +44,25 @@ function toSafeHttpUrl(value: unknown): string | undefined {
 	} catch {
 		return undefined;
 	}
+}
+
+/**
+ * Whether `error` is a NodeApiError, including one from n8n's own copy of n8n-workflow, for
+ * which `instanceof` fails when another copy is installed next to this node.
+ */
+function isNodeApiError(error: unknown): boolean {
+	return (
+		error instanceof NodeApiError ||
+		(error instanceof Error && error.constructor?.name === 'NodeApiError')
+	);
+}
+
+/**
+ * Wrap `error` in a NodeApiError unless it already is one. NodeApiError's own pass-through uses
+ * `instanceof`, so it would re-wrap one from n8n's copy and lose its message and `context`.
+ */
+export function toNodeApiError(node: INode, error: any): Error {
+	return isNodeApiError(error) ? error : new NodeApiError(node, error);
 }
 
 /**
@@ -135,18 +155,17 @@ export async function apiRequest(
 				error.description = `${cta}: <a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
 			}
 			if (Array.isArray(error.messages)) error.messages = [error.message];
-			throw new NodeApiError(this.getNode(), error);
+			throw toNodeApiError(this.getNode(), error);
 		}
 
-		if (error.response && error.response.body) {
+		if (!isNodeApiError(error) && error.response && error.response.body) {
 			throw new NodeApiError(this.getNode(), error, {
 				message: error.response.body,
 				description: error.message,
 			});
 		}
 
-		// Re-wrapping an existing NodeApiError returns the same instance untouched.
-		throw new NodeApiError(this.getNode(), error);
+		throw toNodeApiError(this.getNode(), error);
 	}
 }
 
@@ -238,11 +257,11 @@ export async function retryWithExponentialBackoff(
 
 				continue;
 			}
-			throw new NodeApiError(this.getNode(), error);
+			throw toNodeApiError(this.getNode(), error);
 		}
 	}
 	//In case all of the calls failed with no status or isStatusCodeRetryable, throw the last error
-	throw new NodeApiError(this.getNode(), lastError);
+	throw toNodeApiError(this.getNode(), lastError);
 }
 
 export async function apiRequestAllItems(
@@ -421,8 +440,8 @@ export async function executeAndLinkItems<T extends INodeExecutionData | INodeEx
 					pairedItem: { item: i },
 				});
 			} else {
-				// Propagade the error further
-				throw new NodeApiError(this.getNode(), error);
+				// Propagate the error further
+				throw toNodeApiError(this.getNode(), error);
 			}
 		}
 	}
