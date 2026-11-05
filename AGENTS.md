@@ -25,10 +25,10 @@ npm run format         # prettier on nodes/ and credentials/
 
 Single test: `npx jest -t '<test name>'` or `npx jest <path>`.
 
-CI runs lint → `tsc --noEmit` → build → test for PRs and pushes to `master` on Node 22.23.4,
-24.22.1 and 26.12.1: the first releases of each line patched for CVE-2026-111497, matching
-`package.json` engines (`^22.23.4 || ^24.22.1 || >=26.12.1`). Node 22 ships npm 10, so that job
-upgrades npm to clear the `>=11.10.0` engine floor. `publish.yml` builds and tests on 26.12.1 only;
+CI runs lint → `tsc --noEmit` → build → test for PRs and pushes to `master` on Node 24.22.1 and
+26.12.1: the first releases of each line patched for CVE-2026-111497, matching `package.json`
+engines (`^24.22.1 || >=26.12.1`). Don't add Node 22: `npm ci` fails there
+(`n8n-workflow` → `isolated-vm` requires Node 24). `publish.yml` builds and tests on 26.12.1 only;
 `master` is already covered by the CI matrix. The README and `.nvmrc` ask contributors for
 24.22.1, since `npm run dev` runs `n8n@latest`, which needs Node 24. Change the versions in all
 of these together. `.npmrc` sets `min-release-age=7`, so

@@ -186,7 +186,7 @@ The node supports two authentication methods:
 ## Compatibility
 
 - **n8n**: Version 1.57.0 and higher
-- **Node.js**: 22.23.4+, 24.22.1+, or 26.12.1+
+- **Node.js**: 24.22.1+ or 26.12.1+
 
 ## Usage
 
