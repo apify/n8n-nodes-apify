@@ -43,17 +43,19 @@ If you're using n8n Cloud, installing community nodes is even simpler:
 
 ### ⚙️ Prerequisites
 
-- **Node.js**: 22.x or higher (required)
-- **npm**: 10.8.2 or higher (required)
+- **Node.js**: 24.22.1 or higher (required)
+- **npm**: 11.10.0 or higher (required)
+
+`npm run dev` runs the latest n8n, which needs Node.js 24. Earlier 24.x releases are affected by CVE-2026-111497.
 
 Verify your versions:
 
 ```bash
-node --version  # Should be v22.x.x or higher
-npm --version   # Should be 10.8.2 or higher
+node --version  # Should be v24.22.1 or higher
+npm --version   # Should be 11.10.0 or higher
 ```
 
-If you use `nvm`, the project includes a `.nvmrc` file. Simply run:
+If you use `nvm`, the project includes a `.nvmrc` file. Run:
 
 ```bash
 nvm use
@@ -184,8 +186,7 @@ The node supports two authentication methods:
 ## Compatibility
 
 - **n8n**: Version 1.57.0 and higher
-- **Node.js**: 22.x or higher
-- **npm**: 10.8.2 or higher
+- **Node.js**: 22.23.4+, 24.22.1+, or 26.12.1+
 
 ## Usage
 
