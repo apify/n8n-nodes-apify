@@ -1,5 +1,6 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
 import { apiRequestAllItems } from './genericFunctions';
+import { APIFY_CONSOLE_URL } from '../helpers/consts';
 
 const resourceLocatorProperty: INodeProperties = {
 	displayName: 'Key-Value Store ID',
@@ -32,7 +33,7 @@ const resourceLocatorProperty: INodeProperties = {
 				},
 			],
 			placeholder: 'dmXls2mjfQVdzfrC6',
-			url: '=https://console.apify.com/storage/key-value-stores/{{$value}}',
+			url: `=${APIFY_CONSOLE_URL}/storage/key-value-stores/{{$value}}`,
 		},
 	],
 };
@@ -72,7 +73,7 @@ export async function listKeyValueStores(
 		results: items.map((b: any) => ({
 			name: b.name,
 			value: b.id,
-			url: `https://console.apify.com/storage/key-value-stores/${b.id}`,
+			url: `${APIFY_CONSOLE_URL}/storage/key-value-stores/${b.id}`,
 			description: b.name,
 		})),
 	};

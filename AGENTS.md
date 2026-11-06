@@ -14,7 +14,7 @@ types: `apifyApi` (API key, everywhere) and `apifyOAuth2Api` (PKCE OAuth2, **n8n
 ## Commands
 
 ```bash
-npm install            # engine-strict=true: hard-fails on Node <22 or npm <11.10.0
+npm install            # engine-strict=true: hard-fails outside the Node engines range or on npm <11.10.0
 npm run build          # -> dist/ (icons copied by gulpfile.js)
 npm run dev            # n8n dev server with this node linked
 npm run lint           # ESLint 9 + n8n-nodes-base rules; lint:fix to autofix
@@ -25,10 +25,13 @@ npm run format         # prettier on nodes/ and credentials/
 
 Single test: `npx jest -t '<test name>'` or `npx jest <path>`.
 
-CI runs lint → `tsc --noEmit` → build → test on Node 24.22.1 for PRs to `master`. The version
-spread is known: `package.json` engines say Node `>=22`, the README says 22.x, CI and
-`publish.yml` pin 24.22.1 (for CVE-2026-111497) —
-check all three before "fixing" any one of them. `.npmrc` sets `min-release-age=7`, so
+CI runs lint → `tsc --noEmit` → build → test for PRs and pushes to `master` on Node 24.22.1 and
+26.12.1: the first releases of each line patched for CVE-2026-111497, matching `package.json`
+engines (`^24.22.1 || >=26.12.1`). Don't add Node 22: `npm ci` fails there
+(`n8n-workflow` → `isolated-vm` requires Node 24). `publish.yml` builds and tests on 26.12.1 only;
+`master` is already covered by the CI matrix. The README and `.nvmrc` ask contributors for
+24.22.1, since `npm run dev` runs `n8n@latest`, which needs Node 24. Change the versions in all
+of these together. `.npmrc` sets `min-release-age=7`, so
 installing a package published in the last 7 days fails; Renovate opens weekly `chore:`
 dependency PRs with a matching cooldown.
 
