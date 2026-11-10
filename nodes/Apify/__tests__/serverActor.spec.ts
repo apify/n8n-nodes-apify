@@ -4,9 +4,7 @@ import { Apify } from '../Apify.node';
 import { createLoadOptionsFunctions, executeWorkflow } from './utils/executeWorkflow';
 import { CredentialsHelper } from './utils/credentialHelper';
 import { getRunTaskDataByNodeName, getTaskData } from './utils/getNodeResultData';
-import runActorEndpointWorkflow from './workflows/actors/run-actor-endpoint.workflow.json';
-import runActorWorkflow from './workflows/actors/run-actor.workflow.json';
-import * as fixtures from './utils/fixtures';
+import sendServerActorRequestWorkflow from './workflows/actors/send-server-actor-request.workflow.json';
 import {
 	decodeResponseBody,
 	getErrorFromBody,
@@ -86,8 +84,8 @@ const openApi = {
 const buildWith = (actorDefinition: object) => ({ data: { actorDefinition } });
 
 const endpointWorkflow = (parameters: object) => ({
-	...runActorEndpointWorkflow,
-	nodes: runActorEndpointWorkflow.nodes.map((node) => ({
+	...sendServerActorRequestWorkflow,
+	nodes: sendServerActorRequestWorkflow.nodes.map((node) => ({
 		...node,
 		parameters: { ...node.parameters, ...parameters },
 	})),
@@ -102,7 +100,7 @@ const catchError = async (promise: Promise<unknown>): Promise<any> => {
 	throw new Error('Expected the promise to reject');
 };
 
-describe('Server Actors (Run actor, Interface = Endpoint)', () => {
+describe('Server Actors (Send Server Actor request)', () => {
 	let apifyNode: Apify;
 	let credentialsHelper: CredentialsHelper;
 
@@ -124,18 +122,34 @@ describe('Server Actors (Run actor, Interface = Endpoint)', () => {
 		const propertiesNamed = (name: string) =>
 			apifyNode.description.properties.filter((property) => property.name === name);
 
-		it('should default Interface to Input so saved nodes keep starting runs', () => {
-			const [interfaceProperty] = propertiesNamed('interface');
-			expect(interfaceProperty.default).toBe('input');
-			expect(interfaceProperty.displayOptions?.show?.operation).toEqual(['Run actor']);
+		const actorsOperationSelects = () =>
+			propertiesNamed('operation').filter(
+				(property) => property.displayOptions?.show?.resource?.[0] === 'Actors',
+			);
+
+		it('should offer Send Server Actor request on both Actors operation selects', () => {
+			for (const select of actorsOperationSelects()) {
+				expect(select.options?.map((option: any) => option.value)).toContain(
+					'Send Server Actor request',
+				);
+			}
+			expect(actorsOperationSelects()).toHaveLength(2);
 		});
 
-		it('should show the run fields only for the Input interface', () => {
-			for (const name of ['waitForFinish', 'memory', 'timeout', 'build', 'maxTotalChargeUsd']) {
-				const runActorProperty = propertiesNamed(name).find(
-					(property) => property.displayOptions?.show?.operation?.[0] === 'Run actor',
-				);
-				expect(runActorProperty?.displayOptions?.show?.interface).toEqual(['input']);
+		it('should leave Run an Actor unchanged, with no Interface field', () => {
+			expect(propertiesNamed('interface')).toEqual([]);
+		});
+
+		it('should pick the Actor from the same locator as the run operations', () => {
+			const actorIds = propertiesNamed('actorId').filter((property) =>
+				property.displayOptions?.show?.operation?.includes('Send Server Actor request'),
+			);
+			expect(actorIds).toHaveLength(1);
+			expect(actorIds[0].type).toBe('resourceLocator');
+			for (const name of ['endpoint', 'endpointParameters', 'endpointMethod', 'endpointPath']) {
+				expect(propertiesNamed(name)[0].displayOptions?.show?.operation).toEqual([
+					'Send Server Actor request',
+				]);
 			}
 		});
 
@@ -313,7 +327,7 @@ describe('Server Actors (Run actor, Interface = Endpoint)', () => {
 			const options = await listEndpoints().call(context());
 
 			expect(options.map((option) => option.value)).toEqual([NO_SERVER_INTERFACE]);
-			expect(options[0].description).toMatch(/Switch Interface to Input/);
+			expect(options[0].description).toMatch(/Use the Run an Actor operation/);
 			expect(scope.isDone()).toBe(true);
 		});
 
@@ -403,26 +417,7 @@ describe('Server Actors (Run actor, Interface = Endpoint)', () => {
 			executeWorkflow({ credentialsHelper, workflow: endpointWorkflow(parameters) });
 
 		const resultOf = (executionData: any) =>
-			getTaskData(getRunTaskDataByNodeName(executionData, 'Run actor')[0]);
-
-		it('should keep starting a run when a saved node has no Interface value', async () => {
-			const scope = nock('https://api.apify.com')
-				.get('/v2/acts/nFJndFXA5zjCTuudP')
-				.reply(200, fixtures.getActorResult())
-				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
-				.reply(200, fixtures.getBuildResult())
-				.post('/v2/acts/nFJndFXA5zjCTuudP/runs')
-				.query(true)
-				.reply(200, fixtures.runActorResult());
-
-			const { executionData } = await executeWorkflow({
-				credentialsHelper,
-				workflow: runActorWorkflow,
-			});
-
-			expect(resultOf(executionData)?.id).toBe(fixtures.runActorResult().data.id);
-			expect(scope.isDone()).toBe(true);
-		});
+			getTaskData(getRunTaskDataByNodeName(executionData, 'Send Server Actor request')[0]);
 
 		it('should send typed fields to the right place and return status, contentType and body', async () => {
 			const api = nock('https://api.apify.com')
@@ -530,7 +525,7 @@ describe('Server Actors (Run actor, Interface = Endpoint)', () => {
 				.get(`/v2/acts/${ACTOR_ID}`)
 				.reply(200, serverActor({ actorStandby: { isEnabled: false } }));
 
-			await expect(run()).rejects.toThrow(/Switch Interface to Input/);
+			await expect(run()).rejects.toThrow(/Use the Run an Actor operation/);
 		});
 
 		it.each([500, 429, 503])(

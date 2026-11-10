@@ -1,10 +1,10 @@
 {
-	"name": "Run actor endpoint workflow",
+	"name": "Send Server Actor request workflow",
 	"nodes": [
 		{
 			"parameters": {
 				"resource": "Actors",
-				"operation": "Run actor",
+				"operation": "Send Server Actor request",
 				"actorId": {
 					"__rl": true,
 					"value": "UE4RePbgER1Xt3ZVb",
@@ -12,7 +12,6 @@
 					"cachedResultName": "Server Actor spike (jan.hranicky/server-actor-spike)",
 					"cachedResultUrl": "https://console.apify.com/actors/UE4RePbgER1Xt3ZVb/input"
 				},
-				"interface": "endpoint",
 				"endpoint": "POST /echo",
 				"endpointParameters": {
 					"mappingMode": "defineBelow",
@@ -27,7 +26,7 @@
 				}
 			},
 			"id": "5c1f8f8e-2a4b-4d0e-9a51-0d1a7a0c3b11",
-			"name": "Run actor",
+			"name": "Send Server Actor request",
 			"type": "n8n-nodes-apify.apify",
 			"typeVersion": 2,
 			"position": [920, 460],

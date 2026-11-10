@@ -1,10 +1,6 @@
 import { INodeProperties } from 'n8n-workflow';
 
 import * as helpers from '../../../helpers';
-import { serverActorProperties } from '../../serverActor';
-
-const INPUT_INTERFACE = 'input';
-export const ENDPOINT_INTERFACE = 'endpoint';
 
 export const properties: INodeProperties[] = [
 	{
@@ -36,33 +32,6 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Interface',
-		name: 'interface',
-		type: 'options',
-		noDataExpression: true,
-		options: [
-			{
-				name: 'Input',
-				value: INPUT_INTERFACE,
-				description: 'Start a run with an input and get its results',
-			},
-			{
-				name: 'Endpoint',
-				value: ENDPOINT_INTERFACE,
-				description:
-					"Send an HTTP request to a Server Actor's endpoint and get its response back, without a run",
-			},
-		],
-		// Nodes saved before this field existed have no value and keep starting runs.
-		default: INPUT_INTERFACE,
-		displayOptions: {
-			show: {
-				resource: ['Actors'],
-				operation: ['Run actor'],
-			},
-		},
-	},
-	{
 		displayName: 'Input Mode',
 		name: 'actorInputMode',
 		type: 'options',
@@ -85,7 +54,6 @@ export const properties: INodeProperties[] = [
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
-				interface: [INPUT_INTERFACE],
 			},
 		},
 	},
@@ -117,7 +85,6 @@ export const properties: INodeProperties[] = [
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
-				interface: [INPUT_INTERFACE],
 				actorInputMode: ['schema'],
 			},
 		},
@@ -137,7 +104,6 @@ export const properties: INodeProperties[] = [
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
-				interface: [INPUT_INTERFACE],
 				actorInputMode: ['json'],
 			},
 		},
@@ -153,7 +119,6 @@ export const properties: INodeProperties[] = [
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
-				interface: [INPUT_INTERFACE],
 			},
 		},
 	},
@@ -168,7 +133,6 @@ timeout specified in the default run configuration for the Actor.`,
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
-				interface: [INPUT_INTERFACE],
 			},
 		},
 	},
@@ -184,7 +148,6 @@ timeout specified in the default run configuration for the Actor.`,
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
-				interface: [INPUT_INTERFACE],
 			},
 		},
 	},
@@ -202,7 +165,6 @@ timeout specified in the default run configuration for the Actor.`,
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
-				interface: [INPUT_INTERFACE],
 			},
 		},
 	},
@@ -217,13 +179,7 @@ configuration for the Actor (typically \`latest\`).`,
 			show: {
 				resource: ['Actors'],
 				operation: ['Run actor'],
-				interface: [INPUT_INTERFACE],
 			},
 		},
 	},
-	...serverActorProperties({
-		resource: ['Actors'],
-		operation: ['Run actor'],
-		interface: [ENDPOINT_INTERFACE],
-	}),
 ];

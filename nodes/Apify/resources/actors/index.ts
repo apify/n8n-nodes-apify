@@ -6,12 +6,14 @@ import * as webFetch from './web-fetch';
 import * as scrapeSingleUrl from './scrape-single-url';
 import * as getLastRun from './get-last-run';
 import * as runActorAndGetDataset from './run-actor-and-get-dataset';
+import * as sendServerActorRequest from './send-server-actor-request';
 
 export const name = 'Actors';
 
 const operationsV1: INodePropertyOptions[] = [
 	runActor.option,
 	runActorAndGetDataset.option,
+	sendServerActorRequest.option,
 	webFetch.option,
 	scrapeSingleUrl.option,
 	getLastRun.option,
@@ -20,6 +22,7 @@ const operationsV1: INodePropertyOptions[] = [
 const operationsV2: INodePropertyOptions[] = [
 	runActor.option,
 	runActorAndGetDataset.option,
+	sendServerActorRequest.option,
 	webFetch.option,
 	getLastRun.option,
 ];
@@ -62,6 +65,7 @@ export const rawProperties: INodeProperties[] = [
 	operationSelectV1,
 	...runActor.properties,
 	...runActorAndGetDataset.properties,
+	...sendServerActorRequest.properties,
 	...webFetch.properties,
 	...scrapeSingleUrl.properties,
 	...getLastRun.properties,

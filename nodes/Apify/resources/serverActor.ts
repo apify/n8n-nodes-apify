@@ -25,8 +25,8 @@ import {
 
 /**
  * Server Actors answer HTTP requests at their `standbyUrl` instead of starting a run (the API
- * still uses the old "standby" names). Run actor's Endpoint interface sends one request to the
- * chosen endpoint and returns `{ status, contentType, body }`.
+ * still uses the old "standby" names). The Send Server Actor request operation sends one request
+ * to the chosen endpoint and returns `{ status, contentType, body }`.
  *
  * Every request may be charged, so it is never retried, and no error message suggests retrying.
  */
@@ -39,7 +39,7 @@ export const MCP_ONLY = '__mcpOnly__';
 
 const MESSAGES = {
 	noServerInterface:
-		'This Actor has no server interface. Switch Interface to Input to start a run.',
+		'This Actor has no server interface. Use the Run an Actor operation to start a run instead.',
 	mcpOnly:
 		"This Actor is an MCP server. Use n8n's MCP Client Tool node (or MCP Client node) with the Actor's MCP URL instead. Their default timeout is 60 s, so raise it for slow tools.",
 	noEndpoint: 'Choose an endpoint.',
@@ -187,7 +187,7 @@ export async function getServerActorEndpointFields(
 	return { fields };
 }
 
-/** The Endpoint interface's fields, shown under `displayOptions.show`. */
+/** The endpoint fields that follow the Actor picker, shown under `displayOptions.show`. */
 export function serverActorProperties(show: IDisplayOptions['show']): INodeProperties[] {
 	const withShow = (extra: IDisplayOptions['show'] = {}): IDisplayOptions => ({
 		show: { ...show, ...extra },
@@ -489,7 +489,7 @@ function isTimeoutError(error: unknown): boolean {
 	});
 }
 
-/** Run actor with Interface = Endpoint: sends one request to the Actor's server. */
+/** Send Server Actor request: sends one request to the Actor's server. */
 export async function callServerActor(
 	this: IExecuteFunctions,
 	i: number,

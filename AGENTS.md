@@ -101,10 +101,12 @@ on all four and sent **only when non-null and `> 0`** — `0`/empty deliberately
 
 ### Server Actors — `resources/serverActor.ts`, `resources/serverActorOpenApi.ts`
 
-`Run actor` has an `interface` select: `input` (default, so saved nodes keep starting runs)
-or `endpoint`, which hides every run field and sends one request to the Actor's `standbyUrl`.
-A Server Actor is `actorStandby.isEnabled` plus an `https://*.apify.actor` `standbyUrl` (the
-token never goes elsewhere). The `endpoint` options come from `webServerSchema` (OpenAPI) of
+`Actors → Send Server Actor request` (`actors/send-server-actor-request/`) sends one request
+to the Actor's `standbyUrl` and never starts a run. It is a separate operation on purpose: "Run"
+means an Actor run object across Apify's API and docs, so don't fold it back into `Run actor`.
+Its value `'Send Server Actor request'` is stored in workflows, so never rename it; the label is
+Title Case only because n8n's linter requires it. A Server Actor is `actorStandby.isEnabled`
+plus an `https://*.apify.actor` `standbyUrl` (the token never goes elsewhere). The `endpoint` options come from `webServerSchema` (OpenAPI) of
 the default build plus `__custom__`; MCP-only Actors (`webServerMcpPath`, no OpenAPI) and Actors
 without a server interface get placeholder values whose execution throws the user message.
 Typed fields are the `endpointParameters` resource mapper, with ids prefixed by where the value
