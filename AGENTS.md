@@ -113,8 +113,14 @@ on all four and sent **only when non-null and `> 0`** — `0`/empty deliberately
 starts a run. It is a separate operation on purpose: "Run" means an Actor run object across
 Apify's API and docs, so don't fold it back into `Run actor`. Its value
 `'Send Server Actor request'` is stored in workflows, so never rename it; the label is Title Case
-only because n8n's linter requires it. The operation folder holds its fields and the request flow
-like any other; `resources/serverActor.ts` holds what other Server Actor code shares (the Actor
+only because n8n's linter requires it. Its Actor picker is its own resource locator
+(`serverActorLocatorProperty` in `actorResourceLocator.ts`, no Actor source;
+`overrideActorProperties` skips an `actorId` that is already a `resourceLocator`). The list comes
+from `SERVER_ACTORS_LIST_PATH`, a static `GET /v2/store`-shaped snapshot in a key-value store
+until the Store API can filter Server Actors; switching is a change of that constant (local
+search filtering applies only to key-value store paths, and the specs read the path from the
+constant). The operation folder holds its fields and the request flow like any other;
+`resources/serverActor.ts` holds what other Server Actor code shares (the Actor
 lookup `getServerActorOrigin`, the per-execution OpenAPI cache `getServerActorOpenApi`, the
 `listServerActorEndpoints` loadOptions, the placeholder endpoint values and
 `SERVER_ACTOR_MESSAGES`); `resources/serverActorOpenApi.ts` is pure parsing of `webServerSchema`;
