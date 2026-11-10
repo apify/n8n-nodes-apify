@@ -1,4 +1,5 @@
 import { FieldType, INodePropertyOptions, ResourceMapperField } from 'n8n-workflow';
+import { escapeHtml } from './genericFunctions';
 
 /**
  * Pure helpers that turn a Server Actor's OpenAPI document (`actorDefinition.webServerSchema`
@@ -97,7 +98,8 @@ export function parseOpenApiEndpoints(document: JsonObject | undefined): INodePr
 			endpoints.push({
 				name: value,
 				value,
-				...(typeof summary === 'string' && summary ? { description: summary } : {}),
+				// n8n renders option descriptions as HTML, and the Actor's author controls this text.
+				...(typeof summary === 'string' && summary ? { description: escapeHtml(summary) } : {}),
 			});
 		}
 	}
@@ -181,6 +183,20 @@ function getEnumOptions(schema: JsonObject | undefined): INodePropertyOptions[] 
 		.map((value) => ({ name: String(value), value }));
 }
 
+function isNumberSchema(schema: JsonObject | undefined): boolean {
+	return schema?.type === 'integer' || schema?.type === 'number';
+}
+
+/** The schema's `default` as a field value; object and array fields are edited as JSON text. */
+function getDefaultValue(schema: JsonObject | undefined): ResourceMapperField['defaultValue'] {
+	const value = schema?.default;
+	if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+		return value;
+	}
+	if (value !== null && typeof value === 'object') return JSON.stringify(value, null, 2);
+	return undefined;
+}
+
 function toField(
 	id: string,
 	displayName: string,
@@ -188,14 +204,23 @@ function toField(
 	required: boolean,
 ): ResourceMapperField {
 	const options = getEnumOptions(schema);
+	const defaultValue = getDefaultValue(schema);
+	let type: FieldType = options.length > 0 ? 'options' : getFieldType(schema);
+	// n8n's number input stores 0 as soon as the field is added, and that 0 would be sent in
+	// place of the Actor's own default. Without a default to prefill, take the number as text,
+	// which stays empty until filled in; the node converts it back (see getNumberFieldIds).
+	if (type === 'number' && typeof defaultValue !== 'number') type = 'string';
 	return {
 		id,
 		displayName,
 		defaultMatch: false,
 		required,
 		display: true,
-		type: options.length > 0 ? 'options' : getFieldType(schema),
+		type,
 		...(options.length > 0 ? { options } : {}),
+		// Prefill the Actor's own default, so adding a field doesn't change what it gets.
+		// Without one, n8n leaves the field empty (booleans start as false).
+		...(defaultValue !== undefined ? { defaultValue } : {}),
 		// Show what must be filled in. The rest can be added from the list, and the server
 		// applies its own defaults to what's left out.
 		removed: !required,
@@ -219,6 +244,60 @@ export function parseFieldId(id: string): { location: FieldLocation | 'wholeBody
 	return { location: 'query', name: id };
 }
 
+interface FieldEntry {
+	location: FieldLocation;
+	name: string;
+	schema: JsonObject | undefined;
+	field: ResourceMapperField;
+}
+
+function getFieldEntries(
+	document: JsonObject | undefined,
+	method: string,
+	path: string,
+): FieldEntry[] | undefined {
+	const operation = getEndpointOperation(document, method, path);
+	if (!document || !operation) return undefined;
+
+	const entries: FieldEntry[] = [];
+	for (const parameter of operation.parameters) {
+		if (parameter.in !== 'path' && parameter.in !== 'query') continue;
+		const schema = resolveRefs(document, parameter.schema) as JsonObject | undefined;
+		const required = parameter.in === 'path' || parameter.required === true;
+		const id = toFieldId(parameter.in, parameter.name);
+		entries.push({
+			location: parameter.in,
+			name: parameter.name,
+			schema,
+			field: toField(id, parameter.name, schema, required),
+		});
+	}
+
+	if (method !== 'GET' && operation.bodySchema) {
+		const bodySchema = resolveRefs(document, operation.bodySchema) as JsonObject;
+		const properties = isObject(bodySchema.properties) ? bodySchema.properties : undefined;
+		if (properties && Object.keys(properties).length > 0) {
+			const requiredNames = new Set(Array.isArray(bodySchema.required) ? bodySchema.required : []);
+			for (const [name, rawSchema] of Object.entries(properties)) {
+				const schema = isObject(rawSchema) ? rawSchema : undefined;
+				entries.push({
+					location: 'body',
+					name,
+					schema,
+					field: toField(toFieldId('body', name), name, schema, requiredNames.has(name)),
+				});
+			}
+		} else {
+			const field = toField(WHOLE_BODY_FIELD_ID, 'Body (JSON)', bodySchema, operation.bodyRequired);
+			// A body without a usable schema is edited as JSON either way.
+			if (field.type !== 'array') field.type = 'object';
+			delete field.options;
+			entries.push({ location: 'body', name: WHOLE_BODY_FIELD_ID, schema: undefined, field });
+		}
+	}
+	return entries;
+}
+
 /**
  * Builds typed fields for an endpoint: path and query parameters, then the JSON body's
  * top-level properties. A body that isn't an object with properties becomes one JSON field.
@@ -228,51 +307,25 @@ export function getEndpointFields(
 	method: string,
 	path: string,
 ): ResourceMapperField[] | undefined {
-	const operation = getEndpointOperation(document, method, path);
-	if (!document || !operation) return undefined;
-
-	const entries: Array<{ location: FieldLocation; name: string; field: ResourceMapperField }> = [];
-	for (const parameter of operation.parameters) {
-		if (parameter.in !== 'path' && parameter.in !== 'query') continue;
-		const schema = resolveRefs(document, parameter.schema) as JsonObject | undefined;
-		const required = parameter.in === 'path' || parameter.required === true;
-		entries.push({
-			location: parameter.in,
-			name: parameter.name,
-			field: toField(toFieldId(parameter.in, parameter.name), parameter.name, schema, required),
-		});
-	}
-
-	if (method !== 'GET' && operation.bodySchema) {
-		const bodySchema = resolveRefs(document, operation.bodySchema) as JsonObject;
-		const properties = isObject(bodySchema.properties) ? bodySchema.properties : undefined;
-		if (properties && Object.keys(properties).length > 0) {
-			const requiredNames = new Set(Array.isArray(bodySchema.required) ? bodySchema.required : []);
-			for (const [name, schema] of Object.entries(properties)) {
-				entries.push({
-					location: 'body',
-					name,
-					field: toField(
-						toFieldId('body', name),
-						name,
-						isObject(schema) ? schema : undefined,
-						requiredNames.has(name),
-					),
-				});
-			}
-		} else {
-			const field = toField(WHOLE_BODY_FIELD_ID, 'Body (JSON)', bodySchema, operation.bodyRequired);
-			// A body without a usable schema is edited as JSON either way.
-			if (field.type !== 'array') field.type = 'object';
-			delete field.options;
-			entries.push({ location: 'body', name: WHOLE_BODY_FIELD_ID, field });
-		}
-	}
-
+	const entries = getFieldEntries(document, method, path);
+	if (!entries) return undefined;
 	// Add the location to a label only when the same name appears in two places.
 	const nameCounts = new Map<string, number>();
 	for (const { name } of entries) nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
 	return entries.map(({ location, name, field }) =>
 		(nameCounts.get(name) ?? 0) > 1 ? { ...field, displayName: `${name} (${location})` } : field,
+	);
+}
+
+/** Ids of the endpoint's fields whose schema is a number, so text values can be converted back. */
+export function getNumberFieldIds(
+	document: JsonObject | undefined,
+	method: string,
+	path: string,
+): Set<string> {
+	return new Set(
+		(getFieldEntries(document, method, path) ?? [])
+			.filter(({ schema }) => isNumberSchema(schema))
+			.map(({ field }) => field.id),
 	);
 }

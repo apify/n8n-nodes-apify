@@ -14,6 +14,7 @@ import {
 } from '../resources/serverActor';
 import {
 	getEndpointFields,
+	getNumberFieldIds,
 	parseEndpointValue,
 	parseFieldId,
 	parseOpenApiEndpoints,
@@ -216,7 +217,8 @@ describe('Server Actors (Send Server Actor request)', () => {
 				'body:nested',
 			]);
 			expect(byId['body:text']).toMatchObject({ type: 'string', required: true, removed: false });
-			expect(byId['body:count']).toMatchObject({ type: 'number', required: false, removed: true });
+			// No default to prefill, so the number is entered as text (see the defaults test).
+			expect(byId['body:count']).toMatchObject({ type: 'string', required: false, removed: true });
 			expect(byId['body:flag'].type).toBe('boolean');
 			expect(byId['body:tags'].type).toBe('array');
 			expect(byId['body:nested'].type).toBe('object');
@@ -269,6 +271,60 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(
 				getEndpointFields(document, 'POST', '/clash')!.map((field) => field.displayName),
 			).toEqual(['mode (query)', 'mode (body)']);
+		});
+
+		it('should escape endpoint summaries, which n8n renders as HTML', () => {
+			const [option] = parseOpenApiEndpoints({
+				paths: { '/x': { get: { summary: 'Fetch <img src="https://evil.example/p"> now' } } },
+			});
+			expect(option.description).toBe(
+				'Fetch &lt;img src=&quot;https://evil.example/p&quot;&gt; now',
+			);
+		});
+
+		it("should prefill the schema's default, and take numbers without one as text", () => {
+			const document = {
+				paths: {
+					'/d': {
+						post: {
+							requestBody: {
+								content: {
+									'application/json': {
+										schema: {
+											type: 'object',
+											properties: {
+												count: { type: 'integer', default: 1 },
+												limit: { type: 'integer' },
+												flag: { type: 'boolean' },
+												strict: { type: 'boolean', default: true },
+												mode: { type: 'string', enum: ['fast', 'slow'], default: 'slow' },
+												options: { type: 'object', default: { a: 1 } },
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			};
+			const fields = Object.fromEntries(
+				getEndpointFields(document, 'POST', '/d')!.map((field) => [
+					field.id,
+					{ type: field.type, defaultValue: field.defaultValue },
+				]),
+			);
+			expect(fields).toEqual({
+				'body:count': { type: 'number', defaultValue: 1 },
+				// n8n's number input would store 0, which would be sent.
+				'body:limit': { type: 'string', defaultValue: undefined },
+				// n8n starts a boolean without a default as false.
+				'body:flag': { type: 'boolean', defaultValue: undefined },
+				'body:strict': { type: 'boolean', defaultValue: true },
+				'body:mode': { type: 'options', defaultValue: 'slow' },
+				'body:options': { type: 'object', defaultValue: JSON.stringify({ a: 1 }, null, 2) },
+			});
+			expect([...getNumberFieldIds(document, 'POST', '/d')]).toEqual(['body:count', 'body:limit']);
 		});
 
 		it('should parse endpoint values and field ids', () => {
@@ -509,10 +565,16 @@ describe('Server Actors (Send Server Actor request)', () => {
 		const resultOf = (executionData: any) =>
 			getTaskData(getRunTaskDataByNodeName(executionData, 'Send Server Actor request')[0]);
 
-		it('should send typed fields to the right place and return status, contentType and body', async () => {
-			const api = nock('https://api.apify.com')
+		// The Actor plus its default build, which documented endpoints are checked against.
+		const mockActor = (actor = serverActor()) =>
+			nock('https://api.apify.com')
 				.get(`/v2/acts/${ACTOR_ID}`)
-				.reply(200, serverActor());
+				.reply(200, actor)
+				.get(`/v2/acts/${ACTOR_ID}/builds/default`)
+				.reply(200, buildWith({ webServerSchema: openApi }));
+
+		it('should send typed fields to the right place and return status, contentType and body', async () => {
+			const api = mockActor();
 			const server = nock(SERVER_URL)
 				.post('/echo', { text: 'hello', count: 2, tags: ['a', 'b'] })
 				.query({ probe: 'n8n-test' })
@@ -559,6 +621,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 		});
 
 		it('should fail clearly when a path parameter is missing, before any request', async () => {
+			mockActor();
 			await expect(
 				run({
 					endpoint: 'GET /items/{itemId}',
@@ -621,7 +684,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 		it.each([500, 429, 503])(
 			"should show the Actor's own message for a %i and send the request only once",
 			async (status) => {
-				nock('https://api.apify.com').get(`/v2/acts/${ACTOR_ID}`).reply(200, serverActor());
+				mockActor();
 				const server = nock(SERVER_URL)
 					.post('/echo')
 					.query(true)
@@ -645,7 +708,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 		);
 
 		it("should show Web Fetch's flat { code, error } message", async () => {
-			nock('https://api.apify.com').get(`/v2/acts/${ACTOR_ID}`).reply(200, serverActor());
+			mockActor();
 			nock(SERVER_URL)
 				.post('/echo')
 				.query(true)
@@ -658,7 +721,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 		});
 
 		it('should show a non-JSON error body as text', async () => {
-			nock('https://api.apify.com').get(`/v2/acts/${ACTOR_ID}`).reply(200, serverActor());
+			mockActor();
 			nock(SERVER_URL)
 				.post('/echo')
 				.query(true)
@@ -670,7 +733,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 		});
 
 		it("should turn Apify's 504 into the timeout message, keeping its text", async () => {
-			nock('https://api.apify.com').get(`/v2/acts/${ACTOR_ID}`).reply(200, serverActor());
+			mockActor();
 			nock(SERVER_URL)
 				.post('/echo')
 				.query(true)
@@ -684,7 +747,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 		});
 
 		it('should map a client timeout to the timeout message without retrying', async () => {
-			nock('https://api.apify.com').get(`/v2/acts/${ACTOR_ID}`).reply(200, serverActor());
+			mockActor();
 			const server = nock(SERVER_URL)
 				.post('/echo')
 				.query(true)
@@ -701,7 +764,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 		});
 
 		it('should fail clearly on a binary response', async () => {
-			nock('https://api.apify.com').get(`/v2/acts/${ACTOR_ID}`).reply(200, serverActor());
+			mockActor();
 			nock(SERVER_URL)
 				.post('/echo')
 				.query(true)
@@ -710,6 +773,94 @@ describe('Server Actors (Send Server Actor request)', () => {
 				});
 
 			await expect(run()).rejects.toThrow(/binary response, which is not supported yet/);
+		});
+
+		it("should refuse an endpoint the Actor doesn't document, without sending it", async () => {
+			const api = mockActor();
+			// e.g. a GET / saved for the previous Actor before the Actor was changed
+			const error = await catchError(run({ endpoint: 'GET /' }));
+
+			expect(error.message).toMatch(/"GET \/" isn't in this Actor's OpenAPI definition/);
+			expect(api.isDone()).toBe(true);
+		});
+
+		it('should not send values saved for a different endpoint', async () => {
+			mockActor();
+			const server = nock(SERVER_URL)
+				.post('/echo', { text: 'hello' })
+				// exact query: a stale `url` from another endpoint would not match
+				.query({ probe: 'p' })
+				.reply(200, {});
+
+			await run({
+				endpointParameters: {
+					mappingMode: 'defineBelow',
+					value: { 'query:probe': 'p', 'body:text': 'hello', 'query:url': 'https://stale.example' },
+				},
+			});
+
+			expect(server.isDone()).toBe(true);
+		});
+
+		it('should send number fields entered as text as numbers, and leave out empty ones', async () => {
+			mockActor();
+			const server = nock(SERVER_URL)
+				// `count` is an integer in the OpenAPI; the empty `probe` is left out.
+				.post('/echo', { text: 'hello', count: 3 })
+				.query({})
+				.reply(200, {});
+
+			await run({
+				endpointParameters: {
+					mappingMode: 'defineBelow',
+					value: { 'body:text': 'hello', 'body:count': ' 3 ', 'query:probe': null },
+				},
+			});
+
+			expect(server.isDone()).toBe(true);
+		});
+
+		it('should reject a number field that is not a number, before sending', async () => {
+			mockActor();
+			await expect(
+				run({
+					endpointParameters: {
+						mappingMode: 'defineBelow',
+						value: { 'body:text': 'hello', 'body:count': 'many' },
+					},
+				}),
+			).rejects.toThrow(/"count" must be a number, got "many"/);
+		});
+
+		it('should check the OpenAPI only for documented endpoints, not Custom Path', async () => {
+			const api = nock('https://api.apify.com')
+				.get(`/v2/acts/${ACTOR_ID}`)
+				.reply(200, serverActor());
+			const server = nock(SERVER_URL).get('/anything').reply(200, {});
+
+			await run({ endpoint: CUSTOM_ENDPOINT, endpointMethod: 'GET', endpointPath: '/anything' });
+
+			expect(api.isDone()).toBe(true);
+			expect(server.isDone()).toBe(true);
+		});
+
+		it('should escape Actor-supplied text in the error description, which n8n renders as HTML', async () => {
+			mockActor();
+			nock(SERVER_URL)
+				.post('/echo')
+				.query(true)
+				.reply(400, {
+					error: { type: '<img src="https://evil.example/p">', message: '<b>Bad</b> input' },
+				});
+
+			const error = await catchError(run());
+
+			expect(error.description).toContain(
+				'type &lt;img src=&quot;https://evil.example/p&quot;&gt;',
+			);
+			expect(error.description).not.toContain('<img');
+			// The message is shown as text, so it stays readable.
+			expect(error.message).toBe('<b>Bad</b> input');
 		});
 
 		it('should wait longer than Apify’s 300 s limit', () => {

@@ -116,8 +116,20 @@ come from `webServerSchema` (OpenAPI) of the default build plus `__custom__`; MC
 without a server interface get placeholder values whose execution throws the user message.
 Typed fields are the `endpointParameters` resource mapper, with ids prefixed by where the value
 goes (`path:`, `query:`, `body:`, or a lone `body` for a non-object body); keep that convention.
-Custom Path uses `endpointMethod`/`endpointPath`/`endpointQuery`/`endpointBody` — not
-`customBody`, which is Run actor's Input JSON.
+A field gets the schema's `default` as its `defaultValue`. Number fields *without* a default are
+typed `string`: n8n's number input stores `0` as soon as the field is added, which would be sent
+in place of the Actor's default, so `getNumberFieldIds` lets execution convert the text back
+(empty means left out). Booleans without a default start as `false` — don't give them `null`,
+n8n then draws the toggle as on while sending nothing. Custom Path uses
+`endpointMethod`/`endpointPath`/`endpointQuery`/`endpointBody` — not `customBody`, which is
+Run actor's Input JSON.
+
+At execution a documented endpoint is checked against the default build's OpenAPI (fetched once
+per Actor per execution) and refused if missing: after the Actor changes, a saved endpoint of the
+old one would otherwise go to the new one. Values whose ids aren't that endpoint's fields are
+dropped. n8n renders option descriptions and error descriptions as HTML (sanitized, but links and
+images pass), so Actor-supplied text there goes through `escapeHtml` — except in AI tool mode,
+where the description reaches the agent as plain text.
 
 The request uses `disableRetries`, `ignoreHttpStatusErrors`, `encoding: 'arraybuffer'` and
 `SERVER_ACTOR_REQUEST_TIMEOUT_MS` (310 s, above Apify's 300 s so its 504 wins over n8n's

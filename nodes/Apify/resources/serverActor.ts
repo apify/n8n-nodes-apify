@@ -12,11 +12,13 @@ import {
 	ResourceMapperFields,
 } from 'n8n-workflow';
 import { SERVER_ACTOR_REQUEST_TIMEOUT_MS } from '../helpers/consts';
-import { apiRequest, escapeHtml } from './genericFunctions';
+import { apiRequest, escapeHtml, isUsedAsAiTool } from './genericFunctions';
 import {
 	getEndpointFields,
 	getEndpointOperation,
+	getNumberFieldIds,
 	HTTP_METHODS,
+	OpenApiParameter,
 	parseEndpointValue,
 	parseFieldId,
 	parseOpenApiDocument,
@@ -309,8 +311,34 @@ interface ServerActorRequest {
 	body?: unknown;
 }
 
+interface EndpointFields {
+	/** The documented endpoint's field ids; values for any other id are left out. */
+	ids: Set<string>;
+	/** Fields whose schema is a number; they may hold the number as text. */
+	numberIds: Set<string>;
+}
+
+/** Converts a number field's text to a number. Empty text means the field is left out. */
+function toNumber(this: IExecuteFunctions, value: unknown, name: string, i: number): unknown {
+	if (typeof value !== 'string') return value;
+	const text = value.trim();
+	if (!text) return undefined;
+	const number = Number(text);
+	if (!Number.isFinite(number)) {
+		throw new NodeOperationError(this.getNode(), `"${name}" must be a number, got "${value}"`, {
+			itemIndex: i,
+		});
+	}
+	return number;
+}
+
 /** Reads the endpoint, its typed field values or the Custom Path fields into one request. */
-function getRequest(this: IExecuteFunctions, i: number, endpointValue: string): ServerActorRequest {
+function getRequest(
+	this: IExecuteFunctions,
+	i: number,
+	endpointValue: string,
+	fields?: EndpointFields,
+): ServerActorRequest {
 	if (endpointValue === CUSTOM_ENDPOINT) {
 		const method = (this.getNodeParameter('endpointMethod', i, 'GET') as string).toUpperCase();
 		const path = (this.getNodeParameter('endpointPath', i, '/') as string).trim();
@@ -343,10 +371,13 @@ function getRequest(this: IExecuteFunctions, i: number, endpointValue: string): 
 	const pathParams: IDataObject = {};
 	const query: IDataObject = {};
 	let body: IDataObject | unknown[] | undefined;
-	for (const [id, value] of Object.entries(values)) {
+	for (const [id, rawValue] of Object.entries(values)) {
+		// A value saved for another endpoint must not end up in this request.
+		if (fields && !fields.ids.has(id)) continue;
+		const { location, name } = parseFieldId(id);
+		const value = fields?.numberIds.has(id) ? toNumber.call(this, rawValue, name, i) : rawValue;
 		// Leave out unset fields so the Actor's own defaults apply.
 		if (value === null || value === undefined) continue;
-		const { location, name } = parseFieldId(id);
 		if (location === 'path') pathParams[name] = value;
 		else if (location === 'query') query[name] = value;
 		else if (location === 'wholeBody') body = value as IDataObject;
@@ -394,23 +425,31 @@ function buildQueryString(query: IDataObject, explodeFalse: Set<string>): string
 }
 
 /** Names of the endpoint's array query parameters that are sent comma-separated. */
-async function getNonExplodedQueryParams(
-	this: IExecuteFunctions,
-	actorId: string,
-	endpointValue: string,
-	query: IDataObject,
-): Promise<Set<string>> {
-	const endpoint = parseEndpointValue(endpointValue);
-	// Only arrays depend on the style, so skip the build lookup when there are none.
-	if (!endpoint || !Object.values(query).some(Array.isArray)) return new Set();
-	const build = await getDefaultBuild.call(this, actorId);
-	const document = parseOpenApiDocument(build.actorDefinition?.webServerSchema);
-	const operation = getEndpointOperation(document, endpoint.method, endpoint.path);
+function getNonExplodedQueryParams(parameters: OpenApiParameter[]): Set<string> {
 	return new Set(
-		(operation?.parameters ?? [])
+		parameters
 			.filter((parameter) => parameter.in === 'query' && parameter.explode === false)
 			.map((parameter) => parameter.name),
 	);
+}
+
+// One OpenAPI lookup per Actor per execution: every item of a run shares the same context object.
+type OpenApiDocument = ReturnType<typeof parseOpenApiDocument>;
+const documentCache = new WeakMap<object, Map<string, Promise<OpenApiDocument>>>();
+
+async function getOpenApiDocument(
+	this: IExecuteFunctions,
+	actorId: string,
+): Promise<OpenApiDocument> {
+	const byActor = documentCache.get(this) ?? new Map<string, Promise<OpenApiDocument>>();
+	documentCache.set(this, byActor);
+	const cached = byActor.get(actorId);
+	if (cached) return await cached;
+	const document = getDefaultBuild
+		.call(this, actorId)
+		.then((build) => parseOpenApiDocument(build.actorDefinition?.webServerSchema));
+	byActor.set(actorId, document);
+	return await document;
 }
 
 const TEXT_CONTENT_TYPES =
@@ -489,6 +528,14 @@ function isTimeoutError(error: unknown): boolean {
 	});
 }
 
+/**
+ * Text for an error description. The editor renders descriptions as HTML, so text that comes
+ * from the Actor is escaped there; as an AI tool, n8n passes the description on as plain text.
+ */
+function descriptionText(this: IExecuteFunctions, text: string): string {
+	return isUsedAsAiTool(this.getNode().type) ? text : escapeHtml(text);
+}
+
 /** Send Server Actor request: sends one request to the Actor's server. */
 export async function callServerActor(
 	this: IExecuteFunctions,
@@ -509,19 +556,39 @@ export async function callServerActor(
 		});
 	}
 
-	const request = getRequest.call(this, i, endpointValue);
-
 	const origin = getServerOrigin(await getActor.call(this, actorId));
 	if (!origin) {
 		throw new NodeOperationError(this.getNode(), MESSAGES.noServerInterface, { itemIndex: i });
 	}
 
-	const explodeFalse = await getNonExplodedQueryParams.call(
-		this,
-		actorId,
-		endpointValue,
-		request.query,
-	);
+	// A documented endpoint must still be in the Actor's OpenAPI: after the Actor is changed, a
+	// saved endpoint of the previous Actor would otherwise go to the new one, and may be charged.
+	let fields: EndpointFields | undefined;
+	let explodeFalse = new Set<string>();
+	const endpoint =
+		endpointValue === CUSTOM_ENDPOINT ? undefined : parseEndpointValue(endpointValue);
+	if (endpoint) {
+		const document = await getOpenApiDocument.call(this, actorId);
+		const operation = getEndpointOperation(document, endpoint.method, endpoint.path);
+		if (!operation) {
+			throw new NodeOperationError(
+				this.getNode(),
+				`The endpoint "${endpointValue}" isn't in this Actor's OpenAPI definition. Choose the endpoint again, or use Custom Path.`,
+				{ itemIndex: i },
+			);
+		}
+		fields = {
+			ids: new Set(
+				(getEndpointFields(document, endpoint.method, endpoint.path) ?? []).map(
+					(field) => field.id,
+				),
+			),
+			numberIds: getNumberFieldIds(document, endpoint.method, endpoint.path),
+		};
+		explodeFalse = getNonExplodedQueryParams(operation.parameters);
+	}
+
+	const request = getRequest.call(this, i, endpointValue, fields);
 	const url = `${origin}${request.path}${buildQueryString(request.query, explodeFalse)}`;
 	// A path like `//other.host` must not move the request (and the token) to another host.
 	if (new URL(url).origin !== origin) {
@@ -579,9 +646,11 @@ export async function callServerActor(
 		const details = [`Status ${status}`, type ? `type ${type}` : undefined]
 			.filter(Boolean)
 			.join(', ');
-		const description = timedOut
-			? `${details}${message ? `: ${message}` : ''}`
-			: `${details}. ${MESSAGES.charged}`;
+		// `type` and `message` come from the Actor's response.
+		const description = descriptionText.call(
+			this,
+			timedOut ? `${details}${message ? `: ${message}` : ''}` : `${details}. ${MESSAGES.charged}`,
+		);
 		throw new NodeApiError(
 			this.getNode(),
 			{ message: errorMessage, httpCode: String(status) },
@@ -596,7 +665,7 @@ export async function callServerActor(
 
 	if ('binary' in decoded) {
 		throw new NodeOperationError(this.getNode(), MESSAGES.binary, {
-			description: `Content type: ${contentType || 'unknown'}`,
+			description: descriptionText.call(this, `Content type: ${contentType || 'unknown'}`),
 			itemIndex: i,
 		});
 	}
