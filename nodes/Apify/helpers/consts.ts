@@ -11,6 +11,15 @@ export const WEB_FETCH_STANDBY_URL = 'https://web-fetch.apify.actor/';
 // they're only sent to hosts that end with it.
 export const APIFY_ACTOR_HOST_SUFFIX = '.apify.actor';
 export const HTTP_METHODS: IHttpRequestMethods[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+// Server Actors for the Send Server Actor request picker, shaped like `GET /v2/store`.
+// The Store API can't filter Server Actors yet, so this is a static snapshot in a key-value
+// store (SERVER_ACTORS holds the full item shape, SERVER_ACTORS_SLIM only id, title, username
+// and name). Once the filter ships, point this at the Store endpoint with it, e.g.
+// '/v2/store?<server-actor filter>': `search`, `limit` and `offset` are already sent, and local
+// search filtering switches off for any path that isn't a key-value store record. The Store API
+// silently ignores unknown params, so check that `total` drops to the Server Actors (~2.4k).
+export const SERVER_ACTORS_LIST_PATH =
+	'/v2/key-value-stores/Cw412CNrZrtrhnoty/records/SERVER_ACTORS_SLIM';
 export const TERMINAL_RUN_STATUSES = ['SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'];
 export const WAIT_FOR_FINISH_POLL_INTERVAL = 1000;
 // Per-request HTTP timeout (ms). Prevents a stalled socket from hanging the node indefinitely.

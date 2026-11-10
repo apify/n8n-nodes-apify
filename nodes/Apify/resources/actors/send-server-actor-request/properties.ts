@@ -1,6 +1,7 @@
 import { INodeProperties } from 'n8n-workflow';
 
 import { HTTP_METHODS } from '../../../helpers/consts';
+import { serverActorLocatorProperty } from '../../actorResourceLocator';
 import {
 	CUSTOM_ENDPOINT,
 	MCP_ONLY,
@@ -16,24 +17,7 @@ const show = {
 const placeholders = ['', NO_ACTOR_SELECTED, NO_SERVER_INTERFACE, MCP_ONLY];
 
 export const properties: INodeProperties[] = [
-	{
-		displayName: 'Actor Source',
-		name: 'actorSource',
-		type: 'hidden',
-		default: 'recentlyUsed',
-		displayOptions: { show },
-	},
-	{
-		// Rewritten into the Actor resource locator by `overrideActorProperties`.
-		displayName: 'Actor',
-		name: 'actorId',
-		required: true,
-		description:
-			'The Server Actor to send the request to, in the format "username~actor-name" or as a plain Actor ID',
-		default: 'janedoe~my-actor',
-		type: 'string',
-		displayOptions: { show },
-	},
+	serverActorLocatorProperty({ show }),
 	{
 		displayName: 'Endpoint Name or ID',
 		name: 'endpoint',
