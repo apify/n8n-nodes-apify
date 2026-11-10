@@ -105,9 +105,14 @@ on all four and sent **only when non-null and `> 0`** — `0`/empty deliberately
 to the Actor's `standbyUrl` and never starts a run. It is a separate operation on purpose: "Run"
 means an Actor run object across Apify's API and docs, so don't fold it back into `Run actor`.
 Its value `'Send Server Actor request'` is stored in workflows, so never rename it; the label is
-Title Case only because n8n's linter requires it. A Server Actor is `actorStandby.isEnabled`
-plus an `https://*.apify.actor` `standbyUrl` (the token never goes elsewhere). The `endpoint` options come from `webServerSchema` (OpenAPI) of
-the default build plus `__custom__`; MCP-only Actors (`webServerMcpPath`, no OpenAPI) and Actors
+Title Case only because n8n's linter requires it. Its Actor picker is its own resource locator
+(`serverActorLocatorProperty`, no Actor source; `overrideActorProperties` skips an `actorId`
+that is already a `resourceLocator`). The list comes from `SERVER_ACTORS_LIST_PATH`, a static
+`GET /v2/store`-shaped snapshot in a key-value store until the Store API can filter Server
+Actors; switching is a change of that constant (local search filtering applies only to
+key-value store paths). A Server Actor is `actorStandby.isEnabled` plus an
+`https://*.apify.actor` `standbyUrl` (the token never goes elsewhere). The `endpoint` options
+come from `webServerSchema` (OpenAPI) of the default build plus `__custom__`; MCP-only Actors (`webServerMcpPath`, no OpenAPI) and Actors
 without a server interface get placeholder values whose execution throws the user message.
 Typed fields are the `endpointParameters` resource mapper, with ids prefixed by where the value
 goes (`path:`, `query:`, `body:`, or a lone `body` for a non-object body); keep that convention.

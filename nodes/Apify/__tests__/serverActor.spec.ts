@@ -19,7 +19,8 @@ import {
 	parseOpenApiEndpoints,
 	resolveRefs,
 } from '../resources/serverActorOpenApi';
-import { SERVER_ACTOR_REQUEST_TIMEOUT_MS } from '../helpers/consts';
+import { SERVER_ACTOR_REQUEST_TIMEOUT_MS, SERVER_ACTORS_LIST_PATH } from '../helpers/consts';
+import { searchServerActors } from '../resources/actorResourceLocator';
 
 const ACTOR_ID = 'UE4RePbgER1Xt3ZVb';
 const SERVER_URL = 'https://jan-hranicky--server-actor-spike.apify.actor';
@@ -140,12 +141,23 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(propertiesNamed('interface')).toEqual([]);
 		});
 
-		it('should pick the Actor from the same locator as the run operations', () => {
-			const actorIds = propertiesNamed('actorId').filter((property) =>
-				property.displayOptions?.show?.operation?.includes('Send Server Actor request'),
-			);
+		it('should pick the Actor from a list of Server Actors only, with no Actor source', () => {
+			const forOperation = (name: string) =>
+				propertiesNamed(name).filter((property) =>
+					property.displayOptions?.show?.operation?.includes('Send Server Actor request'),
+				);
+			const actorIds = forOperation('actorId');
 			expect(actorIds).toHaveLength(1);
 			expect(actorIds[0].type).toBe('resourceLocator');
+			const modes = actorIds[0].modes!;
+			expect(modes.map((mode) => mode.name)).toEqual(['list', 'url', 'id']);
+			expect(modes[0].typeOptions?.searchListMethod).toBe('listServerActors');
+			expect(forOperation('actorSource')).toEqual([]);
+			// The run operations keep the shared picker.
+			const runActorId = propertiesNamed('actorId').find(
+				(property) => property.displayOptions?.show?.operation?.[0] === 'Run actor',
+			);
+			expect(runActorId?.modes?.[0].typeOptions?.searchListMethod).toBe('listActors');
 			for (const name of ['endpoint', 'endpointParameters', 'endpointMethod', 'endpointPath']) {
 				expect(propertiesNamed(name)[0].displayOptions?.show?.operation).toEqual([
 					'Send Server Actor request',
@@ -265,6 +277,84 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(parseEndpointValue(CUSTOM_ENDPOINT)).toBeUndefined();
 			expect(parseFieldId('query:a:b')).toEqual({ location: 'query', name: 'a:b' });
 			expect(parseFieldId('body')).toEqual({ location: 'wholeBody', name: 'body' });
+		});
+	});
+
+	describe('Server Actor picker (listSearch)', () => {
+		const context = () =>
+			createLoadOptionsFunctions({
+				credentialsHelper,
+				node: { name: 'Apify', type: 'n8n-nodes-apify.apify', typeVersion: 2, parameters: {} },
+			});
+
+		// Same shape as the SERVER_ACTORS_SLIM record and `GET /v2/store`.
+		const storeList = {
+			data: {
+				total: 2,
+				count: 2,
+				offset: 0,
+				limit: 1000,
+				desc: false,
+				items: [
+					{ id: 'a6Sqhlnt4touIHTub', title: 'Web Fetch', username: 'apify', name: 'web-fetch' },
+					{
+						id: 'GdWCkxBtKWOsKjdch',
+						title: 'TikTok Scraper',
+						username: 'clockworks',
+						name: 'tiktok-scraper',
+					},
+				],
+			},
+		};
+
+		it('should read the snapshot path and list its Actors', async () => {
+			expect(SERVER_ACTORS_LIST_PATH).toMatch(/^\/v2\/key-value-stores\/.+\/records\//);
+			const listServerActors = apifyNode.methods!.listSearch!.listServerActors;
+			const scope = nock('https://api.apify.com')
+				.get(SERVER_ACTORS_LIST_PATH)
+				.query({ limit: 1000, offset: 0 })
+				.reply(200, storeList);
+
+			const { results } = await listServerActors.call(context());
+
+			expect(results).toEqual([
+				{
+					name: 'Web Fetch (apify/web-fetch)',
+					value: 'a6Sqhlnt4touIHTub',
+					url: 'https://console.apify.com/actors/a6Sqhlnt4touIHTub/input',
+					description: 'web-fetch',
+				},
+				expect.objectContaining({ value: 'GdWCkxBtKWOsKjdch' }),
+			]);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should filter the snapshot locally, since a record ignores search', async () => {
+			nock('https://api.apify.com')
+				.get(SERVER_ACTORS_LIST_PATH)
+				.query({ limit: 1000, offset: 0, search: 'tiktok CLOCKWORKS' })
+				.reply(200, storeList);
+
+			const { results } = await searchServerActors.call(context(), 'tiktok CLOCKWORKS');
+
+			expect(results.map((result) => result.value)).toEqual(['GdWCkxBtKWOsKjdch']);
+		});
+
+		it('should trust the Store API to filter once the path points at it', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/store')
+				.query({ isServerActor: 'true', limit: 1000, offset: 0, search: 'tiktok' })
+				.reply(200, storeList);
+
+			const { results } = await searchServerActors.call(
+				context(),
+				'tiktok',
+				'/v2/store?isServerActor=true',
+			);
+
+			// No local filtering: whatever the API returns is listed.
+			expect(results).toHaveLength(2);
+			expect(scope.isDone()).toBe(true);
 		});
 	});
 

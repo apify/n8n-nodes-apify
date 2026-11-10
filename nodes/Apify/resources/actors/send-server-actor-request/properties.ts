@@ -1,5 +1,6 @@
 import { INodeProperties } from 'n8n-workflow';
 
+import { serverActorLocatorProperty } from '../../actorResourceLocator';
 import { serverActorProperties } from '../../serverActor';
 
 const show = {
@@ -8,23 +9,7 @@ const show = {
 };
 
 export const properties: INodeProperties[] = [
-	{
-		displayName: 'Actor Source',
-		name: 'actorSource',
-		type: 'hidden',
-		default: 'recentlyUsed',
-		displayOptions: { show },
-	},
-	{
-		// Rewritten into the Actor resource locator by `overrideActorProperties`.
-		displayName: 'Actor',
-		name: 'actorId',
-		required: true,
-		description:
-			'The Server Actor to send the request to, in the format "username~actor-name" or as a plain Actor ID',
-		default: 'janedoe~my-actor',
-		type: 'string',
-		displayOptions: { show },
-	},
+	// Lists only Server Actors, so it replaces the shared Actor picker and its Actor source.
+	serverActorLocatorProperty({ show }),
 	...serverActorProperties(show),
 ];

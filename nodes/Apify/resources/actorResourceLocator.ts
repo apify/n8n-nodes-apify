@@ -1,5 +1,6 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
-import { apiRequestAllItems } from './genericFunctions';
+import { SERVER_ACTORS_LIST_PATH } from '../helpers/consts';
+import { apiRequest, apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
 	displayName: 'Actor',
@@ -93,11 +94,36 @@ function createActorSourceProperty(displayOptions: any): INodeProperties {
 	};
 }
 
+/**
+ * The Actor locator for Send Server Actor request: the same URL and ID modes, but the list
+ * holds only Server Actors, so there is no Actor source select next to it.
+ */
+export function serverActorLocatorProperty(
+	displayOptions: INodeProperties['displayOptions'],
+): INodeProperties {
+	return {
+		...resourceLocatorProperty,
+		description: 'The Server Actor to send the request to',
+		required: true,
+		modes: resourceLocatorProperty.modes!.map((mode) =>
+			mode.name === 'list'
+				? {
+						...mode,
+						placeholder: 'Choose a Server Actor...',
+						typeOptions: { ...mode.typeOptions, searchListMethod: 'listServerActors' },
+					}
+				: mode,
+		),
+		displayOptions,
+	};
+}
+
 export function overrideActorProperties(properties: INodeProperties[]): INodeProperties[] {
 	const result: INodeProperties[] = [];
 
 	for (const property of properties) {
-		if (property.name === 'actorId') {
+		// Operations that bring their own locator (e.g. Server Actors) keep it.
+		if (property.name === 'actorId' && property.type !== 'resourceLocator') {
 			result.push(createActorSourceProperty(property.displayOptions));
 			result.push(mapProperty(property));
 		} else {
@@ -108,24 +134,24 @@ export function overrideActorProperties(properties: INodeProperties[]): INodePro
 	return result;
 }
 
+const mapToN8nSelectOption = (actor: any) => {
+	const optionName = actor.title
+		? `${actor.title} (${actor.username}/${actor.name})`
+		: `${actor.username}/${actor.name}`;
+
+	return {
+		name: optionName,
+		value: actor.id,
+		url: `https://console.apify.com/actors/${actor.id}/input`,
+		description: actor.description || actor.name,
+	};
+};
+
 export async function listActors(
 	this: ILoadOptionsFunctions,
 	searchTerm?: string,
 ): Promise<INodeListSearchResult> {
 	const actorSource = this.getNodeParameter('actorSource', 'recentlyUsed') as string;
-
-	const mapToN8nSelectOption = (actor: any) => {
-		const optionName = actor.title
-			? `${actor.title} (${actor.username}/${actor.name})`
-			: `${actor.username}/${actor.name}`;
-
-		return {
-			name: optionName,
-			value: actor.id,
-			url: `https://console.apify.com/actors/${actor.id}/input`,
-			description: actor.description || actor.name,
-		};
-	};
 
 	const {
 		data: { items: recentActors },
@@ -170,4 +196,48 @@ export async function listActors(
 	return {
 		results: storeActors.map(mapToN8nSelectOption),
 	};
+}
+
+/** True when every word of the search term appears in the Actor's title, name, username or description. */
+function matchesSearch(actor: any, searchTerm: string): boolean {
+	const haystack = [actor.title, actor.name, actor.username, actor.description]
+		.filter((value) => typeof value === 'string')
+		.join(' ')
+		.toLowerCase();
+	return searchTerm
+		.toLowerCase()
+		.split(/\s+/)
+		.filter(Boolean)
+		.every((word) => haystack.includes(word));
+}
+
+/**
+ * Server Actors for the picker, read from `listPath` in the shape of `GET /v2/store`
+ * (`{ data: { items } }`). A key-value store record (today's static snapshot) ignores `search`,
+ * so it is filtered here; the Store API filters on its own.
+ */
+export async function searchServerActors(
+	this: ILoadOptionsFunctions,
+	searchTerm = '',
+	listPath = SERVER_ACTORS_LIST_PATH,
+): Promise<INodeListSearchResult> {
+	const response = await apiRequest.call(this, {
+		method: 'GET',
+		uri: listPath,
+		qs: { limit: 1000, offset: 0, ...(searchTerm ? { search: searchTerm } : {}) },
+	});
+	const items: any[] = Array.isArray(response?.data?.items) ? response.data.items : [];
+	const isStaticSnapshot = listPath.includes('/key-value-stores/');
+	const actors =
+		isStaticSnapshot && searchTerm
+			? items.filter((actor) => matchesSearch(actor, searchTerm))
+			: items;
+	return { results: actors.map(mapToN8nSelectOption) };
+}
+
+export async function listServerActors(
+	this: ILoadOptionsFunctions,
+	searchTerm?: string,
+): Promise<INodeListSearchResult> {
+	return await searchServerActors.call(this, searchTerm);
 }

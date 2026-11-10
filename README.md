@@ -127,6 +127,7 @@ This node supports a wide range of Apify operations, organized by resource type:
   - Build version selection
 - **Run Actor and get dataset items**: Execute an Actor, wait for it to finish, and return the dataset items
 - **Send Server Actor request**: Send one HTTP request to a Server Actor's endpoint and get `status`, `contentType` and `body` back, without starting a run
+  - The Actor list shows Server Actors from Apify Store. Pick your own private Server Actors by URL or ID
   - Pick an endpoint from the Actor's OpenAPI definition and fill in its typed parameters, or use **Custom Path** (method, path, JSON query and body)
   - Each request may be charged, so it is sent once and never retried. Leave "Retry On Fail" off
   - Apify waits up to 300 s for the Actor to answer. JSON responses are parsed, other text is returned as a string, and binary responses aren't supported yet
