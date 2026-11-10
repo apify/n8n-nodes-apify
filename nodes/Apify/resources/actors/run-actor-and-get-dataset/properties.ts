@@ -21,7 +21,7 @@ export const properties: INodeProperties[] = [
 		required: true,
 		description:
 			'The ID of the Actor to run, in the format "username~actor-name" (e.g. "apify~web-scraper") ' +
-			'or as a plain actor ID. Browse available Actors at https://apify.com/store',
+			'or as a plain Actor ID. Browse available Actors at https://apify.com/store',
 		default: 'janedoe~my-actor',
 		type: 'string',
 		displayOptions: {

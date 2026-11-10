@@ -1,5 +1,6 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
 import { apiRequestAllItems } from './genericFunctions';
+import { APIFY_CONSOLE_URL } from '../helpers/consts';
 
 const resourceLocatorProperty: INodeProperties = {
 	displayName: 'Run ID',
@@ -53,7 +54,7 @@ const resourceLocatorProperty: INodeProperties = {
 				},
 			],
 			placeholder: 'WAtmhr6rhfBnwqKDY',
-			url: '=https://console.apify.com/actors/runs/{{$value}}#log',
+			url: `=${APIFY_CONSOLE_URL}/actors/runs/{{$value}}#log`,
 		},
 	],
 };
@@ -89,7 +90,7 @@ export async function listRuns(this: ILoadOptionsFunctions): Promise<INodeListSe
 
 	return {
 		results: items.map((b: any) => {
-			const url = `https://console.apify.com/actors/runs/${b.id}`;
+			const url = `${APIFY_CONSOLE_URL}/actors/runs/${b.id}`;
 
 			const readableDateTime = b.finishedAt
 				? `${new Date(b.finishedAt).toDateString()} ${new Date(b.finishedAt).toLocaleTimeString()}`

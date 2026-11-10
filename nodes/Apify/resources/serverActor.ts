@@ -6,13 +6,12 @@ import {
 	INodeExecutionData,
 	INodeProperties,
 	INodePropertyOptions,
-	JsonObject,
 	NodeApiError,
 	NodeOperationError,
 	ResourceMapperFields,
 } from 'n8n-workflow';
-import { SERVER_ACTOR_REQUEST_TIMEOUT_MS } from '../helpers/consts';
-import { apiRequest, escapeHtml, isUsedAsAiTool } from './genericFunctions';
+import { APIFY_CONSOLE_URL, SERVER_ACTOR_REQUEST_TIMEOUT_MS } from '../helpers/consts';
+import { apiRequest, escapeHtml, isUsedAsAiTool, toNodeApiError } from './genericFunctions';
 import {
 	getEndpointFields,
 	getEndpointOperation,
@@ -95,7 +94,7 @@ function getServerOrigin(actor: ServerActor | undefined): string | undefined {
 }
 
 function readmeUrl(actorId: string): string {
-	return `https://console.apify.com/actors/${encodeURIComponent(actorId)}/information/latest/readme`;
+	return `${APIFY_CONSOLE_URL}/actors/${encodeURIComponent(actorId)}/information/latest/readme`;
 }
 
 function getSelectedActorId(this: ILoadOptionsFunctions): string {
@@ -624,8 +623,8 @@ export async function callServerActor(
 				},
 			);
 		}
-		// apiRequest already throws NodeApiError, and re-wrapping one returns it unchanged.
-		throw new NodeApiError(this.getNode(), error as JsonObject);
+		// apiRequest already throws a NodeApiError; keep it (and its context) as it is.
+		throw toNodeApiError(this.getNode(), error);
 	}
 
 	const status = Number(response?.statusCode ?? 200);

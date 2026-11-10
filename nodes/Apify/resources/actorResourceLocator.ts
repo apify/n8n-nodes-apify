@@ -1,5 +1,5 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
-import { SERVER_ACTORS_LIST_PATH } from '../helpers/consts';
+import { APIFY_CONSOLE_URL, SERVER_ACTORS_LIST_PATH } from '../helpers/consts';
 import { apiRequest, apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
@@ -56,7 +56,7 @@ const resourceLocatorProperty: INodeProperties = {
 				},
 			],
 			placeholder: 'NVCnbrChXaPbhVs8bISltEhngFg',
-			url: '=https://console.apify.com/actors/{{$value}}/input',
+			url: `=${APIFY_CONSOLE_URL}/actors/{{$value}}/input`,
 		},
 	],
 };
@@ -142,7 +142,7 @@ const mapToN8nSelectOption = (actor: any) => {
 	return {
 		name: optionName,
 		value: actor.id,
-		url: `https://console.apify.com/actors/${actor.id}/input`,
+		url: `${APIFY_CONSOLE_URL}/actors/${actor.id}/input`,
 		description: actor.description || actor.name,
 	};
 };
