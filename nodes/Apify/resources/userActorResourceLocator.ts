@@ -1,5 +1,6 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
 import { apiRequestAllItems } from './genericFunctions';
+import { APIFY_CONSOLE_URL } from '../helpers/consts';
 
 const resourceLocatorProperty: INodeProperties = {
 	displayName: 'Actor',
@@ -55,7 +56,7 @@ const resourceLocatorProperty: INodeProperties = {
 				},
 			],
 			placeholder: 'NVCnbrChXaPbhVs8bISltEhngFg',
-			url: '=https://console.apify.com/actors/{{$value}}/input',
+			url: `=${APIFY_CONSOLE_URL}/actors/{{$value}}/input`,
 		},
 	],
 };
@@ -90,7 +91,7 @@ export async function listUserActors(
 			? `${actor.title} (${actor.username}/${actor.name})`
 			: `${actor.username}/${actor.name}`,
 		value: actor.id,
-		url: `https://console.apify.com/actors/${actor.id}/input`,
+		url: `${APIFY_CONSOLE_URL}/actors/${actor.id}/input`,
 		description: actor.description || actor.name,
 	});
 

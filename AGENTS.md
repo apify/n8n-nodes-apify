@@ -14,7 +14,7 @@ types: `apifyApi` (API key, everywhere) and `apifyOAuth2Api` (PKCE OAuth2, **n8n
 ## Commands
 
 ```bash
-npm install            # engine-strict=true: hard-fails on Node <22 or npm <11.10.0
+npm install            # engine-strict=true: hard-fails outside the Node engines range or on npm <11.10.0
 npm run build          # -> dist/ (icons copied by gulpfile.js)
 npm run dev            # n8n dev server with this node linked
 npm run lint           # ESLint 9 + n8n-nodes-base rules; lint:fix to autofix
@@ -25,10 +25,14 @@ npm run format         # prettier on nodes/ and credentials/
 
 Single test: `npx jest -t '<test name>'` or `npx jest <path>`.
 
-CI runs lint → `tsc --noEmit` → build → test on Node 24.x for PRs to `master`. The version
-spread is known: `package.json` engines say Node `>=22`, the README says 22.x, CI runs 24.x —
-check all three before "fixing" any one of them. `.npmrc` sets `min-release-age=3`, so
-installing a package published in the last 3 days fails; Renovate opens weekly `chore:`
+CI runs lint → `tsc --noEmit` → build → test for PRs and pushes to `master` on Node 24.22.1 and
+26.12.1: the first releases of each line patched for CVE-2026-111497, matching `package.json`
+engines (`^24.22.1 || >=26.12.1`). Don't add Node 22: `npm ci` fails there
+(`n8n-workflow` → `isolated-vm` requires Node 24). `publish.yml` builds and tests on 26.12.1 only;
+`master` is already covered by the CI matrix. The README and `.nvmrc` ask contributors for
+24.22.1, since `npm run dev` runs `n8n@latest`, which needs Node 24. Change the versions in all
+of these together. `.npmrc` sets `min-release-age=7`, so
+installing a package published in the last 7 days fails; Renovate opens weekly `chore:`
 dependency PRs with a matching cooldown.
 
 For trigger work on self-hosted n8n, export a public `WEBHOOK_URL` before `npm run dev` — n8n
@@ -48,6 +52,11 @@ creates duplicate Actor runs.
 `apiRequest` also rewrites the `full-permission-actor-not-approved` error into an actionable
 message. The approval URL is validated and goes only in `description` — n8n rewrites any
 `message` containing an error code — as plain text for AI tools and an escaped `<a>` for the UI.
+
+Rethrow caught errors with `toNodeApiError`, never a bare `new NodeApiError(node, error)`.
+`NodeApiError` only passes through its own instances (`instanceof`), so when a second
+`n8n-workflow` copy sits next to the node (a linked dev setup, some manual installs), n8n's error
+is rebuilt and loses `context`, which the missing-build and approval handling read.
 
 `pollRunStatus` is bounded — the run's own `timeoutSecs` plus a 5m grace, falling back to 24h
 when the run reports no timeout, then it throws. Don't reintroduce unbounded polling. Timeout
@@ -90,6 +99,9 @@ Shared by `actors/run-actor`, `actors/run-actor-and-get-dataset`, `actor-tasks/r
 `actor-tasks/run-task-and-get-dataset`: parse the input JSON (`customBodyParser` tolerates an
 object, which AI Agent tool calls sometimes send), fetch the Actor, resolve the build, assemble
 the query string, POST with `waitForFinish=0`, then poll separately when the caller waits.
+The two `actors/` operations read input through `getActorInput` (`resources/actorInput.ts`):
+`actorInputMode` `json` (default, `customBody`) or `schema`, an `actorInput` resource mapper whose
+fields `getActorInputFields` loads from the input schema of the `build` tag's build, else the default.
 
 `maxTotalChargeUsd` ("Maximum Cost per Run (USD)", `default: null`, `minValue: 0`) is hand-written
 on all four and sent **only when non-null and `> 0`** — `0`/empty deliberately means no limit.
@@ -121,12 +133,14 @@ HTTP requests so `nock` can intercept them. Consequences:
 
 - Fixtures are exported n8n workflow JSON. To test a non-default parameter, spread the fixture
   and override that node's `parameters` (see the `maxTotalChargeUsd` cases) — don't add a fixture.
-- The stub's `getNodeParameter` mirrors n8n by falling back to the caller-supplied default
-  (`node.parameters[name] ?? fallbackValue`). Don't "simplify" it to a bare lookup, or handlers
+- The stub's `getNodeParameter` mirrors n8n by resolving dotted paths (`actorInput.value`) and
+  falling back to the caller-supplied default. Don't "simplify" it to a bare lookup, or handlers
   that rely on defaults will see `undefined` in tests only.
 - It wraps HTTP failures in a `NodeApiError` keeping the parsed body on `error.context.data`,
   which is what the permission-approval handling reads.
 - Assert via `__tests__/utils/getNodeResultData.ts` and always check `scope.isDone()`.
+- `nock` is held at v14 by a `packageRules` entry in `renovate.json5`: v15 is ESM-only and the
+  Jest/ts-jest setup is CommonJS. Lift the hold only together with moving Jest to ESM.
 
 ## Conventions and gotchas
 
@@ -157,8 +171,8 @@ HTTP requests so `nock` can intercept them. Consequences:
   entry) through verbatim — no `pollRunStatus`, no dataset fetch, no stripping. Web Fetch errors
   arrive as a flat `{ code, error }` or a nested `{ error: { message, type } }` body; both are
   mapped to a `NodeApiError` in the operation (the custom message must go in the `options` arg —
-  n8n rewrites messages set on the `errorResponse` when an `httpCode` is present, and re-wrapping
-  an existing `NodeApiError` returns the original untouched). Headers are a JSON-type parameter
+  n8n rewrites messages set on the `errorResponse` when an `httpCode` is present, so build a fresh
+  `NodeApiError` instead of wrapping the caught one). Headers are a JSON-type parameter
   defaulting to `'{}'` (empty-string would make n8n's JSON editor throw "Unexpected end of JSON
   input"); invalid or non-object input throws a `NodeOperationError` with an actionable message.
 - `key-value-stores/get-key-value-store-record` bypasses `apiRequest` because it needs

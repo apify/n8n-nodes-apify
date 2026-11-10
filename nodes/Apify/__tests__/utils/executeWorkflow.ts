@@ -3,6 +3,7 @@ import {
 	ICredentialsHelper,
 	IExecuteFunctions,
 	IExecuteSingleFunctions,
+	ILoadOptionsFunctions,
 	INodeExecutionData,
 	IRun,
 	ITaskData,
@@ -105,6 +106,85 @@ const makeHttpRequest = (options: any): Promise<any> => {
 	});
 };
 
+const httpRequestWithAuthentication = async function (
+	this: IExecuteFunctions | ILoadOptionsFunctions,
+	_credentialType: string,
+	options: any,
+) {
+	// Make an actual HTTP request that nock can intercept
+	try {
+		const response = await makeHttpRequest({
+			method: options.method || 'GET',
+			url: options.url,
+			params: options.qs,
+			data: options.body,
+			headers: options.headers,
+		});
+
+		// For /items endpoint just return data
+		if (options.url.includes('/items')) return response.data;
+
+		// Build a return object compatible with the n8n node
+		return {
+			...response.data,
+			headers: response.headers,
+			body: JSON.stringify(response.data), // Needed by key-value tests
+		};
+	} catch (error: any) {
+		// Mirror how n8n's real httpRequestWithAuthentication surfaces HTTP failures:
+		// it wraps them in a NodeApiError that preserves the parsed response body on
+		// `context.data` (and keeps the status on `httpCode`).
+		if (error.response) {
+			const rawError: any = new Error(`Request failed with status code ${error.response.status}`);
+			rawError.httpCode = error.response.status;
+			rawError.response = {
+				data: error.response.data,
+				status: error.response.status,
+				statusText: error.response.statusText,
+			};
+			throw new NodeApiError(this.getNode(), rawError);
+		}
+		throw error;
+	}
+};
+
+const getParameter = (
+	node: any,
+	parameterName: string,
+	fallbackValue?: any,
+	options?: IGetNodeParameterOptions,
+) => {
+	if (options?.extractValue) return node.parameters[parameterName].value;
+	// Mirror n8n: resolve dotted paths (e.g. `actorInput.value`) and fall back to the
+	// provided default when the parameter is unset.
+	const value = parameterName.split('.').reduce((current, key) => current?.[key], node.parameters);
+	return value ?? fallbackValue;
+};
+
+/**
+ * Minimal fake `ILoadOptionsFunctions` for calling a node's load-options / resource-mapping
+ * methods directly against `nock`-intercepted HTTP.
+ */
+export const createLoadOptionsFunctions = ({
+	credentialsHelper,
+	node,
+}: {
+	credentialsHelper: ICredentialsHelper;
+	node: any;
+}): ILoadOptionsFunctions =>
+	({
+		getCredentials: async (name: string) => {
+			return credentialsHelper.getDecrypted({} as any, { name } as any, name, 'manual');
+		},
+		getNodeParameter: (
+			parameterName: string,
+			fallbackValue?: any,
+			options?: IGetNodeParameterOptions,
+		) => getParameter(node, parameterName, fallbackValue, options),
+		getNode: () => node,
+		helpers: { httpRequestWithAuthentication },
+	}) as unknown as ILoadOptionsFunctions;
+
 export const executeWorkflow = async ({
 	credentialsHelper,
 	workflow: workflowJson,
@@ -122,11 +202,7 @@ export const executeWorkflow = async ({
 			itemIndex: number,
 			fallbackValue?: any,
 			options?: IGetNodeParameterOptions,
-		) => {
-			if (options?.extractValue) return node.parameters[parameterName].value;
-			// Mirror n8n: fall back to the provided default when the parameter is unset.
-			return node.parameters[parameterName] ?? fallbackValue;
-		},
+		) => getParameter(node, parameterName, fallbackValue, options),
 		getInputData: (): INodeExecutionData[] => {
 			// Provide at least one empty item so loops like `for (let i = 0; i < items.length; i++)`
 			// still work
@@ -139,49 +215,7 @@ export const executeWorkflow = async ({
 			return node;
 		},
 		helpers: {
-			httpRequestWithAuthentication: async function (
-				this: IExecuteFunctions,
-				_credentialType: string,
-				options: any,
-			) {
-				// Make an actual HTTP request that nock can intercept
-				try {
-					const response = await makeHttpRequest({
-						method: options.method || 'GET',
-						url: options.url,
-						params: options.qs,
-						data: options.body,
-						headers: options.headers,
-					});
-
-					// For /items endpoint just return data
-					if (options.url.includes('/items')) return response.data;
-
-					// Build a return object compatible with the n8n node
-					return {
-						...response.data,
-						headers: response.headers,
-						body: JSON.stringify(response.data), // Needed by key-value tests
-					};
-				} catch (error: any) {
-					// Mirror how n8n's real httpRequestWithAuthentication surfaces HTTP failures:
-					// it wraps them in a NodeApiError that preserves the parsed response body on
-					// `context.data` (and keeps the status on `httpCode`).
-					if (error.response) {
-						const rawError: any = new Error(
-							`Request failed with status code ${error.response.status}`,
-						);
-						rawError.httpCode = error.response.status;
-						rawError.response = {
-							data: error.response.data,
-							status: error.response.status,
-							statusText: error.response.statusText,
-						};
-						throw new NodeApiError(this.getNode(), rawError);
-					}
-					throw error;
-				}
-			},
+			httpRequestWithAuthentication,
 			returnJsonArray: (items: any[]) => {
 				return items.map((i) => ({ json: i }));
 			},

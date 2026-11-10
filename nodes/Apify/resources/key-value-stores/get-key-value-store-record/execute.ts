@@ -2,10 +2,9 @@ import {
 	IExecuteFunctions,
 	IHttpRequestMethods,
 	INodeExecutionData,
-	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { getBaseUrls, retryWithExponentialBackoff } from '../../genericFunctions';
+import { getBaseUrls, retryWithExponentialBackoff, toNodeApiError } from '../../genericFunctions';
 
 export async function getKeyValueStoreRecord(
 	this: IExecuteFunctions,
@@ -79,6 +78,6 @@ export async function getKeyValueStoreRecord(
 
 		return { json: { ...resultBase, data: finalData } };
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error);
+		throw toNodeApiError(this.getNode(), error);
 	}
 }

@@ -1,7 +1,23 @@
 import nock from 'nock';
-import { NodeOperationError } from 'n8n-workflow';
+import {
+	ILoadOptionsFunctions,
+	NodeApiError,
+	NodeOperationError,
+	ResourceMapperFields,
+} from 'n8n-workflow';
 import { Apify } from '../Apify.node';
-import { executeWorkflow } from './utils/executeWorkflow';
+import { createLoadOptionsFunctions, executeWorkflow } from './utils/executeWorkflow';
+import { getDefaultBuild } from '../resources/executeActor';
+import { apiRequest } from '../resources/genericFunctions';
+import { abortRun } from '../resources/actor-runs/abort-run/execute';
+import { getActorRuns } from '../resources/actor-runs/get-actor-runs/execute';
+import { getRun } from '../resources/actor-runs/get-run/execute';
+import { getUserRunsList } from '../resources/actor-runs/get-user-runs-list/execute';
+import { getLastRun } from '../resources/actors/get-last-run/execute';
+import { scrapeSingleUrl } from '../resources/actors/scrape-single-url/execute';
+import { webFetch } from '../resources/actors/web-fetch/execute';
+import { getItems } from '../resources/datasets/get-items/execute';
+import { getKeyValueStoreRecord } from '../resources/key-value-stores/get-key-value-store-record/execute';
 import { CredentialsHelper } from './utils/credentialHelper';
 import { getRunTaskDataByNodeName, getTaskData } from './utils/getNodeResultData';
 import getRunWorkflow from './workflows/actor-runs/get-run.workflow.json';
@@ -71,6 +87,405 @@ describe('Apify Node', () => {
 			);
 			// unset must mean no limit
 			maxCostProperties.forEach((property) => expect(property.default).toBeNull());
+		});
+
+		it('should default Actor input to JSON with optional schema fields on run-actor operations', () => {
+			const operationsOf = (name: string) =>
+				apifyNode.description.properties
+					.filter((property) => property.name === name)
+					.map((property) => property.displayOptions?.show?.operation)
+					.flat();
+			const runActorOperations = ['Run actor', 'Run actor and get dataset'];
+
+			expect(operationsOf('actorInputMode')).toEqual(runActorOperations);
+			expect(operationsOf('actorInput')).toEqual(runActorOperations);
+
+			apifyNode.description.properties
+				.filter((property) => property.name === 'actorInputMode')
+				.forEach((property) => expect(property.default).toBe('json'));
+			apifyNode.description.properties
+				.filter((property) => property.name === 'actorInput')
+				.forEach((property) => {
+					expect(property.type).toBe('resourceMapper');
+					// fields must follow the build the run will use
+					expect(property.typeOptions?.loadOptionsDependsOn).toEqual(['actorId.value', 'build']);
+					expect(property.displayOptions?.show?.actorInputMode).toEqual(['schema']);
+				});
+			apifyNode.description.properties
+				.filter(
+					(property) =>
+						property.name === 'customBody' &&
+						runActorOperations.includes(property.displayOptions?.show?.operation?.[0] as string),
+				)
+				.forEach((property) =>
+					expect(property.displayOptions?.show?.actorInputMode).toEqual(['json']),
+				);
+		});
+	});
+
+	describe('actor input fields (resource mapper)', () => {
+		const getActorInputFields = () =>
+			apifyNode.methods!.resourceMapping!.getActorInputFields as (
+				this: ILoadOptionsFunctions,
+			) => Promise<ResourceMapperFields>;
+
+		const createNode = (actorId: unknown) => ({
+			name: 'Run actor',
+			type: 'n8n-nodes-apify.apify',
+			typeVersion: 2,
+			parameters: {
+				authentication: 'apifyApi',
+				resource: 'Actors',
+				operation: 'Run actor',
+				actorId,
+			},
+		});
+
+		const buildWithInputSchema = (input: object) => ({ data: { actorDefinition: { input } } });
+
+		it('should ask to select an Actor when none is set, without calling the API', async () => {
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: '' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.fields).toEqual([]);
+			expect(result.emptyFieldsNotice).toMatch(/select an actor/i);
+		});
+
+		it("should map the default build's input schema to resource mapper fields", async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(
+					200,
+					buildWithInputSchema({
+						type: 'object',
+						properties: {
+							startUrls: {
+								title: 'Start URLs',
+								type: 'array',
+								prefill: [{ url: 'https://apify.com' }],
+							},
+							maxPages: { title: 'Max pages', type: 'integer', prefill: 10 },
+							proxy: { title: 'Proxy', type: 'object', prefill: { useApifyProxy: true } },
+							saveHtml: { title: 'Save HTML', type: 'boolean', default: false },
+							format: {
+								title: 'Format',
+								type: 'string',
+								enum: ['md', 'txt'],
+								enumTitles: ['Markdown', 'Text'],
+							},
+							query: { type: 'string' },
+							mode: { title: 'Mode', type: 'string', default: 'fast' },
+						},
+						required: ['startUrls', 'query', 'mode'],
+					}),
+				);
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			const common = { defaultMatch: false, display: true };
+			expect(result.fields).toEqual([
+				{
+					...common,
+					id: 'startUrls',
+					displayName: 'Start URLs',
+					type: 'array',
+					required: true,
+					removed: false,
+					defaultValue: JSON.stringify([{ url: 'https://apify.com' }], null, 2),
+				},
+				{
+					...common,
+					id: 'maxPages',
+					displayName: 'Max pages',
+					type: 'number',
+					required: false,
+					removed: false,
+					defaultValue: 10,
+				},
+				{
+					...common,
+					id: 'proxy',
+					displayName: 'Proxy',
+					type: 'object',
+					required: false,
+					removed: false,
+					defaultValue: JSON.stringify({ useApifyProxy: true }, null, 2),
+				},
+				{
+					...common,
+					id: 'saveHtml',
+					displayName: 'Save HTML',
+					type: 'boolean',
+					required: false,
+					removed: true,
+				},
+				{
+					...common,
+					id: 'format',
+					displayName: 'Format',
+					type: 'options',
+					options: [
+						{ name: 'Markdown', value: 'md' },
+						{ name: 'Text', value: 'txt' },
+					],
+					required: false,
+					removed: true,
+				},
+				// required without a schema default: n8n must ask for it
+				{
+					...common,
+					id: 'query',
+					displayName: 'query',
+					type: 'string',
+					required: true,
+					removed: false,
+				},
+				// required but Apify applies the schema default, so it stays optional
+				{
+					...common,
+					id: 'mode',
+					displayName: 'Mode',
+					type: 'string',
+					required: false,
+					removed: true,
+				},
+			]);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should keep enum titles paired with their values when non-primitive values are dropped', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(
+					200,
+					buildWithInputSchema({
+						properties: {
+							format: {
+								title: 'Format',
+								type: 'string',
+								enum: [null, 'a', 'b'],
+								enumTitles: ['None', 'A', 'B'],
+							},
+						},
+					}),
+				);
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'id', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.fields[0].options).toEqual([
+				{ name: 'A', value: 'a' },
+				{ name: 'B', value: 'b' },
+			]);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should fall back to the stringified inputSchema of older builds', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(200, {
+					data: {
+						inputSchema: JSON.stringify({
+							properties: { query: { title: 'Query', type: 'string', prefill: 'apify' } },
+						}),
+					},
+				});
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'id', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.fields.map((field) => [field.id, field.defaultValue])).toEqual([
+				['query', 'apify'],
+			]);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should load the fields from the build selected by the build tag', async () => {
+			const actor = fixtures.getActorResult();
+			const { buildId } = actor.data.taggedBuilds.latest;
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP')
+				.reply(200, actor)
+				.get(`/v2/actor-builds/${buildId}`)
+				.reply(
+					200,
+					buildWithInputSchema({
+						properties: { query: { title: 'Query', type: 'string', prefill: 'tagged' } },
+					}),
+				);
+
+			const node = createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' });
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: { ...node, parameters: { ...node.parameters, build: 'latest' } },
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.fields.map((field) => [field.id, field.defaultValue])).toEqual([
+				['query', 'tagged'],
+			]);
+			// the default build must not be used when a tag is set
+			expect(scope.isDone()).toBe(true);
+			expect(nock.pendingMocks()).toEqual([]);
+		});
+
+		// n8n's editor drops errors thrown by a resource mapper method, so failures must come back
+		// as a notice - the only feedback shown with `supportAutoMap: false`.
+		const expectLoadFailureNotice = (result: ResourceMapperFields, reason: string) => {
+			expect(result.fields).toEqual([]);
+			expect(result.emptyFieldsNotice).toContain("Could not load the Actor's input fields");
+			expect(result.emptyFieldsNotice).toContain(reason);
+			expect(result.emptyFieldsNotice).toMatch(/use JSON input/i);
+		};
+
+		it('should explain when the Actor has no default build (e.g. never built)', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(404, {
+					error: { type: 'record-not-found', message: 'Actor build was not found' },
+				});
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expectLoadFailureNotice(result, 'Actor build was not found');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should explain a missing default build without the Console link markup', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(403, {
+					error: {
+						type: helpers.consts.MISSING_DEFAULT_BUILD_ERROR_TYPE,
+						message: 'Build with tag "latest" was not found. Has the Actor been built already?',
+					},
+				});
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expectLoadFailureNotice(result, 'has no build for its default build tag');
+			// The notice escapes the error text, so link markup would show up as raw tags.
+			expect(result.emptyFieldsNotice).toContain(
+				'Check builds in Apify Console: https://console.apify.com/actors/nFJndFXA5zjCTuudP/builds',
+			);
+			expect(result.emptyFieldsNotice).not.toContain('&lt;a ');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should explain when the build tag does not exist', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP')
+				.reply(200, fixtures.getActorResult());
+
+			const node = createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' });
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: { ...node, parameters: { ...node.parameters, build: 'beta' } },
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expectLoadFailureNotice(result, 'Build tag &#39;beta&#39; does not exist');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should explain when the default build cannot be fetched', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(200, {});
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expectLoadFailureNotice(result, 'Could not fetch default build for Actor nFJndFXA5zjCTuudP');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should explain when the input schema is not valid JSON', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(200, { data: { inputSchema: '{ not json' } });
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expectLoadFailureNotice(
+				result,
+				'Could not parse the input schema of Actor nFJndFXA5zjCTuudP',
+			);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should escape API error text, since the notice is rendered as HTML', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(404, {
+					error: { type: 'record-not-found', message: '<img src=x onerror=alert(1)>' },
+				});
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.emptyFieldsNotice).not.toContain('<img');
+			expect(result.emptyFieldsNotice).toContain('&lt;img src=x onerror=alert(1)&gt;');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should point to JSON input when the Actor has no input schema', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+				.reply(200, { data: {} });
+
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: createNode({ __rl: true, mode: 'list', value: 'nFJndFXA5zjCTuudP' }),
+			});
+
+			const result = await getActorInputFields().call(context);
+
+			expect(result.fields).toEqual([]);
+			expect(result.emptyFieldsNotice).toMatch(/json/i);
+			expect(scope.isDone()).toBe(true);
 		});
 	});
 
@@ -505,6 +920,61 @@ describe('Apify Node', () => {
 				expect(scope.isDone()).toBe(true);
 			});
 
+			it('should send the schema field values as Actor input, omitting null ones', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockBuild = fixtures.getBuildResult();
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs', {
+						queries: 'javascript',
+						resultsPerPage: 2,
+						focusOnPaidAds: false,
+						includeUnfilteredResults: [],
+						// an explicit empty string (e.g. from `{{ "" }}`) overrides the Actor's default
+						countryCode: '',
+					})
+					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
+					.reply(200, mockRunActor);
+
+				const baseWorkflow = require('./workflows/actors/run-actor.workflow.json');
+				const workflow = {
+					...baseWorkflow,
+					nodes: baseWorkflow.nodes.map((node: any) =>
+						node.name === 'Run actor'
+							? {
+									...node,
+									parameters: {
+										...node.parameters,
+										actorInputMode: 'schema',
+										actorInput: {
+											mappingMode: 'defineBelow',
+											value: {
+												queries: 'javascript',
+												resultsPerPage: 2,
+												focusOnPaidAds: false,
+												includeUnfilteredResults: [],
+												// e.g. an expression resolving to null: let the Actor's default apply
+												maxPagesPerQuery: null,
+												countryCode: '',
+											},
+										},
+									},
+								}
+							: node,
+					),
+				};
+
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Run actor');
+				expect(nodeResult.executionStatus).toBe('success');
+				expect(scope.isDone()).toBe(true);
+			});
+
 			it('should run the run-actor workflow and wait for finish', async () => {
 				const mockRunActor = fixtures.runActorResult();
 				const mockBuild = fixtures.getBuildResult();
@@ -675,7 +1145,86 @@ describe('Apify Node', () => {
 
 				expect(scope.isDone()).toBe(true);
 			});
+
+			describe('missing default build', () => {
+				const runWithDefaultBuildError = async (
+					status: number,
+					error: object,
+					nodeType?: string,
+				) => {
+					const scope = nock('https://api.apify.com')
+						.get('/v2/acts/nFJndFXA5zjCTuudP')
+						.reply(200, fixtures.getActorResult())
+						.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+						.reply(status, { error });
+
+					const runActorWorkflow = JSON.parse(
+						JSON.stringify(require('./workflows/actors/run-actor.workflow.json')),
+					);
+					if (nodeType) runActorWorkflow.nodes[0].type = nodeType;
+
+					let thrown: any;
+					try {
+						await executeWorkflow({ credentialsHelper, workflow: runActorWorkflow });
+					} catch (e) {
+						thrown = e;
+					}
+					expect(scope.isDone()).toBe(true);
+					return thrown;
+				};
+
+				it('should explain a missing default build instead of a credentials error', async () => {
+					const apifyMessage =
+						'Build with tag "latest" was not found. Has the Actor been built already?';
+
+					const thrown = await runWithDefaultBuildError(403, {
+						type: helpers.consts.MISSING_DEFAULT_BUILD_ERROR_TYPE,
+						message: apifyMessage,
+					});
+
+					expect(thrown).toBeInstanceOf(NodeApiError);
+					expect(thrown.message).toBe(
+						'Actor nFJndFXA5zjCTuudP has no build for its default build tag',
+					);
+					expect(thrown.message).not.toMatch(/credentials/i);
+					expect(thrown.description).toContain(apifyMessage);
+					expect(thrown.description).toContain(
+						'Build the Actor, or set Build Tag to an existing build.',
+					);
+					expect(thrown.description).toContain(
+						'Check builds in Apify Console: <a href="https://console.apify.com/actors/nFJndFXA5zjCTuudP/builds" target="_blank" rel="noopener noreferrer">https://console.apify.com/actors/nFJndFXA5zjCTuudP/builds</a>',
+					);
+					expect(thrown.httpCode).toBe('403');
+				});
+
+				it('should give an AI tool a plain-text link to the Actor builds', async () => {
+					const thrown = await runWithDefaultBuildError(
+						403,
+						{
+							type: helpers.consts.MISSING_DEFAULT_BUILD_ERROR_TYPE,
+							message: 'Build with tag "latest" was not found. Has the Actor been built already?',
+						},
+						'n8n-nodes-apify.apifyTool',
+					);
+
+					expect(thrown).toBeInstanceOf(NodeApiError);
+					expect(thrown.description).toContain(
+						'Check builds in Apify Console: https://console.apify.com/actors/nFJndFXA5zjCTuudP/builds',
+					);
+					expect(thrown.description).not.toContain('<a ');
+				});
+				it('should keep other 403 errors from the default build request unchanged', async () => {
+					const thrown = await runWithDefaultBuildError(403, {
+						type: 'insufficient-permissions',
+						message: 'You do not have permission to perform this action.',
+					});
+
+					expect(thrown).toBeInstanceOf(NodeApiError);
+					expect(thrown.message).toBe('Forbidden - perhaps check your credentials?');
+				});
+			});
 		});
+
 		describe('run-actor-and-get-dataset', () => {
 			it('should run the run-actor-and-get-dataset workflow', async () => {
 				const mockRunActor = fixtures.runActorResult();
@@ -713,6 +1262,49 @@ describe('Apify Node', () => {
 				expect(Array.isArray(data)).toBe(true);
 				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockItems);
 
+				expect(scope.isDone()).toBe(true);
+			});
+
+			it('should send the schema field values as Actor input', async () => {
+				const mockRunActor = fixtures.runActorResult();
+				const mockBuild = fixtures.getBuildResult();
+				const mockFinishedRun = fixtures.getSuccessRunResult();
+				const mockItems = fixtures.getItemsResult();
+
+				const scope = nock('https://api.apify.com')
+					.get('/v2/acts/nFJndFXA5zjCTuudP')
+					.reply(200, fixtures.getActorResult())
+					.get('/v2/acts/nFJndFXA5zjCTuudP/builds/default')
+					.reply(200, mockBuild)
+					.post('/v2/acts/nFJndFXA5zjCTuudP/runs', { queries: 'javascript' })
+					.query({ waitForFinish: 0, build: mockBuild.data.buildNumber, memory: 1024 })
+					.reply(200, mockRunActor)
+					.get(`/v2/actor-runs/${mockRunActor.data.id}`)
+					.reply(200, mockFinishedRun)
+					.get(`/v2/datasets/${mockFinishedRun.data.defaultDatasetId}/items`)
+					.query({ format: 'json' })
+					.reply(200, mockItems);
+
+				const workflow = {
+					...runActorAndGetDatasetWorkflow,
+					nodes: runActorAndGetDatasetWorkflow.nodes.map((node: any) =>
+						node.name === 'Run actor and get dataset'
+							? {
+									...node,
+									parameters: {
+										...node.parameters,
+										actorInputMode: 'schema',
+										actorInput: { mappingMode: 'defineBelow', value: { queries: 'javascript' } },
+									},
+								}
+							: node,
+					),
+				};
+
+				const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+				const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Run actor and get dataset');
+				expect(nodeResult.executionStatus).toBe('success');
 				expect(scope.isDone()).toBe(true);
 			});
 
@@ -1266,6 +1858,159 @@ describe('Apify Node', () => {
 			});
 
 			expect(scope.isDone()).toBe(true);
+		});
+
+		it("should pass on a NodeApiError from n8n's own n8n-workflow copy unchanged", async () => {
+			// Same class name, different class: what n8n throws when the node has its own copy of
+			// n8n-workflow installed next to it, so `instanceof NodeApiError` is false.
+			const { NodeApiError: ForeignNodeApiError } = {
+				NodeApiError: class extends Error {
+					httpCode = '403';
+					context = {
+						data: {
+							error: {
+								type: helpers.consts.MISSING_DEFAULT_BUILD_ERROR_TYPE,
+								message: 'Build with tag "latest" was not found. Has the Actor been built already?',
+							},
+						},
+					};
+				},
+			};
+			const node = {
+				name: 'Run actor',
+				type: 'n8n-nodes-apify.apify',
+				typeVersion: 2,
+				parameters: { authentication: 'apifyApi' },
+			};
+			const context = {
+				...createLoadOptionsFunctions({ credentialsHelper, node }),
+				helpers: {
+					httpRequestWithAuthentication: async () => {
+						throw new ForeignNodeApiError('Forbidden - perhaps check your credentials?');
+					},
+				},
+			} as unknown as ILoadOptionsFunctions;
+
+			await expect(getDefaultBuild.call(context, 'nFJndFXA5zjCTuudP')).rejects.toThrow(
+				'Actor nFJndFXA5zjCTuudP has no build for its default build tag',
+			);
+		});
+
+		it("should keep the approval message on a NodeApiError from n8n's own n8n-workflow copy", async () => {
+			const approvalUrl =
+				'https://console.apify.com/actors/nFJndFXA5zjCTuudP?approvePermissions=true';
+			// Same class name, different class, as in the test above.
+			const { NodeApiError: ForeignNodeApiError } = {
+				NodeApiError: class extends Error {
+					httpCode = '403';
+					context = {
+						data: {
+							error: {
+								type: 'full-permission-actor-not-approved',
+								message: `This Actor requires full access to your account. You must approve its permissions before running it: ${approvalUrl}`,
+								data: { approvalUrl },
+							},
+						},
+					};
+				},
+			};
+			const node = {
+				name: 'Run actor',
+				type: 'n8n-nodes-apify.apify',
+				typeVersion: 2,
+				parameters: { authentication: 'apifyApi' },
+			};
+			const context = {
+				...createLoadOptionsFunctions({ credentialsHelper, node }),
+				helpers: {
+					httpRequestWithAuthentication: async () => {
+						throw new ForeignNodeApiError('Forbidden - perhaps check your credentials?');
+					},
+				},
+			} as unknown as ILoadOptionsFunctions;
+
+			let thrown: any;
+			try {
+				await apiRequest.call(context, { method: 'POST', uri: '/v2/acts/nFJndFXA5zjCTuudP/runs' });
+			} catch (error) {
+				thrown = error;
+			}
+
+			expect(thrown).toBeDefined();
+			expect(thrown.message).toContain('You must approve its permissions');
+			expect(thrown.description).toContain(`href="${approvalUrl}"`);
+		});
+
+		describe("operations pass on a NodeApiError from n8n's own n8n-workflow copy unchanged", () => {
+			// Same class name, different class, as in the tests above.
+			const { NodeApiError: ForeignNodeApiError } = {
+				NodeApiError: class extends Error {
+					httpCode = '404';
+					context = {
+						data: { error: { type: 'record-not-found', message: 'Record was not found' } },
+					};
+				},
+			};
+			const node = {
+				name: 'Apify',
+				type: 'n8n-nodes-apify.apify',
+				typeVersion: 2,
+				parameters: {
+					authentication: 'apifyApi',
+					runId: { value: 'runId123' },
+					abortRunId: 'runId123',
+					userActorId: { value: 'nFJndFXA5zjCTuudP' },
+					datasetId: 'datasetId123',
+					storeId: { value: 'storeId123' },
+					recordKey: { value: 'INPUT' },
+					url: 'https://example.com',
+					status: '',
+				},
+			};
+			// `body` replaces the response body on the error.
+			const operations: Array<{
+				name: string;
+				operation: (this: any, i: number) => Promise<unknown>;
+				body?: unknown;
+			}> = [
+				{
+					name: 'getDefaultBuild',
+					operation: function (this: any) {
+						return getDefaultBuild.call(this, 'nFJndFXA5zjCTuudP');
+					},
+				},
+				{ name: 'get-run', operation: getRun },
+				{ name: 'get-actor-runs', operation: getActorRuns },
+				{ name: 'get-user-runs-list', operation: getUserRunsList },
+				{ name: 'abort-run', operation: abortRun },
+				{ name: 'datasets/get-items', operation: getItems },
+				{ name: 'get-key-value-store-record', operation: getKeyValueStoreRecord },
+				{ name: 'scrape-single-url', operation: scrapeSingleUrl },
+				{ name: 'get-last-run', operation: getLastRun },
+				// Web Fetch maps its own error envelopes; a plain-text body reaches the fallback.
+				{ name: 'web-fetch', operation: webFetch, body: 'Bad Gateway' },
+			];
+
+			it.each(operations)('$name', async ({ operation, body }) => {
+				const original = new ForeignNodeApiError(
+					'The resource you are requesting could not be found',
+				);
+				if (body !== undefined) original.context = { data: body } as any;
+				const loadOptionsFunctions = createLoadOptionsFunctions({ credentialsHelper, node });
+				const context = {
+					...loadOptionsFunctions,
+					// Operations call the execute signature, which takes the item index second.
+					getNodeParameter: (name: string, _itemIndex: number, fallback?: any, options?: any) =>
+						loadOptionsFunctions.getNodeParameter(name, fallback, options),
+					helpers: {
+						httpRequestWithAuthentication: async () => {
+							throw original;
+						},
+					},
+				};
+
+				await expect(operation.call(context, 0)).rejects.toBe(original);
+			});
 		});
 	});
 });

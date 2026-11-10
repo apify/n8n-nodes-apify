@@ -1,6 +1,6 @@
 {
 	"name": "@apify/n8n-nodes-apify",
-	"version": "0.8.1",
+	"version": "0.9.0",
 	"description": "n8n nodes for Apify",
 	"keywords": [
 		"n8n-community-node-package",
@@ -21,10 +21,10 @@
 		"url": "https://github.com/apify/n8n-nodes-apify.git"
 	},
 	"engines": {
-		"node": ">=22.0.0",
+		"node": "^24.22.1 || >=26.12.1",
 		"npm": ">=11.10.0"
 	},
-	"packageManager": "npm@11.19.0",
+	"packageManager": "npm@12.2.1",
 	"main": "index.js",
 	"scripts": {
 		"build": "n8n-node build",
@@ -51,9 +51,9 @@
 		]
 	},
 	"devDependencies": {
-		"@n8n/node-cli": "^0.48.0",
+		"@n8n/node-cli": "^0.55.0",
 		"@types/jest": "^30.0.0",
-		"@types/node": "^24.13.2",
+		"@types/node": "^26.0.0",
 		"eslint": "^9.39.4",
 		"gulp": "^5.0.1",
 		"jest": "^30.4.2",

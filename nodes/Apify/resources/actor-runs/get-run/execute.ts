@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest } from '../../../resources/genericFunctions';
+import { apiRequest, toNodeApiError } from '../../../resources/genericFunctions';
 
 export async function getRun(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const runId = this.getNodeParameter('runId', i, undefined, {
@@ -36,6 +36,6 @@ export async function getRun(this: IExecuteFunctions, i: number): Promise<INodeE
 
 		return { json: { ...apiResult.data } };
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error);
+		throw toNodeApiError(this.getNode(), error);
 	}
 }
