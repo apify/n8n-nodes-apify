@@ -22,7 +22,11 @@ import {
 	WAIT_FOR_FINISH_POLL_INTERVAL,
 } from '../helpers/consts';
 
-type IApiRequestOptions = Omit<IHttpRequestOptions, 'url'> & { uri?: string };
+type IApiRequestOptions = Omit<IHttpRequestOptions, 'url'> & {
+	uri?: string;
+	/** Send the request once: no retries at all, e.g. for Server Actor requests that may be charged. */
+	disableRetries?: boolean;
+};
 
 /** Escape a string for interpolation into HTML markup. */
 export function escapeHtml(value: string): string {
@@ -72,7 +76,7 @@ export async function apiRequest(
 	this: IHookFunctions | IExecuteFunctions | ILoadOptionsFunctions,
 	requestOptions: IApiRequestOptions,
 ): Promise<any> {
-	const { method, qs, uri, ...rest } = requestOptions;
+	const { method, qs, uri, disableRetries, ...rest } = requestOptions;
 
 	const query = qs || {};
 	// An absolute URL (e.g. an Actor's standby endpoint) is used as-is, otherwise
@@ -113,9 +117,13 @@ export async function apiRequest(
 			);
 		}
 
+		const send = () =>
+			this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, options);
+		if (disableRetries) return await send();
+
 		return await retryWithExponentialBackoff.call(
 			this,
-			() => this.helpers.httpRequestWithAuthentication.call(this, authenticationMethod, options),
+			send,
 			// Only retry timeouts/network errors for idempotent GET requests. Retrying a
 			// non-idempotent POST (e.g. starting an Actor run) could create duplicate runs.
 			{ retryNetworkErrors: method === 'GET' },
@@ -409,6 +417,118 @@ export function customBodyParser(input: string | object) {
 export function isUsedAsAiTool(nodeType: string): boolean {
 	const parts = nodeType.split('.');
 	return parts[parts.length - 1] === 'apifyTool';
+}
+
+/**
+ * Text for an error description. The editor renders descriptions as HTML, so untrusted text is
+ * escaped there; as an AI tool, n8n passes the description on as plain text.
+ */
+export function toDescriptionText(node: INode, text: string): string {
+	return isUsedAsAiTool(node.type) ? text : escapeHtml(text);
+}
+
+/** Whether a request failed because it timed out, on the error n8n throws or on its cause. */
+export function isTimeoutError(error: unknown): boolean {
+	const candidates = [error, (error as { cause?: unknown })?.cause];
+	return candidates.some((candidate) => {
+		const code = (candidate as { code?: unknown })?.code;
+		return code === 'ECONNABORTED' || code === 'ETIMEDOUT' || code === 'ESOCKETTIMEDOUT';
+	});
+}
+
+/**
+ * Reads a JSON node parameter that must be an object (or, with `allowArray`, an array). Empty
+ * text means `{}`; an object is taken as is, since AI Agent tool calls sometimes send one.
+ */
+export function parseJsonParameter(
+	this: IExecuteFunctions,
+	raw: unknown,
+	label: string,
+	itemIndex: number,
+	{ allowArray = false } = {},
+): IDataObject | unknown[] {
+	let value = raw;
+	if (typeof raw === 'string') {
+		if (!raw.trim()) return {};
+		try {
+			value = JSON.parse(raw);
+		} catch {
+			value = undefined;
+		}
+	}
+	const isPlainObject = typeof value === 'object' && value !== null && !Array.isArray(value);
+	if (isPlainObject) return value as IDataObject;
+	if (allowArray && Array.isArray(value)) return value;
+	throw new NodeOperationError(
+		this.getNode(),
+		`${label} must be a JSON ${allowArray ? 'object or array' : 'object'}`,
+		{ itemIndex },
+	);
+}
+
+const TEXT_CONTENT_TYPES =
+	/^(text\/|application\/(.+\+)?(json|xml|javascript|ecmascript|x-ndjson|ndjson|x-www-form-urlencoded|yaml|x-yaml|graphql|csv)$)/;
+
+function decodeUtf8(buffer: Buffer): string | undefined {
+	try {
+		return new TextDecoder('utf-8', { fatal: true }).decode(buffer);
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * Decodes a raw response body read with `encoding: 'arraybuffer'`: JSON is parsed, other text
+ * stays a string, and binary data returns `{ binary: true }`. A body without a content type
+ * counts as text if it is valid UTF-8. `contentType` is the lowercased type without parameters.
+ */
+export function decodeResponseBody(
+	raw: unknown,
+	contentType: string,
+): { body: unknown } | { binary: true } {
+	let buffer: Buffer;
+	if (Buffer.isBuffer(raw)) buffer = raw;
+	else if (raw instanceof ArrayBuffer) buffer = Buffer.from(raw);
+	else if (typeof raw === 'string') buffer = Buffer.from(raw, 'utf8');
+	else return { body: raw ?? null };
+
+	if (buffer.length === 0) return { body: null };
+	if (contentType && !TEXT_CONTENT_TYPES.test(contentType)) return { binary: true };
+
+	const text = decodeUtf8(buffer);
+	if (text === undefined) return { binary: true };
+	if (!contentType || /^application\/(.+\+)?json$/.test(contentType)) {
+		try {
+			return { body: JSON.parse(text) };
+		} catch {
+			return { body: text };
+		}
+	}
+	return { body: text };
+}
+
+function nonEmptyString(value: unknown): string | undefined {
+	return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+/**
+ * Finds an error message in a response body: Apify's `{ error: { type, message } }`, a flat
+ * `{ error, code }` (e.g. Web Fetch), `{ message }`, `{ detail }`, `{ title }`, or plain text.
+ */
+export function getErrorFromBody(body: unknown): { message?: string; type?: string } {
+	if (typeof body === 'string') return { message: nonEmptyString(body)?.slice(0, 1000) };
+	if (!body || typeof body !== 'object' || Array.isArray(body)) return {};
+	const data = body as IDataObject;
+	const nested = data.error && typeof data.error === 'object' ? (data.error as IDataObject) : {};
+	return {
+		message:
+			nonEmptyString(nested.message) ??
+			nonEmptyString(data.error) ??
+			nonEmptyString(data.message) ??
+			nonEmptyString(data.detail) ??
+			nonEmptyString(data.title),
+		type: nonEmptyString(nested.type) ?? nonEmptyString(data.code) ?? nonEmptyString(data.type),
+	};
 }
 
 export async function executeAndLinkItems<T extends INodeExecutionData | INodeExecutionData[]>(

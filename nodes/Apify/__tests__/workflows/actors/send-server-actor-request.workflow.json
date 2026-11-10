@@ -1,0 +1,45 @@
+{
+	"name": "Send Server Actor request workflow",
+	"nodes": [
+		{
+			"parameters": {
+				"resource": "Actors",
+				"operation": "Send Server Actor request",
+				"actorId": {
+					"__rl": true,
+					"value": "a6Sqhlnt4touIHTub",
+					"mode": "list",
+					"cachedResultName": "Web Fetch (apify/web-fetch)",
+					"cachedResultUrl": "https://console.apify.com/actors/a6Sqhlnt4touIHTub/input"
+				},
+				"endpointMethod": "POST",
+				"endpointPath": "/",
+				"endpointQuery": "{}",
+				"endpointBody": "{\"url\": \"https://example.com\", \"formats\": [\"markdown\", \"links\"]}"
+			},
+			"id": "5c1f8f8e-2a4b-4d0e-9a51-0d1a7a0c3b11",
+			"name": "Send Server Actor request",
+			"type": "n8n-nodes-apify.apify",
+			"typeVersion": 2,
+			"position": [920, 460],
+			"credentials": {
+				"apifyApi": {
+					"id": "dJAynKkN2pRqy3Ko",
+					"name": "Apify account"
+				}
+			}
+		}
+	],
+	"pinData": {},
+	"connections": {},
+	"active": false,
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"versionId": "0f3b9d4e-6a7c-4e21-8f0a-3d2c1b4a5e6f",
+	"meta": {
+		"templateCredsSetupCompleted": true
+	},
+	"id": "SrvActEndpoint01",
+	"tags": []
+}
