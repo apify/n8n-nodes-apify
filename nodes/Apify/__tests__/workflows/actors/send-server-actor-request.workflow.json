@@ -12,8 +12,7 @@
 					"cachedResultName": "Web Fetch (apify/web-fetch)",
 					"cachedResultUrl": "https://console.apify.com/actors/a6Sqhlnt4touIHTub/input"
 				},
-				"endpointMethod": "POST",
-				"endpointPath": "/",
+				"endpoint": "POST /",
 				"endpointQuery": "{}",
 				"endpointBody": "{\"url\": \"https://example.com\", \"formats\": [\"markdown\", \"links\"]}"
 			},

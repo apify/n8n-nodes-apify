@@ -107,21 +107,34 @@ fields `getActorInputFields` loads from the input schema of the `build` tag's bu
 on all four and sent **only when non-null and `> 0`** — `0`/empty deliberately means no limit.
 `Apify.node.spec.ts` asserts every run-starting operation exposes it, so add it to any new one.
 
-### Server Actors — `actors/send-server-actor-request/`, `resources/serverActor.ts`
+### Server Actors — `actors/send-server-actor-request/`, `resources/serverActor.ts`, `resources/serverActorOpenApi.ts`
 
 `Actors → Send Server Actor request` sends one request to the Actor's `standbyUrl` and never
 starts a run. It is a separate operation on purpose: "Run" means an Actor run object across
 Apify's API and docs, so don't fold it back into `Run actor`. Its value
 `'Send Server Actor request'` is stored in workflows, so never rename it; the label is Title Case
 only because n8n's linter requires it. The operation folder holds its fields and the request flow
-like any other; `resources/serverActor.ts` holds what other Server Actor code shares
-(`getServerActorOrigin`, `SERVER_ACTOR_MESSAGES`), and the HTTP helpers it uses
-(`decodeResponseBody`, `getErrorFromBody`, `parseJsonParameter`, `isTimeoutError`,
-`toDescriptionText`) live in `genericFunctions.ts` for any operation. A Server Actor is
-`actorStandby.isEnabled` plus a `standbyUrl` on `APIFY_ACTOR_HOST_SUFFIX` (the token never goes
-elsewhere, and a path like `//other.host` can't move it). The request is `endpointMethod`,
-`endpointPath` and JSON `endpointQuery`/`endpointBody`; don't reuse `customBody`, which is Run
-actor's Input JSON.
+like any other; `resources/serverActor.ts` holds what other Server Actor code shares (the Actor
+lookup `getServerActorOrigin`, the per-execution OpenAPI cache `getServerActorOpenApi`, the
+`listServerActorEndpoints` loadOptions, the placeholder endpoint values and
+`SERVER_ACTOR_MESSAGES`); `resources/serverActorOpenApi.ts` is pure parsing of `webServerSchema`;
+and the HTTP helpers (`decodeResponseBody`, `getErrorFromBody`, `parseJsonParameter`,
+`isTimeoutError`, `toDescriptionText`) live in `genericFunctions.ts` for any operation. The default
+build comes from `executeActor`'s `getDefaultBuild`. A Server Actor is `actorStandby.isEnabled`
+plus a `standbyUrl` on `APIFY_ACTOR_HOST_SUFFIX` (the token never goes elsewhere, and a path like
+`//other.host` can't move it).
+
+The `endpoint` options are the OpenAPI paths plus `__custom__`; MCP-only Actors
+(`webServerMcpPath`, no OpenAPI) and Actors without a server interface get placeholder values
+whose execution throws the user message. Parameters are JSON: `endpointQuery` for every endpoint
+(values for path placeholders such as `{itemId}` are taken from it and removed) and
+`endpointBody`, declared twice with exclusive `displayOptions` — once for Custom Path with a
+method that takes a body, once for documented endpoints except `GET ` ones (`_cnd.startsWith`) —
+because one rule can't express both. Custom Path adds `endpointMethod`/`endpointPath`. Don't
+reuse `customBody`, which is Run actor's Input JSON. At execution a documented endpoint is
+checked against the default build's OpenAPI and refused if missing: after the Actor changes, a
+saved endpoint of the old one would otherwise go to the new one. Arrays are sent comma-separated
+where the OpenAPI says `explode: false`.
 
 The request uses `disableRetries`, `ignoreHttpStatusErrors`, `encoding: 'arraybuffer'` and
 `SERVER_ACTOR_REQUEST_TIMEOUT_MS` (310 s, above Apify's 300 s so its 504 wins over n8n's
@@ -130,9 +143,11 @@ a redirect to any host, so a 3xx comes back as the result. Errors carry the Acto
 set again after building the `NodeApiError` because n8n rewords any message containing a Node
 error code (`ETIMEDOUT` becomes "Retry on Fail" advice); never add retries or wording that
 suggests Retry On Fail, since every request may be charged. Binary responses throw.
-n8n renders error descriptions as HTML (sanitized, but links and images pass), so Actor-supplied
-text there goes through `toDescriptionText`, which escapes it except in AI tool mode, where the
-description reaches the agent as plain text.
+n8n renders option and error descriptions as HTML (sanitized, but links and images pass), so
+Actor-supplied text there is escaped: endpoint summaries with `escapeHtml`, error descriptions
+through `toDescriptionText`, which keeps plain text in AI tool mode, where the description
+reaches the agent as text. `methods` are merged shallowly in `helpers/methods.ts`, so register
+`loadOptions` in `resources/hooks.ts`, not in a resource's `hooks.ts`.
 
 ### Trigger node — `ApifyTrigger.node.ts`
 
