@@ -129,10 +129,11 @@ This node supports a wide range of Apify operations, organized by resource type:
   - Build version selection
 - **Run Actor and get dataset items**: Execute an Actor, wait for it to finish, and return the dataset items
 - **Send Server Actor request**: Send one HTTP request to a Server Actor and get `status`, `contentType` and `body` back, without starting a run
-  - Give the method, path, query parameters and body (as JSON)
+  - Pick an endpoint from the Actor's OpenAPI definition and give its query parameters and body as JSON (values for path parameters such as `{itemId}` go in the query), or use **Custom Path** (method, path, JSON query and body)
   - Each request may be charged, so it is sent once and never retried. Leave "Retry On Fail" off
   - Apify waits up to 300 s for the Actor to answer. JSON responses are parsed, other text is returned as a string, and binary responses aren't supported yet
   - MCP Actors aren't called here: use n8n's MCP Client Tool node with the Actor's MCP URL, and raise its 60 s default timeout for slow tools
+  - As an AI Agent tool, choose the Actor and endpoint in the node: `$fromAI()` can fill the parameters but not these dropdowns
 - **Web Fetch**: Fetch a single URL and get its content in exactly the requested formats (markdown, text, HTML, links, or raw), with optional custom headers
 - **Scrape Single URL** (deprecated): Quick scraping of a single URL - use Web Fetch instead
 - **Get Last Run**: Retrieve information about the most recent Actor run
