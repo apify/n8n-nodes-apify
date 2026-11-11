@@ -1,17 +1,21 @@
 import {
-	FieldType,
-	IDataObject,
 	IExecuteFunctions,
 	ILoadOptionsFunctions,
 	INodeParameterResourceLocator,
-	INodePropertyOptions,
 	NodeApiError,
 	ResourceMapperField,
 	NodeOperationError,
 	ResourceMapperFields,
 } from 'n8n-workflow';
 import { getBuildByTag, getDefaultBuild } from './executeActor';
-import { apiRequest, escapeHtml } from './genericFunctions';
+import {
+	apiRequest,
+	escapeHtml,
+	getErrorReason,
+	getFieldTypeAndOptions,
+	getResourceMapperValues,
+	toFieldDefaultValue,
+} from './genericFunctions';
 
 interface ActorInputSchemaProperty {
 	title?: string;
@@ -32,41 +36,12 @@ interface ActorBuild {
 	inputSchema?: string;
 }
 
-function getEnumOptions(property: ActorInputSchemaProperty): INodePropertyOptions[] {
-	return (property.enum ?? [])
-		.map((value, index) => ({ value, title: property.enumTitles?.[index] }))
-		.filter(
-			(entry): entry is { value: string | number | boolean; title: string | undefined } =>
-				typeof entry.value === 'string' ||
-				typeof entry.value === 'number' ||
-				typeof entry.value === 'boolean',
-		)
-		.map(({ value, title }) => ({ name: title ?? String(value), value }));
-}
-
-function getFieldType(property: ActorInputSchemaProperty): FieldType {
-	switch (property.type) {
-		case 'boolean':
-			return 'boolean';
-		case 'integer':
-		case 'number':
-			return 'number';
-		case 'array':
-			return 'array';
-		case 'object':
-			return 'object';
-		default:
-			return 'string';
-	}
-}
-
 function mapPropertyToField(
 	id: string,
 	property: ActorInputSchemaProperty,
 	isRequired: boolean,
 ): ResourceMapperField {
-	const options = getEnumOptions(property);
-	const hasPrefill = property.prefill !== undefined && property.prefill !== null;
+	const prefill = toFieldDefaultValue(property.prefill);
 	// Apify fills in schema defaults itself, so only required inputs without one must be set here.
 	const required = isRequired && property.default === undefined;
 
@@ -76,18 +51,11 @@ function mapPropertyToField(
 		defaultMatch: false,
 		required,
 		display: true,
-		type: options.length > 0 ? 'options' : getFieldType(property),
+		...getFieldTypeAndOptions(property),
 		// Show what the Apify Console would prefill; everything else can be added on demand.
-		removed: !hasPrefill && !required,
+		removed: prefill === undefined && !required,
 	};
-	if (options.length > 0) field.options = options;
-	if (hasPrefill) {
-		// Object and array fields are edited as JSON, so their default must be a JSON string.
-		field.defaultValue =
-			typeof property.prefill === 'object'
-				? JSON.stringify(property.prefill, null, 2)
-				: (property.prefill as string | number | boolean);
-	}
+	if (prefill !== undefined) field.defaultValue = prefill;
 	return field;
 }
 
@@ -107,18 +75,6 @@ function getInputSchema(
 			`Could not parse the input schema of Actor ${actorId}`,
 		);
 	}
-}
-
-function getErrorReason(error: unknown): string {
-	if (!(error instanceof Error)) return String(error);
-	// NodeApiError keeps the API's own message (e.g. "Actor build was not found") in `description`.
-	const rawDescription = (error as { description?: unknown }).description;
-	// Drop link tags meant for the error view; the notice escapes them and would show raw tags.
-	const description =
-		typeof rawDescription === 'string' ? rawDescription.replace(/<\/?a\b[^>]*>/g, '') : undefined;
-	return description && description !== error.message
-		? `${error.message} (${description})`
-		: error.message;
 }
 
 /** Resolves the build the same way `executeActor` does, so the fields match the run. */
@@ -191,11 +147,7 @@ export function getActorInput(this: IExecuteFunctions, i: number): string | obje
 		return this.getNodeParameter('customBody', i, '{}') as string | object;
 	}
 
-	// Reading `.value` makes n8n validate the fields and parse JSON strings of object/array fields.
-	const values = this.getNodeParameter('actorInput.value', i, {}) as IDataObject | null;
-	// Leave unset fields out so the Actor's own defaults apply. n8n already prunes fields the
-	// user cleared; an explicit '' (e.g. from an expression) is sent to override a default.
-	return Object.fromEntries(
-		Object.entries(values ?? {}).filter(([, value]) => value !== null && value !== undefined),
-	);
+	// n8n already prunes fields the user cleared; an explicit '' (e.g. from an expression) is sent
+	// to override a default.
+	return getResourceMapperValues.call(this, 'actorInput', i);
 }

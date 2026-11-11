@@ -13,8 +13,15 @@
 					"cachedResultUrl": "https://console.apify.com/actors/a6Sqhlnt4touIHTub/input"
 				},
 				"endpoint": "POST /",
-				"endpointQuery": "{}",
-				"endpointBody": "{\"url\": \"https://example.com\", \"formats\": [\"markdown\", \"links\"]}"
+				"endpointParameters": {
+					"mappingMode": "defineBelow",
+					"value": {
+						"body:url": "https://example.com",
+						"body:formats": ["markdown", "links"]
+					},
+					"matchingColumns": [],
+					"schema": []
+				}
 			},
 			"id": "5c1f8f8e-2a4b-4d0e-9a51-0d1a7a0c3b11",
 			"name": "Send Server Actor request",

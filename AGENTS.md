@@ -102,6 +102,9 @@ the query string, POST with `waitForFinish=0`, then poll separately when the cal
 The two `actors/` operations read input through `getActorInput` (`resources/actorInput.ts`):
 `actorInputMode` `json` (default, `customBody`) or `schema`, an `actorInput` resource mapper whose
 fields `getActorInputFields` loads from the input schema of the `build` tag's build, else the default.
+It shares the schema-to-field helpers (`getFieldTypeAndOptions`, `toFieldDefaultValue`) and
+`getResourceMapperValues` in `genericFunctions.ts` with the Server Actor endpoint fields; extend
+those rather than adding a third copy.
 
 `maxTotalChargeUsd` ("Maximum Cost per Run (USD)", `default: null`, `minValue: 0`) is hand-written
 on all four and sent **only when non-null and `> 0`** — `0`/empty deliberately means no limit.
@@ -132,15 +135,22 @@ plus a `standbyUrl` on `APIFY_ACTOR_HOST_SUFFIX` (the token never goes elsewhere
 
 The `endpoint` options are the OpenAPI paths plus `__custom__`; MCP-only Actors
 (`webServerMcpPath`, no OpenAPI) and Actors without a server interface get placeholder values
-whose execution throws the user message. Parameters are JSON: `endpointQuery` for every endpoint
-(values for path placeholders such as `{itemId}` are taken from it and removed) and
-`endpointBody`, declared twice with exclusive `displayOptions` — once for Custom Path with a
-method that takes a body, once for documented endpoints except `GET ` ones (`_cnd.startsWith`) —
-because one rule can't express both. Custom Path adds `endpointMethod`/`endpointPath`. Don't
-reuse `customBody`, which is Run actor's Input JSON. At execution a documented endpoint is
-checked against the default build's OpenAPI and refused if missing: after the Actor changes, a
-saved endpoint of the old one would otherwise go to the new one. Arrays are sent comma-separated
-where the OpenAPI says `explode: false`.
+whose execution throws the user message. A documented endpoint's parameters are the
+`endpointParameters` resource mapper (`getServerActorEndpointFields`), with ids prefixed by where
+the value goes (`path:`, `query:`, `body:`, or a lone `body` for a non-object body); keep that
+convention. Execution looks each id up in `getEndpointFieldTargets` (built from the same entries
+as the fields) rather than parsing it. A path placeholder the OpenAPI doesn't declare still gets a
+required `path:` field. A field gets the schema's `default` as its `defaultValue`. Number fields
+*without* a default are typed `string`: n8n's number input stores `0` as soon as the field is
+added, which would be sent in place of the Actor's default, so their target is `isNumber` and
+execution converts the text back (empty means left out). Booleans without a default start as
+`false` — don't give them
+`null`, n8n then draws the toggle as on while sending nothing. Custom Path uses
+`endpointMethod`/`endpointPath` and JSON `endpointQuery`/`endpointBody`; don't reuse `customBody`,
+which is Run actor's Input JSON. At execution a documented endpoint is checked against the
+default build's OpenAPI and refused if missing (after the Actor changes, a saved endpoint of the
+old one would otherwise go to the new one), values whose ids aren't that endpoint's fields are
+dropped, and arrays are sent comma-separated where the OpenAPI says `explode: false`.
 
 The request uses `disableRetries`, `ignoreHttpStatusErrors`, `encoding: 'arraybuffer'` and
 `SERVER_ACTOR_REQUEST_TIMEOUT_MS` (310 s, above Apify's 300 s so its 504 wins over n8n's
@@ -153,7 +163,7 @@ n8n renders option and error descriptions as HTML (sanitized, but links and imag
 Actor-supplied text there is escaped: endpoint summaries with `escapeHtml`, error descriptions
 through `toDescriptionText`, which keeps plain text in AI tool mode, where the description
 reaches the agent as text. `methods` are merged shallowly in `helpers/methods.ts`, so register
-`loadOptions` in `resources/hooks.ts`, not in a resource's `hooks.ts`.
+`loadOptions` and `resourceMapping` in `resources/hooks.ts`, not in a resource's `hooks.ts`.
 
 ### Trigger node — `ApifyTrigger.node.ts`
 
