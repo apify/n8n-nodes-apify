@@ -1,8 +1,18 @@
-import { IExecuteFunctions, ILoadOptionsFunctions, INodePropertyOptions } from 'n8n-workflow';
+import {
+	IExecuteFunctions,
+	ILoadOptionsFunctions,
+	INodePropertyOptions,
+	ResourceMapperFields,
+} from 'n8n-workflow';
 import { APIFY_ACTOR_HOST_SUFFIX, APIFY_CONSOLE_URL } from '../helpers/consts';
 import { getDefaultBuild } from './executeActor';
-import { apiRequest } from './genericFunctions';
-import { parseOpenApiDocument, parseOpenApiEndpoints } from './serverActorOpenApi';
+import { apiRequest, escapeHtml, getErrorReason } from './genericFunctions';
+import {
+	getEndpointFields,
+	parseEndpointValue,
+	parseOpenApiDocument,
+	parseOpenApiEndpoints,
+} from './serverActorOpenApi';
 
 /**
  * Server Actors answer HTTP requests at their `standbyUrl` instead of starting a run (the API
@@ -70,7 +80,7 @@ const documentCache = new WeakMap<object, Map<string, Promise<OpenApiDocument>>>
 
 /** The OpenAPI document (`webServerSchema`) of the Actor's default build, if it has one. */
 export async function getServerActorOpenApi(
-	this: IExecuteFunctions,
+	this: IExecuteFunctions | ILoadOptionsFunctions,
 	actorId: string,
 ): Promise<OpenApiDocument> {
 	const byActor = documentCache.get(this) ?? new Map<string, Promise<OpenApiDocument>>();
@@ -145,4 +155,39 @@ export async function listServerActorEndpoints(
 				: `This Actor doesn't document its endpoints. Find the method and path in its README: ${readmeUrl(actorId)}`,
 		},
 	];
+}
+
+/** resourceMapper for the selected endpoint's typed path, query and body fields. */
+export async function getServerActorEndpointFields(
+	this: ILoadOptionsFunctions,
+): Promise<ResourceMapperFields> {
+	const actorId = getSelectedActorId.call(this);
+	const endpoint = parseEndpointValue((this.getNodeParameter('endpoint', '') as string) || '');
+	if (!actorId || !endpoint) {
+		return { fields: [], emptyFieldsNotice: 'Choose an Actor and an endpoint to load its fields.' };
+	}
+
+	let document: OpenApiDocument;
+	try {
+		document = await getServerActorOpenApi.call(this, actorId);
+	} catch (error) {
+		// n8n's editor drops errors thrown here, so show the reason as a notice. It's rendered as HTML.
+		return {
+			fields: [],
+			emptyFieldsNotice: `Could not load the endpoint's fields: ${escapeHtml(getErrorReason(error))}`,
+		};
+	}
+
+	const fields = getEndpointFields(document, endpoint.method, endpoint.path);
+	if (!fields) {
+		return {
+			fields: [],
+			emptyFieldsNotice:
+				"This endpoint isn't in the Actor's OpenAPI definition. Choose another endpoint or use Custom Path.",
+		};
+	}
+	if (fields.length === 0) {
+		return { fields: [], emptyFieldsNotice: 'This endpoint takes no parameters.' };
+	}
+	return { fields };
 }

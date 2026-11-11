@@ -1,5 +1,10 @@
 import nock from 'nock';
-import { IExecuteFunctions, ILoadOptionsFunctions, INodePropertyOptions } from 'n8n-workflow';
+import {
+	IExecuteFunctions,
+	ILoadOptionsFunctions,
+	INodePropertyOptions,
+	ResourceMapperFields,
+} from 'n8n-workflow';
 import { Apify } from '../Apify.node';
 import { createLoadOptionsFunctions, executeWorkflow } from './utils/executeWorkflow';
 import { CredentialsHelper } from './utils/credentialHelper';
@@ -14,6 +19,8 @@ import {
 	NO_SERVER_INTERFACE,
 } from '../resources/serverActor';
 import {
+	getEndpointFields,
+	getEndpointFieldTargets,
 	getEndpointOperation,
 	parseEndpointValue,
 	parseOpenApiEndpoints,
@@ -79,6 +86,8 @@ const openApi = {
 				properties: {
 					url: { type: 'string' },
 					formats: { type: 'array', items: { type: 'string' } },
+					unwrap: { type: 'boolean', default: false },
+					wait: { type: 'integer' },
 				},
 			},
 		},
@@ -189,23 +198,26 @@ describe('Server Actors (Send Server Actor request)', () => {
 			}
 		});
 
-		it('should show JSON query and body fields only for endpoints that take a request', () => {
+		it('should show JSON query and body fields only for Custom Path', () => {
 			const [query] = propertiesNamed('endpointQuery');
-			expect(query.displayOptions?.hide?.endpoint).toEqual(
-				expect.arrayContaining(['', NO_SERVER_INTERFACE, MCP_ONLY]),
+			expect(query.displayOptions?.show?.endpoint).toEqual([CUSTOM_ENDPOINT]);
+			const bodies = propertiesNamed('endpointBody');
+			expect(bodies).toHaveLength(1);
+			expect(bodies[0].displayOptions?.show?.endpoint).toEqual([CUSTOM_ENDPOINT]);
+		});
+
+		it('should load typed fields for the selected documented endpoint', () => {
+			const [fields] = propertiesNamed('endpointParameters');
+			expect(fields.typeOptions?.loadOptionsDependsOn).toEqual(['actorId.value', 'endpoint']);
+			// No Parameters box before a documented endpoint is chosen, nor for Custom Path.
+			expect(fields.displayOptions?.hide?.endpoint).toEqual(
+				expect.arrayContaining(['', CUSTOM_ENDPOINT, NO_SERVER_INTERFACE, MCP_ONLY]),
 			);
-			// One Body for Custom Path with a method that takes a body, one for documented endpoints
-			// other than GET.
-			const [customBody, documentedBody] = propertiesNamed('endpointBody');
-			expect(customBody.displayOptions?.show?.endpoint).toEqual([CUSTOM_ENDPOINT]);
-			expect(customBody.displayOptions?.show?.endpointMethod).toEqual([
-				'POST',
-				'PUT',
-				'PATCH',
-				'DELETE',
-			]);
-			expect(documentedBody.displayOptions?.hide?.endpoint).toEqual(
-				expect.arrayContaining([CUSTOM_ENDPOINT, { _cnd: { startsWith: 'GET ' } }]),
+		});
+
+		it('should keep the Actor input resource mapper registered next to the endpoint one', () => {
+			expect(Object.keys(apifyNode.methods!.resourceMapping!)).toEqual(
+				expect.arrayContaining(['getActorInputFields', 'getServerActorEndpointFields']),
 			);
 		});
 	});
@@ -292,6 +304,160 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(parseEndpointValue('POST /')).toEqual({ method: 'POST', path: '/' });
 			expect(parseEndpointValue('FOO /')).toBeUndefined();
 			expect(parseEndpointValue(CUSTOM_ENDPOINT)).toBeUndefined();
+		});
+
+		it('should turn query parameters and body properties into typed fields', () => {
+			const byId = (method: string) =>
+				Object.fromEntries(
+					getEndpointFields(openApi, method, '/')!.map((field) => [field.id, field]),
+				);
+
+			const get = byId('GET');
+			expect(Object.keys(get)).toEqual(['query:url', 'query:formats']);
+			expect(get['query:url']).toMatchObject({ type: 'string', required: true, removed: false });
+			expect(get['query:formats']).toMatchObject({ type: 'array', required: false, removed: true });
+
+			const post = byId('POST');
+			expect(Object.keys(post)).toEqual(['body:url', 'body:formats', 'body:unwrap', 'body:wait']);
+			expect(post['body:url']).toMatchObject({ type: 'string', required: true });
+			expect(post['body:unwrap']).toMatchObject({ type: 'boolean', defaultValue: false });
+			// No default to prefill, so the number is entered as text (see the defaults test).
+			expect(post['body:wait'].type).toBe('string');
+		});
+
+		it('should make path parameters required, merge path-level ones and offer enums as options', () => {
+			const document = {
+				paths: {
+					'/items/{itemId}': {
+						parameters: [
+							{ name: 'itemId', in: 'path', required: true, schema: { type: 'string' } },
+						],
+						get: {
+							parameters: [
+								{ name: 'sort', in: 'query', schema: { type: 'string', enum: ['asc', 'desc'] } },
+							],
+						},
+					},
+				},
+			};
+			const fields = getEndpointFields(document, 'GET', '/items/{itemId}')!;
+			expect(fields.map((field) => [field.id, field.required, field.type])).toEqual([
+				['path:itemId', true, 'string'],
+				['query:sort', false, 'options'],
+			]);
+			expect(fields[1].options).toEqual([
+				{ name: 'asc', value: 'asc' },
+				{ name: 'desc', value: 'desc' },
+			]);
+		});
+
+		it("should add a field for a path placeholder the document doesn't declare", () => {
+			const document = { paths: { '/items/{itemId}': { get: {} } } };
+			expect(getEndpointFields(document, 'GET', '/items/{itemId}')).toEqual([
+				expect.objectContaining({ id: 'path:itemId', type: 'string', required: true }),
+			]);
+		});
+
+		it('should use one JSON field for a body without properties and label name clashes', () => {
+			const document = {
+				paths: {
+					'/run': {
+						post: {
+							parameters: [{ name: 'mode', in: 'query' }],
+							requestBody: {
+								content: { 'application/json': { schema: { type: 'array' } } },
+							},
+						},
+					},
+					'/clash': {
+						post: {
+							parameters: [{ name: 'mode', in: 'query' }],
+							requestBody: {
+								content: {
+									'application/json': {
+										schema: { type: 'object', properties: { mode: { type: 'string' } } },
+									},
+								},
+							},
+						},
+					},
+				},
+			};
+			expect(getEndpointFields(document, 'POST', '/run')!.map((field) => field.id)).toEqual([
+				'query:mode',
+				'body',
+			]);
+			expect(
+				getEndpointFields(document, 'POST', '/clash')!.map((field) => field.displayName),
+			).toEqual(['mode (query)', 'mode (body)']);
+			// The whole-body field isn't a parameter named `body`, so it keeps its label.
+			const withBodyParameter = {
+				paths: {
+					'/run': {
+						post: {
+							...document.paths['/run'].post,
+							parameters: [{ name: 'body', in: 'query' }],
+						},
+					},
+				},
+			};
+			expect(
+				getEndpointFields(withBodyParameter, 'POST', '/run')!.map((field) => field.displayName),
+			).toEqual(['body', 'Body (JSON)']);
+		});
+
+		it("should prefill the schema's default, and take numbers without one as text", () => {
+			const document = {
+				paths: {
+					'/d': {
+						post: {
+							requestBody: {
+								content: {
+									'application/json': {
+										schema: {
+											type: 'object',
+											properties: {
+												count: { type: 'integer', default: 1 },
+												limit: { type: 'integer' },
+												flag: { type: 'boolean' },
+												strict: { type: 'boolean', default: true },
+												mode: { type: 'string', enum: ['fast', 'slow'], default: 'slow' },
+												options: { type: 'object', default: { a: 1 } },
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			};
+			const fields = Object.fromEntries(
+				getEndpointFields(document, 'POST', '/d')!.map((field) => [
+					field.id,
+					{ type: field.type, defaultValue: field.defaultValue },
+				]),
+			);
+			expect(fields).toEqual({
+				'body:count': { type: 'number', defaultValue: 1 },
+				// n8n's number input would store 0, which would be sent.
+				'body:limit': { type: 'string', defaultValue: undefined },
+				// n8n starts a boolean without a default as false.
+				'body:flag': { type: 'boolean', defaultValue: undefined },
+				'body:strict': { type: 'boolean', defaultValue: true },
+				'body:mode': { type: 'options', defaultValue: 'slow' },
+				'body:options': { type: 'object', defaultValue: JSON.stringify({ a: 1 }, null, 2) },
+			});
+			const targets = getEndpointFieldTargets(document, 'POST', '/d');
+			expect([...targets].filter(([, target]) => target.isNumber).map(([id]) => id)).toEqual([
+				'body:count',
+				'body:limit',
+			]);
+			expect(targets.get('body:limit')).toEqual({
+				location: 'body',
+				name: 'limit',
+				isNumber: true,
+			});
 		});
 	});
 
@@ -471,6 +637,60 @@ describe('Server Actors (Send Server Actor request)', () => {
 		});
 	});
 
+	describe('endpoint fields (resourceMapper)', () => {
+		const getFields = () =>
+			apifyNode.methods!.resourceMapping!.getServerActorEndpointFields as (
+				this: ILoadOptionsFunctions,
+			) => Promise<ResourceMapperFields>;
+
+		const context = (endpoint: string) =>
+			createLoadOptionsFunctions({
+				credentialsHelper,
+				node: {
+					name: 'Send Server Actor request',
+					type: 'n8n-nodes-apify.apify',
+					typeVersion: 2,
+					parameters: { actorId: { __rl: true, mode: 'list', value: ACTOR_ID }, endpoint },
+				},
+			});
+
+		it("should load the selected endpoint's fields from the default build", async () => {
+			const scope = nock('https://api.apify.com')
+				.get(`/v2/acts/${ACTOR_ID}/builds/default`)
+				.reply(200, buildWith({ webServerSchema: openApi }));
+
+			const { fields } = await getFields().call(context('POST /'));
+
+			expect(fields.map((field) => field.id)).toContain('body:url');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it("should show a notice with the API's reason instead of failing when the build cannot be loaded", async () => {
+			const scope = nock('https://api.apify.com')
+				.get(`/v2/acts/${ACTOR_ID}/builds/default`)
+				.reply(404, { error: { type: 'record-not-found', message: 'Build not found' } });
+
+			const result = await getFields().call(context('POST /'));
+
+			expect(result.fields).toEqual([]);
+			expect(result.emptyFieldsNotice).toMatch(
+				/Could not load the endpoint's fields: .*Build not found/,
+			);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should say when the endpoint takes no parameters', async () => {
+			const scope = nock('https://api.apify.com')
+				.get(`/v2/acts/${ACTOR_ID}/builds/default`)
+				.reply(200, buildWith({ webServerSchema: { paths: { '/': { get: {} } } } }));
+
+			const result = await getFields().call(context('GET /'));
+
+			expect(result.emptyFieldsNotice).toMatch(/no parameters/);
+			expect(scope.isDone()).toBe(true);
+		});
+	});
+
 	describe('execution', () => {
 		const run = (parameters: object = {}) =>
 			executeWorkflow({ credentialsHelper, workflow: endpointWorkflow(parameters) });
@@ -488,7 +708,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 				: api;
 		};
 
-		it('should send the JSON body and return status, contentType and body', async () => {
+		it('should send the typed body and return status, contentType and body', async () => {
 			const api = mockActor();
 			const server = nock(SERVER_URL)
 				.post('/', { url: 'https://example.com', formats: ['markdown', 'links'] })
@@ -692,8 +912,10 @@ describe('Server Actors (Send Server Actor request)', () => {
 
 			await run({
 				endpoint: 'GET /',
-				endpointQuery: '{"url": "https://example.com", "formats": ["markdown", "links"]}',
-				endpointBody: '{"ignored": true}',
+				endpointParameters: {
+					mappingMode: 'defineBelow',
+					value: { 'query:url': 'https://example.com', 'query:formats': ['markdown', 'links'] },
+				},
 			});
 
 			expect(server.isDone()).toBe(true);
@@ -716,12 +938,12 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(server.isDone()).toBe(true);
 		});
 
-		it('should fill path parameters from Query Parameters', async () => {
+		it('should fill path parameters from their fields', async () => {
 			const withItems = {
 				paths: {
 					'/items/{itemId}': {
 						parameters: [{ name: 'itemId', in: 'path', required: true }],
-						get: { summary: 'Get an item' },
+						get: { summary: 'Get an item', parameters: [{ name: 'fields', in: 'query' }] },
 					},
 				},
 			};
@@ -730,23 +952,109 @@ describe('Server Actors (Send Server Actor request)', () => {
 				.reply(200, serverActor())
 				.get(`/v2/acts/${ACTOR_ID}/builds/default`)
 				.reply(200, buildWith({ webServerSchema: withItems }));
-			// `itemId` fills the path, escaped, and is not sent as a query parameter.
+			// `itemId` fills the path, escaped.
 			const server = nock(SERVER_URL).get('/items/a%2Fb').query({ fields: 'name' }).reply(200, {});
 
 			await run({
 				endpoint: 'GET /items/{itemId}',
-				endpointQuery: '{"itemId": "a/b", "fields": "name"}',
+				endpointParameters: {
+					mappingMode: 'defineBelow',
+					value: { 'path:itemId': 'a/b', 'query:fields': 'name' },
+				},
 			});
 
 			expect(server.isDone()).toBe(true);
 		});
 
-		it('should fail clearly when a path parameter is missing, before any request', async () => {
+		it('should fail clearly when a path parameter is missing, before sending', async () => {
+			const withItems = {
+				paths: {
+					'/items/{itemId}': {
+						parameters: [{ name: 'itemId', in: 'path', required: true }],
+						get: {},
+					},
+				},
+			};
+			const api = nock('https://api.apify.com')
+				.get(`/v2/acts/${ACTOR_ID}`)
+				.reply(200, serverActor())
+				.get(`/v2/acts/${ACTOR_ID}/builds/default`)
+				.reply(200, buildWith({ webServerSchema: withItems }));
+
+			await expect(
+				run({
+					endpoint: 'GET /items/{itemId}',
+					endpointParameters: { mappingMode: 'defineBelow', value: {} },
+				}),
+			).rejects.toThrow(/Missing value for path parameter "itemId"/);
+			expect(api.isDone()).toBe(true);
+		});
+
+		it("should fill a path placeholder the OpenAPI doesn't declare", async () => {
+			const api = nock('https://api.apify.com')
+				.get(`/v2/acts/${ACTOR_ID}`)
+				.reply(200, serverActor())
+				.get(`/v2/acts/${ACTOR_ID}/builds/default`)
+				.reply(200, buildWith({ webServerSchema: { paths: { '/items/{itemId}': { get: {} } } } }));
+			const server = nock(SERVER_URL).get('/items/42').reply(200, {});
+
+			await run({
+				endpoint: 'GET /items/{itemId}',
+				endpointParameters: { mappingMode: 'defineBelow', value: { 'path:itemId': '42' } },
+			});
+
+			expect(api.isDone()).toBe(true);
+			expect(server.isDone()).toBe(true);
+		});
+
+		it('should not send values saved for a different endpoint', async () => {
 			const api = mockActor();
-			await expect(run({ endpoint: 'GET /items/{itemId}', endpointQuery: '{}' })).rejects.toThrow(
-				/Missing value for path parameter "itemId". Add it to Query Parameters/,
-			);
-			expect(api.isDone()).toBe(false);
+			const server = nock(SERVER_URL)
+				// Exact query: a stale `query:url` from GET / would not match.
+				.post('/', { url: 'https://example.com' })
+				.query({})
+				.reply(200, {});
+
+			await run({
+				endpointParameters: {
+					mappingMode: 'defineBelow',
+					value: { 'body:url': 'https://example.com', 'query:url': 'https://stale.example' },
+				},
+			});
+
+			expect(api.isDone()).toBe(true);
+			expect(server.isDone()).toBe(true);
+		});
+
+		it('should send number fields entered as text as numbers, and leave out empty ones', async () => {
+			const api = mockActor();
+			const server = nock(SERVER_URL)
+				// `wait` is an integer in the OpenAPI; the empty `formats` is left out.
+				.post('/', { url: 'https://example.com', wait: 3 })
+				.reply(200, {});
+
+			await run({
+				endpointParameters: {
+					mappingMode: 'defineBelow',
+					value: { 'body:url': 'https://example.com', 'body:wait': ' 3 ', 'body:formats': null },
+				},
+			});
+
+			expect(api.isDone()).toBe(true);
+			expect(server.isDone()).toBe(true);
+		});
+
+		it('should reject a number field that is not a number, before sending', async () => {
+			const api = mockActor();
+			await expect(
+				run({
+					endpointParameters: {
+						mappingMode: 'defineBelow',
+						value: { 'body:url': 'https://example.com', 'body:wait': 'soon' },
+					},
+				}),
+			).rejects.toThrow(/"wait" must be a number, got "soon"/);
+			expect(api.isDone()).toBe(true);
 		});
 
 		it.each([
@@ -757,7 +1065,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 		])(
 			'should explain the placeholder endpoint %p without calling the API',
 			async (endpoint, message) => {
-				const api = mockActor();
+				const api = mockActor(serverActor(), { withOpenApi: false });
 				await expect(run({ endpoint })).rejects.toThrow(message);
 				expect(api.isDone()).toBe(false);
 			},
@@ -767,7 +1075,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 		it.each(['foo', 'toString'])(
 			'should reject the malformed endpoint %p without calling the API',
 			async (endpoint) => {
-				const api = mockActor();
+				const api = mockActor(serverActor(), { withOpenApi: false });
 				await expect(run({ endpoint })).rejects.toThrow(`Unknown endpoint "${endpoint}"`);
 				expect(api.isDone()).toBe(false);
 			},
@@ -803,12 +1111,11 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(api.isDone()).toBe(true);
 		});
 
-		it('should reject Query Parameters that are not a JSON object, before sending', async () => {
-			const api = mockActor();
-			await expect(run({ endpointQuery: '[1, 2]' })).rejects.toThrow(
-				/Query Parameters must be a JSON object/,
-			);
-			expect(api.isDone()).toBe(false);
+		it('should reject Custom Path Query Parameters that are not a JSON object, before sending', async () => {
+			mockActor(serverActor(), { withOpenApi: false });
+			await expect(
+				run({ endpoint: CUSTOM_ENDPOINT, endpointMethod: 'GET', endpointQuery: '[1, 2]' }),
+			).rejects.toThrow(/Query Parameters must be a JSON object/);
 		});
 
 		it('should escape Actor-supplied text in the error description, which n8n renders as HTML', async () => {

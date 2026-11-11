@@ -12,6 +12,7 @@ import {
 	apiRequest,
 	decodeResponseBody,
 	getErrorFromBody,
+	getResourceMapperValues,
 	isTimeoutError,
 	parseJsonParameter,
 	toDescriptionText,
@@ -27,6 +28,8 @@ import {
 	SERVER_ACTOR_MESSAGES as MESSAGES,
 } from '../../serverActor';
 import {
+	FieldTarget,
+	getEndpointFieldTargets,
 	getEndpointOperation,
 	getNonExplodedQueryParams,
 	parseEndpointValue,
@@ -39,7 +42,13 @@ interface ServerActorRequest {
 	body?: IDataObject | unknown[];
 }
 
-function readJsonFields(this: IExecuteFunctions, i: number, method: string) {
+/** Custom Path's method, path, and JSON query and body. */
+function getCustomPathRequest(this: IExecuteFunctions, i: number): ServerActorRequest {
+	// Upper-cased: an expression may give `post`.
+	const method = (
+		this.getNodeParameter('endpointMethod', i, 'GET') as string
+	).toUpperCase() as IHttpRequestMethods;
+	const path = (this.getNodeParameter('endpointPath', i, '/') as string).trim();
 	const query = parseJsonParameter.call(
 		this,
 		this.getNodeParameter('endpointQuery', i, '{}'),
@@ -52,50 +61,59 @@ function readJsonFields(this: IExecuteFunctions, i: number, method: string) {
 			: parseJsonParameter.call(this, this.getNodeParameter('endpointBody', i, '{}'), 'Body', i, {
 					allowArray: true,
 				});
-	return { query, body };
+	// One leading slash: `//host/x` would read as a protocol-relative URL to some tools.
+	return { method, path: `/${path.replace(/^\/+/, '')}`, query, body };
 }
 
-/** Reads the endpoint (or Custom Path's method and path) and the JSON fields into one request. */
-function getRequest(this: IExecuteFunctions, i: number, endpointValue: string): ServerActorRequest {
-	if (endpointValue === CUSTOM_ENDPOINT) {
-		// Upper-cased: an expression may give `post`.
-		const method = (
-			this.getNodeParameter('endpointMethod', i, 'GET') as string
-		).toUpperCase() as IHttpRequestMethods;
-		const path = (this.getNodeParameter('endpointPath', i, '/') as string).trim();
-		// One leading slash: `//host/x` would read as a protocol-relative URL to some tools.
-		return {
-			method,
-			path: `/${path.replace(/^\/+/, '')}`,
-			...readJsonFields.call(this, i, method),
-		};
+/** Converts a number field's text to a number. Empty text means the field is left out. */
+function toNumber(this: IExecuteFunctions, value: unknown, name: string, i: number): unknown {
+	if (typeof value !== 'string') return value;
+	const text = value.trim();
+	if (!text) return undefined;
+	const number = Number(text);
+	if (!Number.isFinite(number)) {
+		throw new NodeOperationError(this.getNode(), `"${name}" must be a number, got "${value}"`, {
+			itemIndex: i,
+		});
 	}
+	return number;
+}
 
-	const endpoint = parseEndpointValue(endpointValue);
-	if (!endpoint) {
-		throw new NodeOperationError(
-			this.getNode(),
-			`Unknown endpoint "${endpointValue}". Use the form "POST /path" or choose Custom Path.`,
-			{ itemIndex: i },
-		);
-	}
+/** A documented endpoint's request, from its typed field values. `targets` are its fields by id. */
+function getEndpointRequest(
+	this: IExecuteFunctions,
+	i: number,
+	endpoint: { method: string; path: string },
+	targets: Map<string, FieldTarget>,
+): ServerActorRequest {
 	const method = endpoint.method as IHttpRequestMethods;
-	const { query, body } = readJsonFields.call(this, i, method);
+	const pathParams: IDataObject = {};
+	const query: IDataObject = {};
+	let body: IDataObject | unknown[] | undefined;
+	const values = getResourceMapperValues.call(this, 'endpointParameters', i);
+	for (const [id, rawValue] of Object.entries(values)) {
+		const target = targets.get(id);
+		// A value saved for another endpoint must not end up in this request.
+		if (!target) continue;
+		const value = target.isNumber ? toNumber.call(this, rawValue, target.name, i) : rawValue;
+		if (value === undefined) continue;
+		if (target.location === 'path') pathParams[target.name] = value;
+		else if (target.location === 'query') query[target.name] = value;
+		else if (target.location === 'wholeBody') body = value as IDataObject | unknown[];
+		else body = { ...(body as IDataObject), [target.name]: value };
+	}
 
-	// Fill path parameters such as /items/{itemId} from Query Parameters.
+	// Fill path parameters such as /items/{itemId}.
 	const path = endpoint.path.replace(/\{([^}]+)\}/g, (_, name: string) => {
-		const value = query[name];
-		if (value === undefined || value === null || value === '') {
-			throw new NodeOperationError(
-				this.getNode(),
-				`Missing value for path parameter "${name}". Add it to Query Parameters.`,
-				{ itemIndex: i },
-			);
+		const value = pathParams[name];
+		if (value === undefined || value === '') {
+			throw new NodeOperationError(this.getNode(), `Missing value for path parameter "${name}"`, {
+				itemIndex: i,
+			});
 		}
-		delete query[name];
 		return encodeURIComponent(String(value));
 	});
-	return { method, path, query, body };
+	return { method, path, query, body: method === 'GET' ? undefined : (body ?? {}) };
 }
 
 /**
@@ -172,19 +190,26 @@ export async function sendServerActorRequest(
 		throw new NodeOperationError(this.getNode(), placeholderMessage, { itemIndex: i });
 	}
 
-	const request = getRequest.call(this, i, endpointValue);
+	const endpoint =
+		endpointValue === CUSTOM_ENDPOINT ? undefined : parseEndpointValue(endpointValue);
+	if (!endpoint && endpointValue !== CUSTOM_ENDPOINT) {
+		throw new NodeOperationError(
+			this.getNode(),
+			`Unknown endpoint "${endpointValue}". Use the form "POST /path" or choose Custom Path.`,
+			{ itemIndex: i },
+		);
+	}
 
 	const origin = await getServerActorOrigin.call(this, actorId);
 	if (!origin) {
 		throw new NodeOperationError(this.getNode(), MESSAGES.noServerInterface, { itemIndex: i });
 	}
 
-	// A documented endpoint must still be in the Actor's OpenAPI: after the Actor is changed, a
-	// saved endpoint of the previous Actor would otherwise go to the new one, and may be charged.
+	let request: ServerActorRequest;
 	let commaSeparated: Set<string> | undefined;
-	const endpoint =
-		endpointValue === CUSTOM_ENDPOINT ? undefined : parseEndpointValue(endpointValue);
 	if (endpoint) {
+		// A documented endpoint must still be in the Actor's OpenAPI: after the Actor is changed, a
+		// saved endpoint of the previous Actor would otherwise go to the new one, and may be charged.
 		const document = await getServerActorOpenApi.call(this, actorId);
 		const operation = getEndpointOperation(document, endpoint.method, endpoint.path);
 		if (!operation) {
@@ -195,6 +220,10 @@ export async function sendServerActorRequest(
 			);
 		}
 		commaSeparated = getNonExplodedQueryParams(operation.parameters);
+		const targets = getEndpointFieldTargets(document, endpoint.method, endpoint.path);
+		request = getEndpointRequest.call(this, i, endpoint, targets);
+	} else {
+		request = getCustomPathRequest.call(this, i);
 	}
 
 	const url = new URL(`${origin}${request.path}`);

@@ -1,11 +1,11 @@
-import { INodePropertyOptions } from 'n8n-workflow';
+import { INodePropertyOptions, ResourceMapperField } from 'n8n-workflow';
 import { HTTP_METHODS } from '../helpers/consts';
-import { escapeHtml } from './genericFunctions';
+import { escapeHtml, getFieldTypeAndOptions, toFieldDefaultValue } from './genericFunctions';
 
 /**
  * Pure helpers that read a Server Actor's OpenAPI document (`actorDefinition.webServerSchema`
- * of its default build): the endpoint options and each endpoint's operation. No n8n context
- * or HTTP here, so everything is unit-testable.
+ * of its default build): the endpoint options, each endpoint's operation, and its typed resource
+ * mapper fields. No n8n context or HTTP here, so everything is unit-testable.
  */
 
 type JsonObject = Record<string, unknown>;
@@ -26,6 +26,10 @@ const HIDDEN_PATHS = new Set([
 // At most this many `$ref`s are followed in a chain, and a ref that repeats in its own chain (a
 // cycle) becomes `{}`. Plain nesting isn't limited, so deep schemas aren't cut short.
 const MAX_REF_DEPTH = 10;
+
+// Id of the single field used when the request body isn't an object with properties. Other
+// field ids are where the value goes and its name, such as `query:limit`.
+const WHOLE_BODY_FIELD_ID = 'body';
 
 export interface OpenApiParameter {
 	name: string;
@@ -174,5 +178,143 @@ export function getNonExplodedQueryParams(parameters: OpenApiParameter[]): Set<s
 		parameters
 			.filter((parameter) => parameter.in === 'query' && parameter.explode === false)
 			.map((parameter) => parameter.name),
+	);
+}
+
+function toField(
+	id: string,
+	displayName: string,
+	schema: JsonObject | undefined,
+	required: boolean,
+): ResourceMapperField {
+	const defaultValue = toFieldDefaultValue(schema?.default);
+	const field: ResourceMapperField = {
+		id,
+		displayName,
+		defaultMatch: false,
+		required,
+		display: true,
+		...getFieldTypeAndOptions(schema),
+		// Prefill the Actor's own default, so adding a field doesn't change what it gets.
+		// Without one, n8n leaves the field empty (booleans start as false).
+		...(defaultValue !== undefined ? { defaultValue } : {}),
+		// Show what must be filled in. The rest can be added from the list, and the server
+		// applies its own defaults to what's left out.
+		removed: !required,
+	};
+	// n8n's number input stores 0 as soon as the field is added, and that 0 would be sent in
+	// place of the Actor's own default. Without a default to prefill, take the number as text,
+	// which stays empty until filled in; the node converts it back (see `FieldTarget.isNumber`).
+	if (field.type === 'number' && typeof defaultValue !== 'number') field.type = 'string';
+	return field;
+}
+
+/** Where a field's value goes in the request. */
+export interface FieldTarget {
+	location: 'path' | 'query' | 'body' | 'wholeBody';
+	/** The parameter's or body property's name. */
+	name: string;
+	/** The schema is a number, so the value may be the number as text. */
+	isNumber: boolean;
+}
+
+interface FieldEntry extends FieldTarget {
+	field: ResourceMapperField;
+}
+
+function toEntry(
+	location: 'path' | 'query' | 'body',
+	name: string,
+	schema: JsonObject | undefined,
+	required: boolean,
+): FieldEntry {
+	return {
+		location,
+		name,
+		isNumber: schema?.type === 'integer' || schema?.type === 'number',
+		field: toField(`${location}:${name}`, name, schema, required),
+	};
+}
+
+function getFieldEntries(
+	document: JsonObject | undefined,
+	method: string,
+	path: string,
+): FieldEntry[] | undefined {
+	const operation = getEndpointOperation(document, method, path);
+	if (!document || !operation) return undefined;
+
+	// A placeholder such as `{itemId}` needs a value even when the document doesn't declare it.
+	const declared = new Set(
+		operation.parameters.filter((parameter) => parameter.in === 'path').map(({ name }) => name),
+	);
+	const undeclared = [...path.matchAll(/\{([^}]+)\}/g)]
+		.map(([, name]) => name)
+		.filter((name) => !declared.has(name))
+		.map((name): OpenApiParameter => ({ name, in: 'path' }));
+
+	const entries: FieldEntry[] = [];
+	for (const parameter of [...undeclared, ...operation.parameters]) {
+		if (parameter.in !== 'path' && parameter.in !== 'query') continue;
+		const schema = resolveRefs(document, parameter.schema) as JsonObject | undefined;
+		const required = parameter.in === 'path' || parameter.required === true;
+		entries.push(toEntry(parameter.in, parameter.name, schema, required));
+	}
+
+	if (method !== 'GET' && operation.bodySchema) {
+		const bodySchema = resolveRefs(document, operation.bodySchema) as JsonObject;
+		const properties = isObject(bodySchema.properties) ? bodySchema.properties : undefined;
+		if (properties && Object.keys(properties).length > 0) {
+			const requiredNames = new Set(Array.isArray(bodySchema.required) ? bodySchema.required : []);
+			for (const [name, schema] of Object.entries(properties)) {
+				entries.push(
+					toEntry('body', name, isObject(schema) ? schema : undefined, requiredNames.has(name)),
+				);
+			}
+		} else {
+			const field = toField(WHOLE_BODY_FIELD_ID, 'Body (JSON)', bodySchema, operation.bodyRequired);
+			// A body without a usable schema is edited as JSON either way.
+			if (field.type !== 'array') field.type = 'object';
+			delete field.options;
+			entries.push({ location: 'wholeBody', name: WHOLE_BODY_FIELD_ID, isNumber: false, field });
+		}
+	}
+	return entries;
+}
+
+/**
+ * Builds typed fields for an endpoint: path and query parameters, then the JSON body's
+ * top-level properties. A body that isn't an object with properties becomes one JSON field.
+ */
+export function getEndpointFields(
+	document: JsonObject | undefined,
+	method: string,
+	path: string,
+): ResourceMapperField[] | undefined {
+	const entries = getFieldEntries(document, method, path);
+	if (!entries) return undefined;
+	// Add the location to a label only when two parameters or body properties share a name.
+	const nameCounts = new Map<string, number>();
+	for (const { location, name } of entries) {
+		if (location !== 'wholeBody') nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
+	}
+	return entries.map(({ location, name, field }) =>
+		location !== 'wholeBody' && (nameCounts.get(name) ?? 0) > 1
+			? { ...field, displayName: `${name} (${location})` }
+			: field,
+	);
+}
+
+/** Where each of the endpoint's field values goes in the request, by field id. */
+export function getEndpointFieldTargets(
+	document: JsonObject | undefined,
+	method: string,
+	path: string,
+): Map<string, FieldTarget> {
+	return new Map(
+		(getFieldEntries(document, method, path) ?? []).map(({ field, ...target }) => [
+			field.id,
+			target,
+		]),
 	);
 }
