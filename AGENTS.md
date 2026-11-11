@@ -208,8 +208,8 @@ HTTP requests so `nock` can intercept them. Consequences:
 - n8n's node-creator action sidebar (via `useActionsGeneration.ts` → `resourceCategories()`)
   filters operation *properties* by `@version` but maps every *option* unconditionally —
   option-level `displayOptions` (including `'@version'`) is never evaluated there. This is why
-  `Actors` ships two `operation` selects: one with `'@version': [2]` (4 options, no scrape)
-  for new nodes, and one with `'@version': [1]` (all 5, incl. the deprecated option) for
+  `Actors` ships two `operation` selects: one with `'@version': [2]` (5 options, no scrape)
+  for new nodes, and one with `'@version': [1]` (all 6, incl. the deprecated option) for
   typeVersion-1 workflows. If a future v3 changes the operation list, the `[2]` gate on the v2
   select must be widened to `[2, 3]`.
 - Keep base URLs in `helpers/consts.ts`; `ApifyApi.credentials.ts` imports `APIFY_API_URL` from
