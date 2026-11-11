@@ -54,12 +54,9 @@ export const properties: INodeProperties[] = [
 		name: 'endpointQuery',
 		type: 'json',
 		default: '{}',
-		description:
-			'Query parameters as a JSON object, e.g. {"limit": 10}. Values for path parameters such as {itemId} go here too.',
-		displayOptions: { show, hide: { endpoint: placeholders } },
+		description: 'Query parameters as a JSON object, e.g. {"limit": 10}',
+		displayOptions: { show: { ...show, endpoint: [CUSTOM_ENDPOINT] } },
 	},
-	// Two Body properties, because the editor can't express "Custom Path with a method that takes
-	// a body, or a documented endpoint other than GET" in one rule. Only one is shown.
 	{
 		displayName: 'Body',
 		name: 'endpointBody',
@@ -75,14 +72,30 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Body',
-		name: 'endpointBody',
-		type: 'json',
-		default: '{}',
-		description: 'JSON request body',
-		displayOptions: {
-			show,
-			hide: { endpoint: [...placeholders, CUSTOM_ENDPOINT, { _cnd: { startsWith: 'GET ' } }] },
+		displayName: 'Parameters',
+		name: 'endpointParameters',
+		type: 'resourceMapper',
+		noDataExpression: true,
+		default: {
+			mappingMode: 'defineBelow',
+			value: null,
 		},
+		typeOptions: {
+			loadOptionsDependsOn: ['actorId.value', 'endpoint'],
+			resourceMapper: {
+				resourceMapperMethod: 'getServerActorEndpointFields',
+				mode: 'add',
+				valuesLabel: 'Parameters',
+				fieldWords: {
+					singular: 'parameter',
+					plural: 'parameters',
+				},
+				addAllFields: true,
+				multiKeyMatch: false,
+				supportAutoMap: false,
+			},
+		},
+		// Shown only once a documented endpoint is chosen.
+		displayOptions: { show, hide: { endpoint: [...placeholders, CUSTOM_ENDPOINT] } },
 	},
 ];

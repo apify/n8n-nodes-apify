@@ -10,6 +10,8 @@ import {
 	IHttpRequestOptions,
 	type INode,
 	INodeExecutionData,
+	type FieldType,
+	type ResourceMapperField,
 } from 'n8n-workflow';
 import {
 	DEFAULT_EXP_BACKOFF_EXPONENTIAL,
@@ -464,6 +466,83 @@ export function parseJsonParameter(
 		`${label} must be a JSON ${allowArray ? 'object or array' : 'object'}`,
 		{ itemIndex },
 	);
+}
+
+/**
+ * A JSON Schema property's resource mapper type: `options` for an `enum` (labelled by
+ * `enumTitles` where given; values that aren't strings, numbers or booleans are dropped, keeping
+ * titles paired with their values), else the type matching its `type`.
+ */
+export function getFieldTypeAndOptions(
+	schema: { type?: unknown; enum?: unknown; enumTitles?: unknown } = {},
+): Pick<ResourceMapperField, 'type' | 'options'> {
+	const titles: unknown[] = Array.isArray(schema.enumTitles) ? schema.enumTitles : [];
+	const options = (Array.isArray(schema.enum) ? schema.enum : [])
+		.map((value: unknown, index) => ({ value, title: titles[index] }))
+		.filter(
+			(entry): entry is { value: string | number | boolean; title: unknown } =>
+				typeof entry.value === 'string' ||
+				typeof entry.value === 'number' ||
+				typeof entry.value === 'boolean',
+		)
+		.map(({ value, title }) => ({
+			name: typeof title === 'string' ? title : String(value),
+			value,
+		}));
+	return options.length > 0 ? { type: 'options', options } : { type: getFieldType(schema.type) };
+}
+
+function getFieldType(type: unknown): FieldType {
+	switch (type) {
+		case 'boolean':
+			return 'boolean';
+		case 'integer':
+		case 'number':
+			return 'number';
+		case 'array':
+			return 'array';
+		case 'object':
+			return 'object';
+		default:
+			return 'string';
+	}
+}
+
+/** A schema value as a field's `defaultValue`; object and array fields are edited as JSON text. */
+export function toFieldDefaultValue(value: unknown): ResourceMapperField['defaultValue'] {
+	if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+		return value;
+	}
+	if (value !== null && typeof value === 'object') return JSON.stringify(value, null, 2);
+	return undefined;
+}
+
+/**
+ * A resource mapper's values for item `i`, without unset (`null`) fields so the API's own
+ * defaults apply. Reading `.value` makes n8n validate the fields and parse the JSON of object
+ * and array fields.
+ */
+export function getResourceMapperValues(
+	this: IExecuteFunctions,
+	parameterName: string,
+	i: number,
+): IDataObject {
+	const values = this.getNodeParameter(`${parameterName}.value`, i, {}) as IDataObject | null;
+	return Object.fromEntries(
+		Object.entries(values ?? {}).filter(([, value]) => value !== null && value !== undefined),
+	);
+}
+
+/** An error's message, plus the API's own reason that NodeApiError keeps in `description`. */
+export function getErrorReason(error: unknown): string {
+	if (!(error instanceof Error)) return String(error);
+	const rawDescription = (error as { description?: unknown }).description;
+	// Drop link tags meant for the error view; a notice escapes them and would show raw tags.
+	const description =
+		typeof rawDescription === 'string' ? rawDescription.replace(/<\/?a\b[^>]*>/g, '') : undefined;
+	return description && description !== error.message
+		? `${error.message} (${description})`
+		: error.message;
 }
 
 const TEXT_CONTENT_TYPES =
