@@ -4,7 +4,7 @@ export const APIFY_CONSOLE_URL = 'https://console.apify.com';
 // Apify's 403 error type when the Actor's default build tag has no build.
 export const MISSING_DEFAULT_BUILD_ERROR_TYPE = 'unknown-build-tag';
 // Standby endpoint of the apify/web-fetch Actor (per the integrations-team contract).
-export const WEB_FETCH_STANDBY_URL = 'https://web-fetch.apify.actor/';
+export const WEB_FETCH_STANDBY_URL = 'https://web-fetch.apify.actor';
 export const TERMINAL_RUN_STATUSES = ['SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'];
 export const WAIT_FOR_FINISH_POLL_INTERVAL = 1000;
 // Per-request HTTP timeout (ms). Prevents a stalled socket from hanging the node indefinitely.
