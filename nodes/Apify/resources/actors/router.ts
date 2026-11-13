@@ -6,11 +6,13 @@ import { name as runActorAndGetDatasetOperationName } from './run-actor-and-get-
 import { webFetchName as webFetchOperationName } from './web-fetch';
 import { scrapeSingleUrlName as scrapeSingleUrlOperationName } from './scrape-single-url';
 import { name as getLastRunOperationName } from './get-last-run';
+import { name as sendServerActorRequestOperationName } from './send-server-actor-request';
 import { runActor } from './run-actor/execute';
 import { webFetch } from './web-fetch/execute';
 import { scrapeSingleUrl } from './scrape-single-url/execute';
 import { getLastRun } from './get-last-run/execute';
 import { runActorAndGetDataset } from './run-actor-and-get-dataset/execute';
+import { sendServerActorRequest } from './send-server-actor-request/execute';
 
 export async function actorsRouter(
 	this: IExecuteFunctions,
@@ -31,6 +33,8 @@ export async function actorsRouter(
 			return await runActor.call(this, i);
 		case runActorAndGetDatasetOperationName:
 			return await runActorAndGetDataset.call(this, i);
+		case sendServerActorRequestOperationName:
+			return await sendServerActorRequest.call(this, i);
 		case webFetchOperationName:
 			return await webFetch.call(this, i);
 		case scrapeSingleUrlOperationName:
