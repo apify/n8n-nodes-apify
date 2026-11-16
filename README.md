@@ -176,6 +176,7 @@ For example, you can scrape data from a website using an Actor and then use an A
 The node supports two authentication methods:
 
 1. **API key authentication**
+   - Create an API token for n8n in [Apify Console](https://console.apify.com/settings/integrations?createApiToken=true&for=n8n&utm_source=n8n&utm_medium=integrations) and copy it right after creating it — it is shown only once
    - Configure your Apify API key in the n8n credentials section under `apifyApi`
 
 2. **OAuth2 authentication** (available only in n8n cloud)
