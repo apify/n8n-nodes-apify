@@ -3,7 +3,7 @@ import {
   INodeExecutionData,
   NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, toNodeApiError } from '../../../resources/genericFunctions';
+import { apiPath, apiRequest, toNodeApiError } from '../../../resources/genericFunctions';
 
 export async function abortRun(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
   const runId = this.getNodeParameter('abortRunId', i) as string;
@@ -16,7 +16,7 @@ export async function abortRun(this: IExecuteFunctions, i: number): Promise<INod
   try {
     const apiResult = await apiRequest.call(this, {
       method: 'POST',
-      uri: `/v2/actor-runs/${runId}/abort`,
+      uri: apiPath`/v2/actor-runs/${runId}/abort`,
       qs: gracefully ? { gracefully: true } : {},
     });
 

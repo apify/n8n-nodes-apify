@@ -1,6 +1,7 @@
 /* eslint-disable */
 import {
 	sleep,
+	ApplicationError,
 	NodeApiError,
 	NodeOperationError,
 	type IDataObject,
@@ -63,6 +64,27 @@ function isNodeApiError(error: unknown): boolean {
  */
 export function toNodeApiError(node: INode, error: any): Error {
 	return isNodeApiError(error) ? error : new NodeApiError(node, error);
+}
+
+/**
+ * Encode `value` as a single URL path segment. `''`, `.` and `..` are rejected rather than
+ * encoded, because URL parsers resolve dot segments even when percent-encoded.
+ * `~` is left as-is by `encodeURIComponent`, so `username~actor-name` IDs are unchanged.
+ */
+export function toPathSegment(value: unknown): string {
+	const segment = String(value ?? '');
+	if (segment === '' || segment === '.' || segment === '..') {
+		throw new ApplicationError(`Invalid ID or key: "${segment}"`);
+	}
+	return encodeURIComponent(segment);
+}
+
+/**
+ * Tagged template for Apify API paths that encodes every interpolated value as one path
+ * segment, e.g. apiPath`/v2/actor-runs/${runId}/abort`.
+ */
+export function apiPath(strings: TemplateStringsArray, ...values: unknown[]): string {
+	return strings.reduce((path, part, i) => path + toPathSegment(values[i - 1]) + part);
 }
 
 /**
@@ -321,11 +343,12 @@ export async function pollRunStatus(
 	// The max timeout is based on run timeout or maximum, in case there is no timeout.
 	let maxDurationMs = WAIT_FOR_FINISH_MAX_DURATION_MS;
 	let timeoutChecked = false;
+	const runPath = apiPath`/v2/actor-runs/${runId}`;
 	while (true) {
 		try {
 			const pollResult = await apiRequest.call(this, {
 				method: 'GET',
-				uri: `/v2/actor-runs/${runId}`,
+				uri: runPath,
 			});
 			const status = pollResult?.data?.status;
 			lastRunData = pollResult?.data;

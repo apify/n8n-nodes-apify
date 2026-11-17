@@ -5,6 +5,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import {
+	apiPath,
 	apiRequest,
 	customBodyParser,
 	escapeHtml,
@@ -60,7 +61,7 @@ export async function executeActor(
 	// 1. Get the actor details
 	const actor = await apiRequest.call(this, {
 		method: 'GET',
-		uri: `/v2/acts/${actorId}`,
+		uri: apiPath`/v2/acts/${actorId}`,
 	});
 	if (!actor || !actor.data) {
 		throw new NodeApiError(this.getNode(), {
@@ -122,7 +123,7 @@ export async function getBuildByTag(
 	}
 	const buildResp = await apiRequest.call(this, {
 		method: 'GET',
-		uri: `/v2/actor-builds/${buildByTag.buildId}`,
+		uri: apiPath`/v2/actor-builds/${buildByTag.buildId}`,
 	});
 	if (!buildResp || !buildResp.data) {
 		throw new NodeApiError(this.getNode(), {
@@ -140,7 +141,7 @@ export async function getDefaultBuild(
 	try {
 		defaultBuildResp = await apiRequest.call(this, {
 			method: 'GET',
-			uri: `/v2/acts/${actorId}/builds/default`,
+			uri: apiPath`/v2/acts/${actorId}/builds/default`,
 		});
 	} catch (error) {
 		// n8n titles every 403 as a credentials error; give a missing build a clear message.
@@ -188,7 +189,7 @@ export async function runActorApi(
 ) {
 	return await apiRequest.call(this, {
 		method: 'POST',
-		uri: `/v2/acts/${actorId}/runs`,
+		uri: apiPath`/v2/acts/${actorId}/runs`,
 		body: mergedInput,
 		qs,
 	});

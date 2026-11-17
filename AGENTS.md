@@ -53,6 +53,10 @@ creates duplicate Actor runs.
 message. The approval URL is validated and goes only in `description` — n8n rewrites any
 `message` containing an error code — as plain text for AI tools and an escaped `<a>` for the UI.
 
+Build Apify API paths with the `apiPath` tagged template (e.g. ``apiPath`/v2/actor-runs/${runId}` ``),
+never a plain template string. It encodes each interpolated ID or key as one path segment
+(`username~actor-name` stays as-is) and rejects `''`, `.` and `..`.
+
 Rethrow caught errors with `toNodeApiError`, never a bare `new NodeApiError(node, error)`.
 `NodeApiError` only passes through its own instances (`instanceof`), so when a second
 `n8n-workflow` copy sits next to the node (a linked dev setup, some manual installs), n8n's error
