@@ -48,7 +48,7 @@ jobs:
           npm version ${{ env.VERSION }} --no-git-tag-version
 
       - name: Commit version update
-        uses: apify/actions/signed-commit@v1.6.2
+        uses: apify/actions/signed-commit@6a234394aa4b2a753d3ed294c3e069d044656406 # v1.6.2
         with:
           message: "chore(release): set version to ${{ env.VERSION }} [skip ci]"
           add: 'package.json package-lock.json'
