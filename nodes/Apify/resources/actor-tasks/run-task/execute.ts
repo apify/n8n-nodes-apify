@@ -4,7 +4,12 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, customBodyParser, pollRunStatus } from '../../../resources/genericFunctions';
+import {
+	apiPath,
+	apiRequest,
+	customBodyParser,
+	pollRunStatus,
+} from '../../../resources/genericFunctions';
 
 export async function runTask(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const actorTaskId = this.getNodeParameter('actorTaskId', i, undefined, {
@@ -41,7 +46,7 @@ export async function runTask(this: IExecuteFunctions, i: number): Promise<INode
 
 	const apiResult = await apiRequest.call(this, {
 		method: 'POST',
-		uri: `/v2/actor-tasks/${actorTaskId}/runs`,
+		uri: apiPath`/v2/actor-tasks/${actorTaskId}/runs`,
 		body: input,
 		qs,
 	});

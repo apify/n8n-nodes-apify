@@ -1,5 +1,5 @@
 import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-workflow';
-import { apiRequest, toNodeApiError } from '../../../resources/genericFunctions';
+import { apiPath, apiRequest, toNodeApiError } from '../../../resources/genericFunctions';
 import { consts } from '../../../helpers';
 
 function normalizeCommaSeparatedList(value: string): string {
@@ -36,7 +36,7 @@ export async function getItems(this: IExecuteFunctions, i: number): Promise<INod
 	try {
 		const itemsArray = await apiRequest.call(this, {
 			method: 'GET',
-			uri: `/v2/datasets/${datasetId}/items`,
+			uri: apiPath`/v2/datasets/${datasetId}/items`,
 			qs,
 			timeout: consts.DATASET_REQUEST_TIMEOUT_MS,
 		});

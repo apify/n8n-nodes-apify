@@ -1,5 +1,5 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
-import { apiRequestAllItems } from './genericFunctions';
+import { apiPath, apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
 	displayName: 'Key-Value Store Record Key',
@@ -60,7 +60,7 @@ export async function listKeyValueStoreRecordKeys(
 
 	const searchResults = await apiRequestAllItems.call(this, {
 		method: 'GET',
-		uri: `/v2/key-value-stores/${storeIdParam.value}/keys`,
+		uri: apiPath`/v2/key-value-stores/${storeIdParam.value}/keys`,
 		qs: {
 			limit: 100,
 			offset: 0,
