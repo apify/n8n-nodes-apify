@@ -47,13 +47,43 @@ const makeHttpRequest = (options: any): Promise<any> => {
 		}
 
 		const req = protocol.request(reqOptions, (res) => {
-			let data = '';
+			// Mirror n8n, which follows redirects with the same headers (credentials included, even
+			// to another host) unless `disableFollowRedirect` is set.
+			const status = res.statusCode ?? 0;
+			if (status >= 300 && status < 400 && res.headers.location && !options.disableFollowRedirect) {
+				res.resume();
+				const keepMethod = status === 307 || status === 308;
+				resolve(
+					makeHttpRequest({
+						...options,
+						url: new URL(res.headers.location, url).toString(),
+						params: undefined,
+						method: keepMethod ? options.method : 'GET',
+						data: keepMethod ? options.data : undefined,
+					}),
+				);
+				return;
+			}
+
+			const chunks: Buffer[] = [];
 
 			res.on('data', (chunk) => {
-				data += chunk;
+				chunks.push(Buffer.from(chunk));
 			});
 
 			res.on('end', () => {
+				const raw = Buffer.concat(chunks);
+				const data = raw.toString('utf8');
+				// Mirror axios with `validateStatus: () => true` and `responseType: 'arraybuffer'`,
+				// as Server Actor requests use them: every status resolves with the raw bytes.
+				if (options.ignoreHttpStatusErrors) {
+					resolve({
+						data: options.encoding === 'arraybuffer' ? raw : data,
+						status: res.statusCode,
+						headers: res.headers,
+					});
+					return;
+				}
 				try {
 					const parsedData = data ? JSON.parse(data) : {};
 
@@ -119,7 +149,16 @@ const httpRequestWithAuthentication = async function (
 			params: options.qs,
 			data: options.body,
 			headers: options.headers,
+			encoding: options.encoding,
+			ignoreHttpStatusErrors: options.ignoreHttpStatusErrors,
+			disableFollowRedirect: options.disableFollowRedirect,
 		});
+
+		// n8n's `returnFullResponse` shape, used by Server Actor requests. Key-value store reads
+		// (`returnFullResponse` without `ignoreHttpStatusErrors`) keep the legacy shape below.
+		if (options.returnFullResponse && options.ignoreHttpStatusErrors) {
+			return { body: response.data, headers: response.headers, statusCode: response.status };
+		}
 
 		// For /items endpoint just return data
 		if (options.url.includes('/items')) return response.data;

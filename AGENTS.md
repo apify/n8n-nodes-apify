@@ -107,6 +107,33 @@ fields `getActorInputFields` loads from the input schema of the `build` tag's bu
 on all four and sent **only when non-null and `> 0`** — `0`/empty deliberately means no limit.
 `Apify.node.spec.ts` asserts every run-starting operation exposes it, so add it to any new one.
 
+### Server Actors — `actors/send-server-actor-request/`, `resources/serverActor.ts`
+
+`Actors → Send Server Actor request` sends one request to the Actor's `standbyUrl` and never
+starts a run. It is a separate operation on purpose: "Run" means an Actor run object across
+Apify's API and docs, so don't fold it back into `Run actor`. Its value
+`'Send Server Actor request'` is stored in workflows, so never rename it; the label is Title Case
+only because n8n's linter requires it. The operation folder holds its fields and the request flow
+like any other; `resources/serverActor.ts` holds what other Server Actor code shares
+(`getServerActorOrigin`, `SERVER_ACTOR_MESSAGES`), and the HTTP helpers it uses
+(`decodeResponseBody`, `getErrorFromBody`, `parseJsonParameter`, `isTimeoutError`,
+`toDescriptionText`) live in `genericFunctions.ts` for any operation. A Server Actor is
+`actorStandby.isEnabled` plus a `standbyUrl` on `APIFY_ACTOR_HOST_SUFFIX` (the token never goes
+elsewhere, and a path like `//other.host` can't move it). The request is `endpointMethod`,
+`endpointPath` and JSON `endpointQuery`/`endpointBody`; don't reuse `customBody`, which is Run
+actor's Input JSON.
+
+The request uses `disableRetries`, `ignoreHttpStatusErrors`, `encoding: 'arraybuffer'` and
+`SERVER_ACTOR_REQUEST_TIMEOUT_MS` (310 s, above Apify's 300 s so its 504 wins over n8n's
+misleading "server is offline"). It also sets `disableFollowRedirect`: n8n re-sends the token on
+a redirect to any host, so a 3xx comes back as the result. Errors carry the Actor's own message,
+set again after building the `NodeApiError` because n8n rewords any message containing a Node
+error code (`ETIMEDOUT` becomes "Retry on Fail" advice); never add retries or wording that
+suggests Retry On Fail, since every request may be charged. Binary responses throw.
+n8n renders error descriptions as HTML (sanitized, but links and images pass), so Actor-supplied
+text there goes through `toDescriptionText`, which escapes it except in AI tool mode, where the
+description reaches the agent as plain text.
+
 ### Trigger node — `ApifyTrigger.node.ts`
 
 Self-contained: its own properties (reusing the Actor/task locator overrides) plus
@@ -181,8 +208,8 @@ HTTP requests so `nock` can intercept them. Consequences:
 - n8n's node-creator action sidebar (via `useActionsGeneration.ts` → `resourceCategories()`)
   filters operation *properties* by `@version` but maps every *option* unconditionally —
   option-level `displayOptions` (including `'@version'`) is never evaluated there. This is why
-  `Actors` ships two `operation` selects: one with `'@version': [2]` (4 options, no scrape)
-  for new nodes, and one with `'@version': [1]` (all 5, incl. the deprecated option) for
+  `Actors` ships two `operation` selects: one with `'@version': [2]` (5 options, no scrape)
+  for new nodes, and one with `'@version': [1]` (all 6, incl. the deprecated option) for
   typeVersion-1 workflows. If a future v3 changes the operation list, the `[2]` gate on the v2
   select must be widened to `[2, 3]`.
 - Keep base URLs in `helpers/consts.ts`; `ApifyApi.credentials.ts` imports `APIFY_API_URL` from
