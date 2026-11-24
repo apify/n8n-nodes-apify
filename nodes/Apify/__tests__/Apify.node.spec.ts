@@ -525,7 +525,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockRunsList.data.items);
+				expect(data?.map((item: { json: any }) => item.json)).toEqual(mockRunsList.data.items);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -552,7 +552,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockRunsList.data.items);
+				expect(data?.map((item: { json: any }) => item.json)).toEqual(mockRunsList.data.items);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -754,7 +754,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockItems);
+				expect(data?.map((item: { json: any }) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -1248,7 +1248,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockItems);
+				expect(data?.map((item: { json: any }) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -1696,7 +1696,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockItems);
+				expect(data?.map((item: { json: any }) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -1929,95 +1929,80 @@ describe('Apify Node', () => {
 		});
 
 		it('apiPath encodes each value as one path segment', () => {
-			expect(apiPath`/v2/actor-runs/${'../acts/x/runs?a=b#c'}/abort`).toBe(
-				'/v2/actor-runs/..%2Facts%2Fx%2Fruns%3Fa%3Db%23c/abort',
-			);
+			expect(apiPath`/v2/actor-runs/${'a/b?c#d'}/abort`).toBe('/v2/actor-runs/a%2Fb%3Fc%23d/abort');
 			expect(apiPath`/v2/acts/${'janedoe~my-actor'}/runs`).toBe('/v2/acts/janedoe~my-actor/runs');
 			expect(apiPath`/v2/key-value-stores/${'abc'}/records/${'my key.json'}`).toBe(
 				'/v2/key-value-stores/abc/records/my%20key.json',
 			);
+			expect(apiPath`/v2/datasets/${'a.b'}/items`).toBe('/v2/datasets/a.b/items');
 		});
 
 		it.each(['', '.', '..'])('apiPath rejects %j', (value) => {
 			expect(() => apiPath`/v2/actor-runs/${value}`).toThrow('Invalid ID or key');
 		});
 
-		it('abort-run keeps a run ID with ../ and ? inside the abort endpoint', async () => {
-			const runId = '../../actor-tasks/janedoe~my-task/runs?x=';
-			const otherEndpoint = nock('https://api.apify.com')
-				.post('/v2/actor-tasks/janedoe~my-task/runs')
-				.query(true)
-				.reply(201, {});
+		it('abort-run encodes the run ID as one path segment', async () => {
 			const scope = nock('https://api.apify.com')
-				.post(`/v2/actor-runs/${encodeURIComponent(runId)}/abort`)
+				.post('/v2/actor-runs/a%2Fb%3Fc%23d/abort')
 				.reply(200, fixtures.abortRunResult());
 
 			const workflow = withNodeParameters(
 				require('./workflows/actor-runs/abort-run.workflow.json'),
 				'Abort run',
-				{ abortRunId: runId },
+				{ abortRunId: 'a/b?c#d' },
 			);
 			const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
 
 			const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Abort run');
 			expect(nodeResult.executionStatus).toBe('success');
 			expect(scope.isDone()).toBe(true);
-			expect(otherEndpoint.isDone()).toBe(false);
 		});
 
-		it('get-run keeps a run ID with ../ and # inside the run endpoint', async () => {
-			const runId = '../key-value-stores#';
-			const otherEndpoint = nock('https://api.apify.com')
-				.get('/v2/key-value-stores')
-				.reply(200, {});
+		it('get-run encodes the run ID as one path segment', async () => {
 			const scope = nock('https://api.apify.com')
-				.get(`/v2/actor-runs/${encodeURIComponent(runId)}`)
+				.get('/v2/actor-runs/a%2Fb%3Fc%23d')
 				.reply(200, fixtures.getRunResult());
 
 			const workflow = withNodeParameters(getRunWorkflow, 'Get run', {
-				runId: { __rl: true, value: runId, mode: 'id' },
+				runId: { __rl: true, value: 'a/b?c#d', mode: 'id' },
 			});
 			const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
 
 			const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Get run');
 			expect(nodeResult.executionStatus).toBe('success');
 			expect(scope.isDone()).toBe(true);
-			expect(otherEndpoint.isDone()).toBe(false);
 		});
 
-		it('get-run rejects a run ID of ".." without sending a request', async () => {
-			const otherEndpoint = nock('https://api.apify.com').get(/.*/).reply(200, {});
+		it.each(['.', '..'])(
+			'get-run rejects a run ID of %j without sending a request',
+			async (runId) => {
+				const anyRequest = nock('https://api.apify.com').get(/.*/).reply(200, {});
 
-			const workflow = withNodeParameters(getRunWorkflow, 'Get run', {
-				runId: { __rl: true, value: '..', mode: 'id' },
-			});
-			await expect(executeWorkflow({ credentialsHelper, workflow })).rejects.toThrow(
-				'Invalid ID or key: ".."',
-			);
-			expect(otherEndpoint.isDone()).toBe(false);
-		});
+				const workflow = withNodeParameters(getRunWorkflow, 'Get run', {
+					runId: { __rl: true, value: runId, mode: 'id' },
+				});
+				await expect(executeWorkflow({ credentialsHelper, workflow })).rejects.toThrow(
+					`Invalid ID or key: "${runId}"`,
+				);
+				expect(anyRequest.isDone()).toBe(false);
+			},
+		);
 
-		it('get-key-value-store-record keeps a record key with ../ and # inside the records endpoint', async () => {
-			const storeId = 'yTfMu13hDFe9bRjx6';
-			const recordKey = '../../../acts/janedoe~my-actor#';
-			const otherEndpoint = nock('https://api.apify.com')
-				.get('/v2/acts/janedoe~my-actor')
-				.reply(200, {});
+		it('get-key-value-store-record encodes the record key as one path segment', async () => {
 			const scope = nock('https://api.apify.com')
-				.get(`/v2/key-value-stores/${storeId}/records/${encodeURIComponent(recordKey)}`)
+				.get('/v2/key-value-stores/yTfMu13hDFe9bRjx6/records/my%20key%2Fwith%3Fspecial%23chars')
 				.reply(200, fixtures.getKeyValueStoreRecordResult());
 
 			const workflow = withNodeParameters(
 				require('./workflows/key-value-stores/get-key-value-store-record.workflow.json'),
 				'Get Key-Value Store Record',
-				{ recordKey: { __rl: true, value: recordKey, mode: 'id' } },
+				{ recordKey: { __rl: true, value: 'my key/with?special#chars', mode: 'id' } },
 			);
 			const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
 
 			const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Get Key-Value Store Record');
 			expect(nodeResult.executionStatus).toBe('success');
 			expect(scope.isDone()).toBe(true);
-			expect(otherEndpoint.isDone()).toBe(false);
 		});
 	});
 });
