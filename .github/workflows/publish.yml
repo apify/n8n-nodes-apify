@@ -14,13 +14,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Set up Node.js & cache npm
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: '26.13.0'
           registry-url: 'https://registry.npmjs.org'
@@ -48,7 +48,7 @@ jobs:
           npm version ${{ env.VERSION }} --no-git-tag-version
 
       - name: Commit version update
-        uses: apify/actions/signed-commit@v1.6.2
+        uses: apify/actions/signed-commit@6a234394aa4b2a753d3ed294c3e069d044656406 # v1.6.2
         with:
           message: "chore(release): set version to ${{ env.VERSION }} [skip ci]"
           add: 'package.json package-lock.json'
