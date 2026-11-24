@@ -175,6 +175,18 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(server.isDone()).toBe(true);
 		});
 
+		it('should encode the Actor ID as one path segment', async () => {
+			const api = nock('https://api.apify.com')
+				.get('/v2/acts/a%2Fb%3Fc%23d')
+				.reply(200, serverActor());
+			const server = nock(SERVER_URL).post('/').reply(200, { ok: true });
+
+			await run({ actorId: { __rl: true, value: 'a/b?c#d', mode: 'id' } });
+
+			expect(api.isDone()).toBe(true);
+			expect(server.isDone()).toBe(true);
+		});
+
 		it('should refuse an Actor whose server interface was turned off', async () => {
 			nock('https://api.apify.com')
 				.get(`/v2/acts/${ACTOR_ID}`)
