@@ -115,7 +115,8 @@ Apify's API and docs, so don't fold it back into `Run actor`. Its value
 `'Send Server Actor request'` is stored in workflows, so never rename it; the label is Title Case
 only because n8n's linter requires it. The operation folder holds its fields and the request flow
 like any other; `resources/serverActor.ts` holds what other Server Actor code shares (the Actor
-lookup `getServerActorOrigin`, the per-execution OpenAPI cache `getServerActorOpenApi`, the
+lookup `getServerActorOrigin`, the per-execution OpenAPI cache `getServerActorOpenApi`, which
+keeps only successful lookups so the next item tries again, the
 `listServerActorEndpoints` loadOptions, the placeholder endpoint values and
 `SERVER_ACTOR_MESSAGES`); `resources/serverActorOpenApi.ts` is pure parsing of `webServerSchema`;
 and the HTTP helpers (`decodeResponseBody`, `getErrorFromBody`, `parseJsonParameter`,
@@ -126,7 +127,9 @@ plus a `standbyUrl` on `APIFY_ACTOR_HOST_SUFFIX` (the token never goes elsewhere
 
 The `endpoint` options are the OpenAPI paths plus `__custom__`; MCP-only Actors
 (`webServerMcpPath`, no OpenAPI) and Actors without a server interface get placeholder values
-whose execution throws the user message. Parameters are JSON: `endpointQuery` for every endpoint
+whose execution throws the user message. When the default build can't be loaded, the list is only
+Custom Path, with the escaped reason in its description, instead of n8n's bare "Error fetching
+options". Parameters are JSON: `endpointQuery` for every endpoint
 (values for path placeholders such as `{itemId}` are taken from it and removed) and
 `endpointBody`, declared twice with exclusive `displayOptions` — once for Custom Path with a
 method that takes a body, once for documented endpoints except `GET ` ones (`_cnd.startsWith`) —

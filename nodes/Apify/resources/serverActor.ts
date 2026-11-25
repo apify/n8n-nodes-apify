@@ -1,7 +1,8 @@
 import { IExecuteFunctions, ILoadOptionsFunctions, INodePropertyOptions } from 'n8n-workflow';
 import { APIFY_ACTOR_HOST_SUFFIX, APIFY_CONSOLE_URL } from '../helpers/consts';
+import { getErrorReason } from './actorInput';
 import { getDefaultBuild } from './executeActor';
-import { apiRequest } from './genericFunctions';
+import { apiRequest, escapeHtml } from './genericFunctions';
 import { parseOpenApiDocument, parseOpenApiEndpoints } from './serverActorOpenApi';
 
 /**
@@ -75,13 +76,17 @@ export async function getServerActorOpenApi(
 ): Promise<OpenApiDocument> {
 	const byActor = documentCache.get(this) ?? new Map<string, Promise<OpenApiDocument>>();
 	documentCache.set(this, byActor);
-	let document = byActor.get(actorId);
-	if (!document) {
-		document = (getDefaultBuild.call(this, actorId) as Promise<ServerActorBuild>).then((build) =>
-			parseOpenApiDocument(build.actorDefinition?.webServerSchema),
-		);
-		byActor.set(actorId, document);
-	}
+	const cached = byActor.get(actorId);
+	if (cached) return await cached;
+
+	const document = (getDefaultBuild.call(this, actorId) as Promise<ServerActorBuild>).then(
+		(build) => parseOpenApiDocument(build.actorDefinition?.webServerSchema),
+	);
+	byActor.set(actorId, document);
+	// Keep only successful lookups, so the next item (with Continue On Fail) tries again.
+	document.catch(() => {
+		if (byActor.get(actorId) === document) byActor.delete(actorId);
+	});
 	return await document;
 }
 
@@ -122,7 +127,21 @@ export async function listServerActorEndpoints(
 		];
 	}
 
-	const build = (await getDefaultBuild.call(this, actorId)) as ServerActorBuild;
+	let build: ServerActorBuild;
+	try {
+		build = (await getDefaultBuild.call(this, actorId)) as ServerActorBuild;
+	} catch (error) {
+		// Without the build there's no endpoint list, but a request to a path may still work.
+		// The reason goes where n8n would otherwise only say "Error fetching options".
+		return [
+			{
+				name: 'Custom Path',
+				value: CUSTOM_ENDPOINT,
+				// n8n renders option descriptions as HTML.
+				description: `Couldn't load the Actor's endpoints: ${escapeHtml(getErrorReason(error))}`,
+			},
+		];
+	}
 	const document = parseOpenApiDocument(build.actorDefinition?.webServerSchema);
 	if (!document && build.actorDefinition?.webServerMcpPath) {
 		return [

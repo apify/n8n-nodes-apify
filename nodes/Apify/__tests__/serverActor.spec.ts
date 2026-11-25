@@ -322,6 +322,29 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(scope.isDone()).toBe(true);
 		});
 
+		it("should still offer Custom Path, with the reason, when the default build can't be loaded", async () => {
+			const scope = nock('https://api.apify.com')
+				.get(`/v2/acts/${ACTOR_ID}`)
+				.reply(200, serverActor())
+				.get(`/v2/acts/${ACTOR_ID}/builds/default`)
+				.reply(404, {
+					error: {
+						type: 'unknown-build-tag',
+						message: 'Build with tag <b>latest</b> was not found',
+					},
+				});
+
+			const options = await listEndpoints().call(context());
+
+			expect(options).toHaveLength(1);
+			expect(options[0]).toMatchObject({ name: 'Custom Path', value: CUSTOM_ENDPOINT });
+			expect(options[0].description).toContain(`Actor ${ACTOR_ID} has no build for its default`);
+			// n8n renders option descriptions as HTML: the API's text is escaped and links are dropped.
+			expect(options[0].description).toContain('Build with tag &lt;b&gt;latest&lt;/b&gt;');
+			expect(options[0].description).not.toMatch(/<a\b|<b>/);
+			expect(scope.isDone()).toBe(true);
+		});
+
 		it('should say when the Actor has no server interface, without Custom Path', async () => {
 			const scope = nock('https://api.apify.com')
 				.get(`/v2/acts/${ACTOR_ID}`)
@@ -685,6 +708,23 @@ describe('Server Actors (Send Server Actor request)', () => {
 
 			expect(first).toEqual(openApi);
 			expect(second).toBe(first);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should look up the OpenAPI again after a failed lookup, instead of keeping the failure', async () => {
+			const scope = nock('https://api.apify.com')
+				.get(`/v2/acts/${ACTOR_ID}/builds/default`)
+				.reply(404, { error: { type: 'record-not-found', message: 'Actor build was not found' } })
+				.get(`/v2/acts/${ACTOR_ID}/builds/default`)
+				.reply(200, buildWith({ webServerSchema: openApi }));
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: sendServerActorRequestWorkflow.nodes[0],
+			}) as unknown as IExecuteFunctions;
+
+			await expect(getServerActorOpenApi.call(context, ACTOR_ID)).rejects.toThrow();
+			// The next item of the same execution, for example with Continue On Fail, tries again.
+			await expect(getServerActorOpenApi.call(context, ACTOR_ID)).resolves.toEqual(openApi);
 			expect(scope.isDone()).toBe(true);
 		});
 

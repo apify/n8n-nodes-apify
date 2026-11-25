@@ -109,7 +109,8 @@ function getInputSchema(
 	}
 }
 
-function getErrorReason(error: unknown): string {
+/** An error's message, plus the API's own reason that NodeApiError keeps in `description`. */
+export function getErrorReason(error: unknown): string {
 	if (!(error instanceof Error)) return String(error);
 	// NodeApiError keeps the API's own message (e.g. "Actor build was not found") in `description`.
 	const rawDescription = (error as { description?: unknown }).description;
