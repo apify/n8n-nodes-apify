@@ -172,6 +172,44 @@ export function getEndpointOperation(
 	};
 }
 
+/**
+ * The schema a field takes its type from. Pydantic and FastAPI write an optional value as
+ * `anyOf: [<schema>, { type: 'null' }]` or `type: [<type>, 'null']`, and older Pydantic wraps a
+ * single `$ref` in `allOf`. With exactly one non-null branch, that branch gives the type, and the
+ * wrapper's own keywords, such as `default`, win. A value must match every `allOf` branch, so
+ * branches that extend a base schema give their one shared type. Unions of several types are
+ * left as they are, so their fields stay text.
+ */
+function unwrapSchema(schema: unknown): JsonObject | undefined {
+	if (!isObject(schema)) return undefined;
+	let result = schema;
+	for (const keyword of ['anyOf', 'oneOf', 'allOf']) {
+		const branches = result[keyword];
+		if (!Array.isArray(branches)) continue;
+		const nonNull = branches.filter((branch) => !(isObject(branch) && branch.type === 'null'));
+		if (nonNull.length === 1 && isObject(nonNull[0])) {
+			const wrapper = { ...result };
+			delete wrapper[keyword];
+			result = { ...nonNull[0], ...wrapper };
+		} else if (keyword === 'allOf' && result.type === undefined) {
+			const types = new Set(
+				nonNull.map((branch) => (isObject(branch) ? withoutNull(branch.type) : undefined)),
+			);
+			types.delete(undefined);
+			if (types.size === 1) result = { ...result, type: [...types][0] };
+		}
+	}
+	const type = withoutNull(result.type);
+	return type === result.type ? result : { ...result, type };
+}
+
+/** A `type` list such as `['integer', 'null']` as its one non-null type; anything else as is. */
+function withoutNull(type: unknown): unknown {
+	if (!Array.isArray(type)) return type;
+	const types = type.filter((entry) => entry !== 'null');
+	return types.length === 1 ? types[0] : type;
+}
+
 /** Names of an operation's array query parameters that are sent comma-separated (`explode: false`). */
 export function getNonExplodedQueryParams(parameters: OpenApiParameter[]): Set<string> {
 	return new Set(
@@ -256,20 +294,18 @@ function getFieldEntries(
 	const entries: FieldEntry[] = [];
 	for (const parameter of [...undeclared, ...operation.parameters]) {
 		if (parameter.in !== 'path' && parameter.in !== 'query') continue;
-		const schema = resolveRefs(document, parameter.schema) as JsonObject | undefined;
+		const schema = unwrapSchema(resolveRefs(document, parameter.schema));
 		const required = parameter.in === 'path' || parameter.required === true;
 		entries.push(toEntry(parameter.in, parameter.name, schema, required));
 	}
 
 	if (method !== 'GET' && operation.bodySchema) {
-		const bodySchema = resolveRefs(document, operation.bodySchema) as JsonObject;
+		const bodySchema = unwrapSchema(resolveRefs(document, operation.bodySchema)) ?? {};
 		const properties = isObject(bodySchema.properties) ? bodySchema.properties : undefined;
 		if (properties && Object.keys(properties).length > 0) {
 			const requiredNames = new Set(Array.isArray(bodySchema.required) ? bodySchema.required : []);
 			for (const [name, schema] of Object.entries(properties)) {
-				entries.push(
-					toEntry('body', name, isObject(schema) ? schema : undefined, requiredNames.has(name)),
-				);
+				entries.push(toEntry('body', name, unwrapSchema(schema), requiredNames.has(name)));
 			}
 		} else {
 			const field = toField(WHOLE_BODY_FIELD_ID, 'Body (JSON)', bodySchema, operation.bodyRequired);

@@ -459,6 +459,86 @@ describe('Server Actors (Send Server Actor request)', () => {
 				isNumber: true,
 			});
 		});
+
+		it('should type optional values from their non-null branch, as Pydantic writes them', () => {
+			const optional = (schema: object, extra: object = {}) => ({
+				anyOf: [schema, { type: 'null' }],
+				...extra,
+			});
+			const document = {
+				paths: {
+					'/p': {
+						post: {
+							parameters: [
+								{ name: 'page', in: 'query', schema: optional({ type: 'integer' }) },
+								{ name: 'sort', in: 'query', schema: { $ref: '#/components/schemas/Sort' } },
+							],
+							requestBody: {
+								content: {
+									'application/json': {
+										schema: optional({ $ref: '#/components/schemas/Body' }),
+									},
+								},
+							},
+						},
+					},
+				},
+				components: {
+					schemas: {
+						Sort: optional({ type: 'string', enum: ['asc', 'desc'] }, { default: 'asc' }),
+						Body: {
+							type: 'object',
+							properties: {
+								limit: optional({ type: 'integer' }, { default: null }),
+								depth: optional({ type: 'integer' }, { default: 2 }),
+								tags: optional({ type: 'array', items: { type: 'string' } }),
+								flag: { type: ['boolean', 'null'] },
+								meta: { oneOf: [{ type: 'object' }, { type: 'null' }] },
+								mode: { allOf: [{ $ref: '#/components/schemas/Mode' }], default: 'fast' },
+								// As in apify/openrouter: a base schema extended with more properties.
+								reasoning: optional({
+									allOf: [
+										{ $ref: '#/components/schemas/Base' },
+										{ type: 'object', properties: { enabled: { type: 'boolean' } } },
+									],
+								}),
+								either: { anyOf: [{ type: 'integer' }, { type: 'string' }] },
+							},
+						},
+						Mode: { type: 'string', enum: ['fast', 'slow'] },
+						Base: { type: ['object', 'null'], properties: { effort: { type: 'string' } } },
+					},
+				},
+			};
+
+			const fields = Object.fromEntries(
+				getEndpointFields(document, 'POST', '/p')!.map((field) => [
+					field.id,
+					{ type: field.type, defaultValue: field.defaultValue },
+				]),
+			);
+			expect(fields).toEqual({
+				// No default, so the number is entered as text and converted when sent.
+				'query:page': { type: 'string', defaultValue: undefined },
+				'query:sort': { type: 'options', defaultValue: 'asc' },
+				'body:limit': { type: 'string', defaultValue: undefined },
+				'body:depth': { type: 'number', defaultValue: 2 },
+				'body:tags': { type: 'array', defaultValue: undefined },
+				'body:flag': { type: 'boolean', defaultValue: undefined },
+				'body:meta': { type: 'object', defaultValue: undefined },
+				'body:mode': { type: 'options', defaultValue: 'fast' },
+				'body:reasoning': { type: 'object', defaultValue: undefined },
+				// A union of two types can't have one input, so it stays text.
+				'body:either': { type: 'string', defaultValue: undefined },
+			});
+
+			const targets = getEndpointFieldTargets(document, 'POST', '/p');
+			expect([...targets].filter(([, target]) => target.isNumber).map(([id]) => id)).toEqual([
+				'query:page',
+				'body:limit',
+				'body:depth',
+			]);
+		});
 	});
 
 	describe('Server Actor picker (listSearch)', () => {

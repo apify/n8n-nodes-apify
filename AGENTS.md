@@ -143,7 +143,9 @@ options". A documented endpoint's parameters are the
 the value goes (`path:`, `query:`, `body:`, or a lone `body` for a non-object body); keep that
 convention. Execution looks each id up in `getEndpointFieldTargets` (built from the same entries
 as the fields) rather than parsing it. A path placeholder the OpenAPI doesn't declare still gets a
-required `path:` field. A field gets the schema's `default` as its `defaultValue`. Number fields
+required `path:` field. Fields and their targets are typed from `unwrapSchema`: an optional value
+(`anyOf`/`oneOf` with one non-null branch, `type: [x, 'null']`, an `allOf` whose branches share one
+type) takes that type, while a real union stays text. A field gets the schema's `default` as its `defaultValue`. Number fields
 *without* a default are typed `string`: n8n's number input stores `0` as soon as the field is
 added, which would be sent in place of the Actor's default, so their target is `isNumber` and
 execution converts the text back (empty means left out). Booleans without a default start as
