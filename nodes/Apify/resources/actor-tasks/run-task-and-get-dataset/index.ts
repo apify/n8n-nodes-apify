@@ -6,7 +6,7 @@ import { runHooks } from './hooks';
 export const name = 'Run task and get dataset';
 
 const rawOption: INodePropertyOptions = {
-	name: 'Run Task and Get Dataset',
+	name: 'Run and Get Dataset',
 	value: 'Run task and get dataset',
 	action: 'Run task and get dataset',
 	description:

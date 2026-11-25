@@ -6,7 +6,7 @@ import { runHooks } from './hooks';
 export const name = 'Run task';
 
 const rawOption: INodePropertyOptions = {
-	name: 'Run Task',
+	name: 'Run',
 	value: 'Run task',
 	action: 'Run task',
 	description:
