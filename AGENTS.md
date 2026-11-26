@@ -107,6 +107,8 @@ fields `getActorInputFields` loads from the input schema of the `build` tag's bu
 on all four and sent **only when non-null and `> 0`** — `0`/empty deliberately means no limit.
 `Apify.node.spec.ts` asserts every run-starting operation exposes it, so add it to any new one.
 
+### Server Actors — `actors/send-server-actor-request/`, `resources/serverActor.ts`
+
 `Actors → Send Server Actor request` sends one request to the Actor's `standbyUrl` and never
 starts a run. It is a separate operation on purpose: "Run" means an Actor run object across
 Apify's API and docs, so don't fold it back into `Run actor`. Its value
