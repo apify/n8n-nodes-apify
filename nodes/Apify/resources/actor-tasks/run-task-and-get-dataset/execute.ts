@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, customBodyParser, pollRunStatus } from '../../genericFunctions';
+import { apiPath, apiRequest, customBodyParser, pollRunStatus } from '../../genericFunctions';
 import { consts } from '../../../helpers';
 
 export async function runTaskAndGetDataset(
@@ -44,7 +44,7 @@ export async function runTaskAndGetDataset(
 
 	const apiResult = await apiRequest.call(this, {
 		method: 'POST',
-		uri: `/v2/actor-tasks/${actorTaskId}/runs`,
+		uri: apiPath`/v2/actor-tasks/${actorTaskId}/runs`,
 		body: input,
 		qs,
 	});
@@ -72,7 +72,7 @@ export async function runTaskAndGetDataset(
 
 	const datasetItems = await apiRequest.call(this, {
 		method: 'GET',
-		uri: `/v2/datasets/${lastRunData.defaultDatasetId}/items`,
+		uri: apiPath`/v2/datasets/${lastRunData.defaultDatasetId}/items`,
 		qs: { format: 'json' },
 		timeout: consts.DATASET_REQUEST_TIMEOUT_MS,
 	});

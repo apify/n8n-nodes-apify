@@ -2,7 +2,7 @@ import { IExecuteFunctions, ILoadOptionsFunctions, INodePropertyOptions } from '
 import { APIFY_ACTOR_HOST_SUFFIX, APIFY_CONSOLE_URL } from '../helpers/consts';
 import { getErrorReason } from './actorInput';
 import { getDefaultBuild } from './executeActor';
-import { apiRequest, escapeHtml } from './genericFunctions';
+import { apiPath, apiRequest, escapeHtml } from './genericFunctions';
 import { parseOpenApiDocument, parseOpenApiEndpoints } from './serverActorOpenApi';
 
 /**
@@ -51,7 +51,7 @@ export async function getServerActorOrigin(
 ): Promise<string | undefined> {
 	const { data: actor } = (await apiRequest.call(this, {
 		method: 'GET',
-		uri: `/v2/acts/${actorId}`,
+		uri: apiPath`/v2/acts/${actorId}`,
 	})) as { data?: ServerActor };
 	if (!actor?.actorStandby?.isEnabled || typeof actor.standbyUrl !== 'string') return undefined;
 	try {
