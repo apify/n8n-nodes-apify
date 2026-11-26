@@ -13,7 +13,7 @@ const CHARGED = 'The request may still have been charged.';
 
 export const SERVER_ACTOR_MESSAGES = {
 	noServerInterface:
-		'This Actor has no server interface. Use the Run an Actor operation to start a run instead.',
+		'This Actor has no server interface. Use the Run operation to start a run instead.',
 	timeout: `The Actor didn't answer in time (Apify waits up to 300 s). ${CHARGED}`,
 	binary: `The Actor returned a binary response, which is not supported yet. ${CHARGED}`,
 	charged: CHARGED,

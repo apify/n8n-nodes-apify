@@ -12,7 +12,10 @@ export class ApifyApi implements ICredentialType {
 
 	displayName = 'Apify API';
 
-	icon = 'file:../nodes/Apify/apify-light.svg' as const;
+	icon = {
+		light: 'file:../nodes/Apify/apify-light.svg',
+		dark: 'file:../nodes/Apify/apify-dark.svg',
+	} as const;
 
 	documentationUrl = 'https://docs.apify.com/platform/integrations/api#api-token';
 
