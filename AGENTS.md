@@ -119,9 +119,10 @@ like any other; `resources/serverActor.ts` holds what other Server Actor code sh
 (`decodeResponseBody`, `getErrorFromBody`, `parseJsonParameter`, `isTimeoutError`,
 `toDescriptionText`) live in `genericFunctions.ts` for any operation. A Server Actor is
 `actorStandby.isEnabled` plus a `standbyUrl` on `APIFY_ACTOR_HOST_SUFFIX` (the token never goes
-elsewhere, and a path like `//other.host` can't move it). The request is `endpointMethod`,
-`endpointPath` and JSON `endpointQuery`/`endpointBody`; don't reuse `customBody`, which is Run
-actor's Input JSON.
+elsewhere, and a path like `//other.host` can't move it). The request is an `endpoint`
+(`'POST /path'` from the default build's OpenAPI, parsed in `resources/serverActorOpenApi.ts`;
+path params come from the query) or Custom Path's `endpointMethod`/`endpointPath`, plus JSON
+`endpointQuery`/`endpointBody`; don't reuse `customBody`, which is Run actor's Input JSON.
 
 The request uses `disableRetries`, `ignoreHttpStatusErrors`, `encoding: 'arraybuffer'` and
 `SERVER_ACTOR_REQUEST_TIMEOUT_MS` (310 s, above Apify's 300 s so its 504 wins over n8n's
