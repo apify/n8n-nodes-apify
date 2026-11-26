@@ -1,6 +1,6 @@
 import { IExecuteFunctions } from 'n8n-workflow';
 import { APIFY_ACTOR_HOST_SUFFIX } from '../helpers/consts';
-import { apiRequest } from './genericFunctions';
+import { apiPath, apiRequest } from './genericFunctions';
 
 /**
  * Server Actors answer HTTP requests at their `standbyUrl` instead of starting a run (the API
@@ -34,7 +34,7 @@ export async function getServerActorOrigin(
 ): Promise<string | undefined> {
 	const { data: actor } = (await apiRequest.call(this, {
 		method: 'GET',
-		uri: `/v2/acts/${actorId}`,
+		uri: apiPath`/v2/acts/${actorId}`,
 	})) as { data?: ServerActor };
 	if (!actor?.actorStandby?.isEnabled || typeof actor.standbyUrl !== 'string') return undefined;
 	try {

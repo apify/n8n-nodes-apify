@@ -8,7 +8,7 @@ import {
 import { Apify } from '../Apify.node';
 import { createLoadOptionsFunctions, executeWorkflow } from './utils/executeWorkflow';
 import { getDefaultBuild } from '../resources/executeActor';
-import { apiRequest } from '../resources/genericFunctions';
+import { apiPath, apiRequest } from '../resources/genericFunctions';
 import { abortRun } from '../resources/actor-runs/abort-run/execute';
 import { getActorRuns } from '../resources/actor-runs/get-actor-runs/execute';
 import { getRun } from '../resources/actor-runs/get-run/execute';
@@ -525,7 +525,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockRunsList.data.items);
+				expect(data?.map((item: { json: any }) => item.json)).toEqual(mockRunsList.data.items);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -552,7 +552,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockRunsList.data.items);
+				expect(data?.map((item: { json: any }) => item.json)).toEqual(mockRunsList.data.items);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -754,7 +754,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockItems);
+				expect(data?.map((item: { json: any }) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -1248,7 +1248,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockItems);
+				expect(data?.map((item: { json: any }) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -1696,7 +1696,7 @@ describe('Apify Node', () => {
 
 				const data = getTaskArrayData(nodeResult);
 				expect(Array.isArray(data)).toBe(true);
-				expect(data?.map((item: { json: any; }) => item.json)).toEqual(mockItems);
+				expect(data?.map((item: { json: any }) => item.json)).toEqual(mockItems);
 
 				expect(scope.isDone()).toBe(true);
 			});
@@ -1911,6 +1911,98 @@ describe('Apify Node', () => {
 
 				await expect(operation.call(context, 0)).rejects.toBe(original);
 			});
+		});
+	});
+
+	describe('path encoding of IDs and keys', () => {
+		const withNodeParameters = (baseWorkflow: any, nodeName: string, parameters: object) => ({
+			...baseWorkflow,
+			nodes: baseWorkflow.nodes.map((node: any) =>
+				node.name === nodeName
+					? { ...node, parameters: { ...node.parameters, ...parameters } }
+					: node,
+			),
+		});
+
+		afterEach(() => {
+			nock.cleanAll();
+		});
+
+		it('apiPath encodes each value as one path segment', () => {
+			expect(apiPath`/v2/actor-runs/${'a/b?c#d'}/abort`).toBe('/v2/actor-runs/a%2Fb%3Fc%23d/abort');
+			expect(apiPath`/v2/acts/${'janedoe~my-actor'}/runs`).toBe('/v2/acts/janedoe~my-actor/runs');
+			expect(apiPath`/v2/key-value-stores/${'abc'}/records/${'my key.json'}`).toBe(
+				'/v2/key-value-stores/abc/records/my%20key.json',
+			);
+			expect(apiPath`/v2/datasets/${'a.b'}/items`).toBe('/v2/datasets/a.b/items');
+		});
+
+		it.each(['', '.', '..'])('apiPath rejects %j', (value) => {
+			expect(() => apiPath`/v2/actor-runs/${value}`).toThrow('Invalid ID or key');
+		});
+
+		it('abort-run encodes the run ID as one path segment', async () => {
+			const scope = nock('https://api.apify.com')
+				.post('/v2/actor-runs/a%2Fb%3Fc%23d/abort')
+				.reply(200, fixtures.abortRunResult());
+
+			const workflow = withNodeParameters(
+				require('./workflows/actor-runs/abort-run.workflow.json'),
+				'Abort run',
+				{ abortRunId: 'a/b?c#d' },
+			);
+			const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+			const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Abort run');
+			expect(nodeResult.executionStatus).toBe('success');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('get-run encodes the run ID as one path segment', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/actor-runs/a%2Fb%3Fc%23d')
+				.reply(200, fixtures.getRunResult());
+
+			const workflow = withNodeParameters(getRunWorkflow, 'Get run', {
+				runId: { __rl: true, value: 'a/b?c#d', mode: 'id' },
+			});
+			const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+			const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Get run');
+			expect(nodeResult.executionStatus).toBe('success');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it.each(['.', '..'])(
+			'get-run rejects a run ID of %j without sending a request',
+			async (runId) => {
+				const anyRequest = nock('https://api.apify.com').get(/.*/).reply(200, {});
+
+				const workflow = withNodeParameters(getRunWorkflow, 'Get run', {
+					runId: { __rl: true, value: runId, mode: 'id' },
+				});
+				await expect(executeWorkflow({ credentialsHelper, workflow })).rejects.toThrow(
+					`Invalid ID or key: "${runId}"`,
+				);
+				expect(anyRequest.isDone()).toBe(false);
+			},
+		);
+
+		it('get-key-value-store-record encodes the record key as one path segment', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/key-value-stores/yTfMu13hDFe9bRjx6/records/my%20key%2Fwith%3Fspecial%23chars')
+				.reply(200, fixtures.getKeyValueStoreRecordResult());
+
+			const workflow = withNodeParameters(
+				require('./workflows/key-value-stores/get-key-value-store-record.workflow.json'),
+				'Get Key-Value Store Record',
+				{ recordKey: { __rl: true, value: 'my key/with?special#chars', mode: 'id' } },
+			);
+			const { executionData } = await executeWorkflow({ credentialsHelper, workflow });
+
+			const [nodeResult] = getRunTaskDataByNodeName(executionData, 'Get Key-Value Store Record');
+			expect(nodeResult.executionStatus).toBe('success');
+			expect(scope.isDone()).toBe(true);
 		});
 	});
 });
