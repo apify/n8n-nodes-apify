@@ -442,12 +442,17 @@ describe('Server Actors (Send Server Actor request)', () => {
 				'body:count': { type: 'number', defaultValue: 1 },
 				// n8n's number input would store 0, which would be sent.
 				'body:limit': { type: 'string', defaultValue: undefined },
-				// n8n starts a boolean without a default as false.
-				'body:flag': { type: 'boolean', defaultValue: undefined },
+				// n8n's switch would store false, which would be sent.
+				'body:flag': { type: 'options', defaultValue: undefined },
 				'body:strict': { type: 'boolean', defaultValue: true },
 				'body:mode': { type: 'options', defaultValue: 'slow' },
 				'body:options': { type: 'object', defaultValue: JSON.stringify({ a: 1 }, null, 2) },
 			});
+			const flag = getEndpointFields(document, 'POST', '/d')!.find(({ id }) => id === 'body:flag');
+			expect(flag!.options).toEqual([
+				{ name: 'true', value: true },
+				{ name: 'false', value: false },
+			]);
 			const targets = getEndpointFieldTargets(document, 'POST', '/d');
 			expect([...targets].filter(([, target]) => target.isNumber).map(([id]) => id)).toEqual([
 				'body:count',
@@ -493,6 +498,9 @@ describe('Server Actors (Send Server Actor request)', () => {
 								depth: optional({ type: 'integer' }, { default: 2 }),
 								tags: optional({ type: 'array', items: { type: 'string' } }),
 								flag: { type: ['boolean', 'null'] },
+								// `Optional[bool] = None` and `Optional[bool] = True`.
+								verbose: optional({ type: 'boolean' }, { default: null }),
+								strict: optional({ type: 'boolean' }, { default: true }),
 								meta: { oneOf: [{ type: 'object' }, { type: 'null' }] },
 								mode: { allOf: [{ $ref: '#/components/schemas/Mode' }], default: 'fast' },
 								// As in apify/openrouter: a base schema extended with more properties.
@@ -524,7 +532,10 @@ describe('Server Actors (Send Server Actor request)', () => {
 				'body:limit': { type: 'string', defaultValue: undefined },
 				'body:depth': { type: 'number', defaultValue: 2 },
 				'body:tags': { type: 'array', defaultValue: undefined },
-				'body:flag': { type: 'boolean', defaultValue: undefined },
+				// No default, so the boolean is a true/false choice that starts empty.
+				'body:flag': { type: 'options', defaultValue: undefined },
+				'body:verbose': { type: 'options', defaultValue: undefined },
+				'body:strict': { type: 'boolean', defaultValue: true },
 				'body:meta': { type: 'object', defaultValue: undefined },
 				'body:mode': { type: 'options', defaultValue: 'fast' },
 				'body:reasoning': { type: 'object', defaultValue: undefined },
@@ -1132,14 +1143,19 @@ describe('Server Actors (Send Server Actor request)', () => {
 		it('should send number fields entered as text as numbers, and leave out empty ones', async () => {
 			const api = mockActor();
 			const server = nock(SERVER_URL)
-				// `wait` is an integer in the OpenAPI; the empty `formats` is left out.
-				.post('/', { url: 'https://example.com', wait: 3 })
+				// `wait` is an integer in the OpenAPI; the empty `formats` is left out, a false is not.
+				.post('/', { url: 'https://example.com', wait: 3, unwrap: false })
 				.reply(200, {});
 
 			await run({
 				endpointParameters: {
 					mappingMode: 'defineBelow',
-					value: { 'body:url': 'https://example.com', 'body:wait': ' 3 ', 'body:formats': null },
+					value: {
+						'body:url': 'https://example.com',
+						'body:wait': ' 3 ',
+						'body:formats': null,
+						'body:unwrap': false,
+					},
 				},
 			});
 

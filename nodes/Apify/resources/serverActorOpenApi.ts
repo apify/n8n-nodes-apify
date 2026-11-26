@@ -240,10 +240,15 @@ function toField(
 		// applies its own defaults to what's left out.
 		removed: !required,
 	};
-	// n8n's number input stores 0 as soon as the field is added, and that 0 would be sent in
-	// place of the Actor's own default. Without a default to prefill, take the number as text,
-	// which stays empty until filled in; the node converts it back (see `FieldTarget.isNumber`).
+	// n8n's number input stores 0, and its switch stores false, as soon as the field is added,
+	// and that value would be sent in place of the Actor's own default (`Optional[bool] = None`
+	// means "not set", not false). Without a default to prefill, take a number as text and a
+	// boolean as a true/false choice, which both stay empty until filled in. The node converts
+	// the text back to a number (see `FieldTarget.isNumber`).
 	if (field.type === 'number' && typeof defaultValue !== 'number') field.type = 'string';
+	if (field.type === 'boolean' && typeof defaultValue !== 'boolean') {
+		Object.assign(field, getFieldTypeAndOptions({ enum: [true, false] }));
+	}
 	return field;
 }
 
