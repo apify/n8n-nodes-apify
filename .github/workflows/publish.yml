@@ -1,8 +1,18 @@
 name: Release & Publish Apify n8n Node
 
+# Started by `release-published.yml`, so that it runs from master and can use the environment that holds the token.
 on:
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish (e.g. v1.2.3)
+        required: true
+        type: string
+      target-branch:
+        description: Branch that receives the version bump commit
+        required: false
+        type: string
+        default: master
 
 permissions:
   id-token: write
@@ -11,18 +21,35 @@ permissions:
 jobs:
   build_and_release:
     runs-on: ubuntu-latest
+    environment:
+      name: npm
+      deployment: false
 
     steps:
+      # The tag's code runs with the token below, so it has to be code that already went through master.
+      - name: Check that the tag is on master
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          status=$(gh api "repos/${GITHUB_REPOSITORY}/compare/master...refs/tags/${TAG}" --jq .status)
+          if [[ "$status" != "identical" && "$status" != "behind" ]]; then
+            echo "::error::${TAG} is not on master"
+            exit 1
+          fi
+
       - name: Checkout code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
+          ref: refs/tags/${{ inputs.tag }}
           fetch-depth: 0
 
       - name: Set up Node.js & cache npm
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
-          node-version: '26.13.0'
+          node-version: '26.13.1'
           registry-url: 'https://registry.npmjs.org'
           cache: npm
 
@@ -37,29 +64,31 @@ jobs:
 
       - name: Extract release version
         id: get_version
+        env:
+          TAG: ${{ inputs.tag }}
         run: |
-          FULL_TAG_NAME="${{ github.event.release.tag_name }}"
+          FULL_TAG_NAME="$TAG"
           VERSION_NUMBER="${FULL_TAG_NAME#v}"
           echo "VERSION=${VERSION_NUMBER}" >> $GITHUB_ENV
 
       - name: Update package.json version
         run: |
-          echo "Updating package.json to version ${{ env.VERSION }}"
-          npm version ${{ env.VERSION }} --no-git-tag-version
+          echo "Updating package.json to version $VERSION"
+          npm version "$VERSION" --no-git-tag-version
 
       - name: Commit version update
-        uses: apify/actions/signed-commit@v1.6.2
+        uses: apify/actions/signed-commit@6a234394aa4b2a753d3ed294c3e069d044656406 # v1.6.2
         with:
           message: "chore(release): set version to ${{ env.VERSION }} [skip ci]"
           add: 'package.json package-lock.json'
           github-token: ${{ secrets.APIFY_SERVICE_ACCOUNT_GITHUB_TOKEN }}
-          branch: ${{ github.event.release.target_commitish }}
+          branch: ${{ inputs.target-branch }}
 
       - name: Publish to npm
         run: |
-          if npm view @apify/n8n-nodes-apify@${{ env.VERSION }} version > /dev/null 2>&1; then
-            echo "Version ${{ env.VERSION }} of @apify/n8n-nodes-apify is already published to npm. Skipping publish step."
+          if npm view @apify/n8n-nodes-apify@"$VERSION" version > /dev/null 2>&1; then
+            echo "Version $VERSION of @apify/n8n-nodes-apify is already published to npm. Skipping publish step."
           else
-            echo "Publishing @apify/n8n-nodes-apify@${{ env.VERSION }} to npm..."
+            echo "Publishing @apify/n8n-nodes-apify@$VERSION to npm..."
             npm publish --provenance --access public
           fi

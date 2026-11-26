@@ -6,7 +6,7 @@ import { runHooks } from './hooks';
 const name = 'Get Key-Value Store Record';
 
 const rawOption: INodePropertyOptions = {
-	name: name,
+	name: 'Get Record',
 	value: name,
 	action: 'Get key-value store record',
 	description: 'Gets a value stored in the key-value store under a specific key',

@@ -12,14 +12,17 @@ export class ApifyApi implements ICredentialType {
 
 	displayName = 'Apify API';
 
-	icon = 'file:../nodes/Apify/apify-light.svg' as const;
+	icon = {
+		light: 'file:../nodes/Apify/apify-light.svg',
+		dark: 'file:../nodes/Apify/apify-dark.svg',
+	} as const;
 
 	documentationUrl = 'https://docs.apify.com/platform/integrations/api#api-token';
 
 	properties: INodeProperties[] = [
 		{
 			displayName:
-				'Get your API token in <a href="https://console.apify.com/settings/integrations?utm_source=n8n&utm_medium=integrations" target="_blank">Apify Console → Settings → API &amp; Integrations</a>.',
+				'Create an API token for n8n in <a href="https://console.apify.com/settings/integrations?createApiToken=true&amp;for=n8n&amp;utm_source=n8n&amp;utm_medium=integrations" target="_blank">Apify Console</a> and copy it right after creating it — it is shown only once.',
 			name: 'consoleNotice',
 			type: 'notice',
 			default: '',
@@ -31,7 +34,7 @@ export class ApifyApi implements ICredentialType {
 			typeOptions: { password: true },
 			default: '',
 			description:
-				'Your Apify API token. Find it in <a href="https://console.apify.com/settings/integrations?utm_source=n8n&utm_medium=integrations" target="_blank">Apify Console → Settings → API &amp; Integrations</a>.',
+				'Your Apify API token. Create one in <a href="https://console.apify.com/settings/integrations?createApiToken=true&amp;for=n8n&amp;utm_source=n8n&amp;utm_medium=integrations" target="_blank">Apify Console</a> and copy it right after creating it — it is shown only once.',
 		},
 	];
 

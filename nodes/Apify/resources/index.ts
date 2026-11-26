@@ -1,5 +1,3 @@
-/* eslint-disable n8n-nodes-base/node-param-options-type-unsorted-items */
-
 import { INodeProperties } from 'n8n-workflow';
 
 import { aggregateNodeMethods } from '../helpers/methods';
@@ -25,12 +23,12 @@ const resourceSelect: INodeProperties[] = [
 				value: 'Actors',
 			},
 			{
-				name: 'Actor Task',
-				value: 'Actor tasks',
-			},
-			{
 				name: 'Actor Run',
 				value: 'Actor runs',
+			},
+			{
+				name: 'Actor Task',
+				value: 'Actor tasks',
 			},
 			{
 				name: 'Dataset',

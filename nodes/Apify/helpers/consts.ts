@@ -1,3 +1,5 @@
+import type { IHttpRequestMethods } from 'n8n-workflow';
+
 export const WEB_CONTENT_SCRAPER_ACTOR_ID = 'aYG0l9s7dbB7j3gbS';
 export const APIFY_API_URL = 'https://api.apify.com';
 export const APIFY_CONSOLE_URL = 'https://console.apify.com';
@@ -5,6 +7,10 @@ export const APIFY_CONSOLE_URL = 'https://console.apify.com';
 export const MISSING_DEFAULT_BUILD_ERROR_TYPE = 'unknown-build-tag';
 // Standby endpoint of the apify/web-fetch Actor (per the integrations-team contract).
 export const WEB_FETCH_STANDBY_URL = 'https://web-fetch.apify.actor/';
+// Every Server Actor's `standbyUrl` is on this domain. Requests carry the connection's token, so
+// they're only sent to hosts that end with it.
+export const APIFY_ACTOR_HOST_SUFFIX = '.apify.actor';
+export const HTTP_METHODS: IHttpRequestMethods[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 export const TERMINAL_RUN_STATUSES = ['SUCCEEDED', 'FAILED', 'TIMED-OUT', 'ABORTED'];
 export const WAIT_FOR_FINISH_POLL_INTERVAL = 1000;
 // Per-request HTTP timeout (ms). Prevents a stalled socket from hanging the node indefinitely.
@@ -15,6 +21,10 @@ export const DATASET_REQUEST_TIMEOUT_MS = 10 * 60 * 1000;
 // more than the default 60s, and apiRequest does not retry POST network errors. Modelled on
 // the dataset timeout and kept well above the 120s floor.
 export const WEB_FETCH_REQUEST_TIMEOUT_MS = 10 * 60 * 1000;
+// Timeout of a Send Server Actor request. Apify answers with a 504 after 300 s without a
+// response; n8n's own 300 s default would fire ~0.4 s earlier with a misleading "server is
+// offline" error, so wait a little longer and let Apify's answer arrive.
+export const SERVER_ACTOR_REQUEST_TIMEOUT_MS = 310_000;
 // Grace period added on top of a run's own `timeoutSecs` when polling
 export const WAIT_FOR_FINISH_BUFFER_MS = 5 * 60 * 1000;
 // Absolute ceiling for polling when a run has no timeout of its own (timeoutSecs = 0).
