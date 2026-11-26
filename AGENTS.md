@@ -135,12 +135,11 @@ The `endpoint` options are the OpenAPI paths plus `__custom__`; MCP-only Actors
 (`webServerMcpPath`, no OpenAPI) and Actors without a server interface get placeholder values
 whose execution throws the user message. When the default build can't be loaded, the list is only
 Custom Path, with the escaped reason in its description, instead of n8n's bare "Error fetching
-options". Parameters are JSON: `endpointQuery` for every endpoint
-(values for path placeholders such as `{itemId}` are taken from it and removed) and
-`endpointBody`, declared twice with exclusive `displayOptions` — once for Custom Path with a
-method that takes a body, once for documented endpoints except `GET ` ones (`_cnd.startsWith`) —
-because one rule can't express both. Custom Path adds `endpointMethod`/`endpointPath`. Don't
-reuse `customBody`, which is Run actor's Input JSON. At execution a documented endpoint is
+options". A documented endpoint's parameters are the `endpointParameters` resource mapper,
+whose typed path, query and top-level body fields `getServerActorEndpointFields` builds from the
+OpenAPI (`getEndpointFields`; field ids such as `query:limit` say where each value goes).
+Custom Path instead has `endpointMethod`/`endpointPath` and JSON `endpointQuery`/`endpointBody`.
+Don't reuse `customBody`, which is Run actor's Input JSON. At execution a documented endpoint is
 checked against the default build's OpenAPI and refused if missing: after the Actor changes, a
 saved endpoint of the old one would otherwise go to the new one. Arrays are sent comma-separated
 where the OpenAPI says `explode: false`.
@@ -232,8 +231,8 @@ HTTP requests so `nock` can intercept them. Consequences:
 - n8n's node-creator action sidebar (via `useActionsGeneration.ts` → `resourceCategories()`)
   filters operation *properties* by `@version` but maps every *option* unconditionally —
   option-level `displayOptions` (including `'@version'`) is never evaluated there. This is why
-  `Actors` ships two `operation` selects: one with `'@version': [2]` (4 options, no scrape)
-  for new nodes, and one with `'@version': [1]` (all 5, incl. the deprecated option) for
+  `Actors` ships two `operation` selects: one with `'@version': [2]` (5 options, no scrape)
+  for new nodes, and one with `'@version': [1]` (all 6, incl. the deprecated option) for
   typeVersion-1 workflows. If a future v3 changes the operation list, the `[2]` gate on the v2
   select must be widened to `[2, 3]`.
 - Keep base URLs in `helpers/consts.ts`; `ApifyApi.credentials.ts` imports `APIFY_API_URL` from
