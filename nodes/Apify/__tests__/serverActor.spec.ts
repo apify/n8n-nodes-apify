@@ -139,7 +139,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(actorsOperationSelects()).toHaveLength(2);
 		});
 
-		it('should leave Run an Actor unchanged, with no Interface field', () => {
+		it('should leave Run unchanged, with no Interface field', () => {
 			expect(propertiesNamed('interface')).toEqual([]);
 		});
 
@@ -353,7 +353,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 			const options = await listEndpoints().call(context());
 
 			expect(options.map((option) => option.value)).toEqual([NO_SERVER_INTERFACE]);
-			expect(options[0].description).toMatch(/Use the Run an Actor operation/);
+			expect(options[0].description).toMatch(/Use the Run operation/);
 			expect(scope.isDone()).toBe(true);
 		});
 
@@ -488,7 +488,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 				.get(`/v2/acts/${ACTOR_ID}`)
 				.reply(200, serverActor({ actorStandby: { isEnabled: false } }));
 
-			await expect(run()).rejects.toThrow(/Use the Run an Actor operation/);
+			await expect(run()).rejects.toThrow(/Use the Run operation/);
 		});
 
 		it.each([500, 429, 503])(

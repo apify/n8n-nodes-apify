@@ -215,6 +215,7 @@ HTTP requests so `nock` can intercept them. Consequences:
 - Keep base URLs in `helpers/consts.ts`; `ApifyApi.credentials.ts` imports `APIFY_API_URL` from
   there for its `/v2/users/me` credential test.
 - Conventional Commits (`feat:`, `fix:`, `chore:`, `ci:`, `docs:`); PRs target `master`.
-- Never bump the version by hand. Publishing a GitHub Release tagged `vX.Y.Z` triggers
-  `publish.yml`: build, test, `npm version`, a signed `chore(release): … [skip ci]` commit, and
+- Never bump the version by hand. Publishing a GitHub Release tagged `vX.Y.Z` makes
+  `release-published.yml` dispatch `publish.yml` on `master` (the tag must be on `master`, or it
+  fails): build, test, `npm version`, a signed `chore(release): … [skip ci]` commit, and
   `npm publish --provenance --access public`.

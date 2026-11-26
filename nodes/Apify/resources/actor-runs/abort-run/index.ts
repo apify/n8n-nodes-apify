@@ -7,7 +7,7 @@ import { runHooks } from './hooks';
 const name = 'Abort run';
 
 const rawOption: INodePropertyOptions = {
-  name: name,
+  name: 'Abort',
   value: name,
   action: 'Abort an Actor run',
   description: 'Abort a running Actor run',

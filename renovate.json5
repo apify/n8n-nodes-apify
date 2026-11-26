@@ -5,6 +5,7 @@
 		'config:recommended',
 		// Dependency bumps are `chore:`, never `fix:`.
 		':semanticCommitTypeAll(chore)',
+		'helpers:pinGitHubActionDigests',
 	],
 	semanticCommits: 'enabled',
 
@@ -23,6 +24,11 @@
 	internalChecksFilter: 'strict',
 
 	packageRules: [
+		{
+			matchManagers: ['github-actions'],
+			matchPackageNames: ['apify/**'],
+			pinDigests: false,
+		},
 		{
 			// Hold eslint on v9: `@n8n/node-cli` bundles ESLint 9 and the n8n-nodes-base
 			// lint config, which do not support ESLint 10. Only 9.x updates are offered;

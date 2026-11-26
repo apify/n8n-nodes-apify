@@ -16,7 +16,7 @@ const CHARGED = 'The request may still have been charged.';
 
 export const SERVER_ACTOR_MESSAGES = {
 	noServerInterface:
-		'This Actor has no server interface. Use the Run an Actor operation to start a run instead.',
+		'This Actor has no server interface. Use the Run operation to start a run instead.',
 	mcpOnly:
 		"This Actor is an MCP server. Use n8n's MCP Client Tool node (or MCP Client node) with the Actor's MCP URL instead. Their default timeout is 60 s, so raise it for slow tools.",
 	noEndpoint: 'Choose an endpoint.',
