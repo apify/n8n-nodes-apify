@@ -1,5 +1,6 @@
 import nock from 'nock';
 import {
+	IExecuteFunctions,
 	ILoadOptionsFunctions,
 	NodeApiError,
 	NodeOperationError,
@@ -8,7 +9,7 @@ import {
 import { Apify } from '../Apify.node';
 import { createLoadOptionsFunctions, executeWorkflow } from './utils/executeWorkflow';
 import { getDefaultBuild } from '../resources/executeActor';
-import { apiPath, apiRequest } from '../resources/genericFunctions';
+import { apiPath, apiRequest, executeAndLinkItems } from '../resources/genericFunctions';
 import { abortRun } from '../resources/actor-runs/abort-run/execute';
 import { getActorRuns } from '../resources/actor-runs/get-actor-runs/execute';
 import { getRun } from '../resources/actor-runs/get-run/execute';
@@ -1654,7 +1655,7 @@ describe('Apify Node', () => {
 			it('should map the nested { error: { message, type } } error envelope to a NodeApiError', async () => {
 				const scope = nock(WEB_FETCH_HOST)
 					.post('/')
-					.reply(401, { error: { message: 'Unauthorized', type: 'auth' } });
+					.reply(403, { error: { message: 'Forbidden', type: 'auth' } });
 
 				let thrown: any;
 				try {
@@ -1664,7 +1665,7 @@ describe('Apify Node', () => {
 				}
 
 				expect(thrown).toBeDefined();
-				expect(thrown.message).toContain('Unauthorized');
+				expect(thrown.message).toContain('Forbidden');
 				expect(thrown.description).toContain('Web Fetch error type: auth');
 
 				expect(scope.isDone()).toBe(true);
@@ -1954,6 +1955,149 @@ describe('Apify Node', () => {
 
 				await expect(operation.call(context, 0)).rejects.toBe(original);
 			});
+		});
+	});
+
+	describe('rejected token (401)', () => {
+		const INTEGRATIONS_URL = 'https://console.apify.com/settings/integrations';
+		const API_MESSAGE = 'User was not found or authentication token is not valid';
+		const unauthorized = {
+			error: { type: 'user-or-token-not-found', message: API_MESSAGE },
+		};
+
+		const runActorWorkflow = (nodeOverrides: Record<string, any> = {}) => {
+			const workflow = JSON.parse(
+				JSON.stringify(require('./workflows/actors/run-actor.workflow.json')),
+			);
+			Object.assign(workflow.nodes[0], nodeOverrides);
+			return workflow;
+		};
+
+		const catchError = async (promise: Promise<unknown>): Promise<any> => {
+			try {
+				await promise;
+			} catch (error) {
+				return error;
+			}
+			throw new Error('Expected the promise to reject');
+		};
+
+		it('should tell an API token user to create a new token, linking the Console page', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP')
+				.reply(401, unauthorized);
+
+			const error = await catchError(
+				executeWorkflow({ credentialsHelper, workflow: runActorWorkflow() }),
+			);
+
+			expect(error).toBeInstanceOf(NodeApiError);
+			expect(error.message).toBe(
+				'Your Apify API token is invalid or was revoked. Create a new token in Apify Console > Settings > API & Integrations, then update your Apify credential in n8n.',
+			);
+			expect(error.messages).toEqual([error.message]);
+			expect(error.description).toContain(`href="${INTEGRATIONS_URL}"`);
+			expect(error.description).toContain(`Apify API response: ${API_MESSAGE}`);
+			expect(String(error.httpCode)).toBe('401');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should give an AI tool the Console URL as plain text', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP')
+				.reply(401, unauthorized);
+
+			const error = await catchError(
+				executeWorkflow({
+					credentialsHelper,
+					workflow: runActorWorkflow({ type: 'n8n-nodes-apify.apifyTool' }),
+				}),
+			);
+
+			expect(error.message).toContain('Create a new token in Apify Console');
+			expect(error.description).toBe(`${INTEGRATIONS_URL}\nApify API response: ${API_MESSAGE}`);
+			expect(error.description).not.toContain('<a');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should tell an OAuth2 user to reconnect the credential', async () => {
+			credentialsHelper = new CredentialsHelper({
+				apifyOAuth2Api: { oauthTokenData: { access_token: 'test-token' } },
+			});
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP')
+				.reply(401, unauthorized);
+
+			const workflow = runActorWorkflow();
+			workflow.nodes[0].parameters.authentication = 'apifyOAuth2Api';
+			const error = await catchError(executeWorkflow({ credentialsHelper, workflow }));
+
+			expect(error.message).toBe(
+				'Apify no longer accepts this OAuth2 connection. Open your Apify OAuth2 credential in n8n and reconnect it.',
+			);
+			expect(error.description).toBe(`Apify API response: ${API_MESSAGE}`);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should rewrite a 401 when reading a key-value store record', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/key-value-stores/yTfMu13hDFe9bRjx6/records/INPUT')
+				.reply(401, unauthorized);
+
+			const error = await catchError(
+				executeWorkflow({
+					credentialsHelper,
+					workflow: require('./workflows/key-value-stores/get-key-value-store-record.workflow.json'),
+				}),
+			);
+
+			expect(error.message).toContain('Your Apify API token is invalid or was revoked');
+			expect(error.description).toContain(`href="${INTEGRATIONS_URL}"`);
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should keep the rewrite on Web Fetch instead of mapping its error body', async () => {
+			const scope = nock('https://web-fetch.apify.actor').post('/').reply(401, unauthorized);
+
+			const error = await catchError(
+				executeWorkflow({ credentialsHelper, workflow: webFetchWorkflow }),
+			);
+
+			expect(error.message).toContain('Your Apify API token is invalid or was revoked');
+			expect(error.description).not.toContain('Web Fetch error type');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should put the new message in the output item with Continue On Fail', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP')
+				.reply(401, unauthorized);
+			const node = runActorWorkflow().nodes[0];
+			const context = {
+				...createLoadOptionsFunctions({ credentialsHelper, node }),
+				getInputData: () => [{ json: {} }],
+				continueOnFail: () => true,
+			} as unknown as IExecuteFunctions;
+
+			const [items] = await executeAndLinkItems.call(context, function () {
+				return apiRequest.call(this, { method: 'GET', uri: '/v2/acts/nFJndFXA5zjCTuudP' });
+			});
+
+			expect(items[0].json.error).toContain('Create a new token in Apify Console');
+			expect(scope.isDone()).toBe(true);
+		});
+
+		it('should leave other errors alone', async () => {
+			const scope = nock('https://api.apify.com')
+				.get('/v2/acts/nFJndFXA5zjCTuudP')
+				.reply(404, { error: { type: 'record-not-found', message: 'Actor was not found' } });
+
+			const error = await catchError(
+				executeWorkflow({ credentialsHelper, workflow: runActorWorkflow() }),
+			);
+
+			expect(error.message).not.toContain('Apify Console');
+			expect(scope.isDone()).toBe(true);
 		});
 	});
 

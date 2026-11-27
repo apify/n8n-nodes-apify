@@ -53,6 +53,14 @@ creates duplicate Actor runs.
 message. The approval URL is validated and goes only in `description` — n8n rewrites any
 `message` containing an error code — as plain text for AI tools and an escaped `<a>` for the UI.
 
+A 401 gets the same treatment through `withAuthErrorMessage`: n8n's generic "Authorization
+failed" becomes how to fix the credential (new API token in Console, or reconnect OAuth2), with
+the Console URL and Apify's own text in `description`. The API returns one 401 for a typo and a
+revoked token, so keep the wording generic, with no incident dates. Paths that skip
+`apiRequest`'s catch apply it themselves: the key-value store record read, and Server Actor
+requests, which only do so for Apify's `user-or-token-not-found` type, since an Actor can send
+its own 401. Web Fetch passes a 401 through instead of mapping its error body.
+
 Rethrow caught errors with `toNodeApiError`, never a bare `new NodeApiError(node, error)`.
 `NodeApiError` only passes through its own instances (`instanceof`), so when a second
 `n8n-workflow` copy sits next to the node (a linked dev setup, some manual installs), n8n's error

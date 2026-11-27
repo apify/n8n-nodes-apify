@@ -4,7 +4,12 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, validateUrl, toNodeApiError } from '../../../resources/genericFunctions';
+import {
+	apiRequest,
+	isAuthError,
+	validateUrl,
+	toNodeApiError,
+} from '../../../resources/genericFunctions';
 import { consts } from '../../../helpers';
 
 function toHttpCode(value: unknown): string | undefined {
@@ -17,7 +22,7 @@ function parseHeaders(rawHeaders: string | object): object {
 		if (rawHeaders && typeof rawHeaders === 'object' && !Array.isArray(rawHeaders)) {
 			return rawHeaders;
 		}
-throw new Error('not an object');
+		throw new Error('not an object');
 	}
 	const trimmed = rawHeaders.trim();
 	if (!trimmed) return {};
@@ -28,10 +33,7 @@ throw new Error('not an object');
 	return parsed;
 }
 
-export async function webFetch(
-	this: IExecuteFunctions,
-	i: number,
-): Promise<INodeExecutionData> {
+export async function webFetch(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const url = this.getNodeParameter('url', i) as string;
 	const formats = this.getNodeParameter('formats', i, ['markdown']) as string[];
 	const rawHeaders = this.getNodeParameter('headers', i, '{}') as string | object;
@@ -72,6 +74,8 @@ export async function webFetch(
 		// apiRequest rethrows NodeApiError as-is, keeping the parsed response
 		// body on `context.data`.
 		const body = error?.context?.data ?? error?.response?.body ?? error?.response?.data;
+		// apiRequest already gave a rejected token its fix-the-credential message; keep it.
+		if (isAuthError(error)) throw toNodeApiError(this.getNode(), error);
 		if (body && typeof body === 'object' && !Array.isArray(body)) {
 			// The custom message must be passed as an option, otherwise n8n replaces
 			// it with the generic status-code message when an httpCode is present.

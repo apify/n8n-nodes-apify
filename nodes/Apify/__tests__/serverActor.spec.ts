@@ -235,6 +235,37 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(error.message).not.toMatch(/retry/i);
 		});
 
+		it('should tell the user to replace a token Apify rejected', async () => {
+			mockActor();
+			nock(SERVER_URL)
+				.post('/')
+				.query(true)
+				.reply(401, {
+					error: {
+						type: 'user-or-token-not-found',
+						message: 'User was not found or authentication token is not valid',
+					},
+				});
+
+			const error = await catchError(run());
+
+			expect(error.message).toContain('Your Apify API token is invalid or was revoked');
+			expect(error.description).toContain('console.apify.com/settings/integrations');
+			expect(error.httpCode).toBe('401');
+		});
+
+		it("should keep an Actor's own 401 message", async () => {
+			mockActor();
+			nock(SERVER_URL)
+				.post('/')
+				.query(true)
+				.reply(401, { error: { type: 'bad-signature', message: 'Signature mismatch' } });
+
+			const error = await catchError(run());
+
+			expect(error.message).toBe('Signature mismatch');
+		});
+
 		it("should show Web Fetch's flat { code, error } message", async () => {
 			mockActor();
 			nock(SERVER_URL)

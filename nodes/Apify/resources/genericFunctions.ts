@@ -13,6 +13,7 @@ import {
 	INodeExecutionData,
 } from 'n8n-workflow';
 import {
+	APIFY_INTEGRATIONS_URL,
 	DEFAULT_EXP_BACKOFF_EXPONENTIAL,
 	DEFAULT_EXP_BACKOFF_INTERVAL,
 	DEFAULT_EXP_BACKOFF_RETRIES,
@@ -188,6 +189,11 @@ export async function apiRequest(
 			throw toNodeApiError(this.getNode(), error);
 		}
 
+		if (isAuthError(error)) {
+			const authenticationMethod = this.getNodeParameter('authentication', 0) as string;
+			throw withAuthErrorMessage(this.getNode(), error, authenticationMethod);
+		}
+
 		if (!isNodeApiError(error) && error.response && error.response.body) {
 			throw new NodeApiError(this.getNode(), error, {
 				message: error.response.body,
@@ -197,6 +203,47 @@ export async function apiRequest(
 
 		throw toNodeApiError(this.getNode(), error);
 	}
+}
+
+/** Apify's error type for a token that is wrong, deleted or revoked: it can't tell them apart. */
+export const AUTH_ERROR_TYPE = 'user-or-token-not-found';
+
+/** Whether `error` is Apify rejecting the connection's credentials (any 401 from the API). */
+export function isAuthError(error: any): boolean {
+	return String(error?.httpCode ?? error?.response?.status ?? '') === '401';
+}
+
+/**
+ * Replace n8n's generic "Authorization failed - please check your credentials" with how to fix
+ * the credential, keeping Apify's own text in `description`. Mutates the error, so it keeps its
+ * `httpCode` and `context`. The wording covers a typo and a revoked token alike, as the API
+ * returns the same 401 for both.
+ */
+export function withAuthErrorMessage(node: INode, error: any, authenticationMethod: string): Error {
+	const body = error?.context?.data ?? error?.response?.body ?? error?.response?.data;
+	const apiMessage = getErrorFromBody(body).message;
+	const wrapped: any = toNodeApiError(node, error);
+	const isOAuth = authenticationMethod === 'apifyOAuth2Api';
+
+	// The URL only goes in `description`, as for the approval error: n8n replaces any `message`
+	// containing an error code. `message` still names the Console page, since `continueOnFail`
+	// output and some tool outputs show only the message.
+	wrapped.message = isOAuth
+		? 'Apify no longer accepts this OAuth2 connection. Open your Apify OAuth2 credential in n8n and reconnect it.'
+		: 'Your Apify API token is invalid or was revoked. Create a new token in Apify Console > Settings > API & Integrations, then update your Apify credential in n8n.';
+	wrapped.messages = [wrapped.message];
+
+	const asAiTool = isUsedAsAiTool(node.type);
+	const details = apiMessage ? `Apify API response: ${apiMessage}` : undefined;
+	let link: string | undefined;
+	if (!isOAuth) {
+		link = asAiTool
+			? APIFY_INTEGRATIONS_URL
+			: `<a href="${APIFY_INTEGRATIONS_URL}" target="_blank" rel="noopener noreferrer">${APIFY_INTEGRATIONS_URL}</a>`;
+	}
+	const parts = [link, details && toDescriptionText(node, details)].filter(Boolean);
+	wrapped.description = parts.length ? parts.join(asAiTool ? '\n' : '<br>') : undefined;
+	return wrapped;
 }
 
 /**

@@ -5,7 +5,13 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 import { consts } from '../../../helpers';
-import { apiPath, retryWithExponentialBackoff, toNodeApiError } from '../../genericFunctions';
+import {
+	apiPath,
+	isAuthError,
+	retryWithExponentialBackoff,
+	toNodeApiError,
+	withAuthErrorMessage,
+} from '../../genericFunctions';
 
 export async function getKeyValueStoreRecord(
 	this: IExecuteFunctions,
@@ -79,6 +85,8 @@ export async function getKeyValueStoreRecord(
 
 		return { json: { ...resultBase, data: finalData } };
 	} catch (error) {
+		// This request always uses the API token credential (see above).
+		if (isAuthError(error)) throw withAuthErrorMessage(this.getNode(), error, 'apifyApi');
 		throw toNodeApiError(this.getNode(), error);
 	}
 }
