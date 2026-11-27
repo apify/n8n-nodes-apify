@@ -1,5 +1,5 @@
 import { INodeProperties, ILoadOptionsFunctions, INodeListSearchResult } from 'n8n-workflow';
-import { APIFY_CONSOLE_URL, SERVER_ACTORS_LIST_PATH } from '../helpers/consts';
+import { APIFY_CONSOLE_URL, SERVER_ACTOR_STORE_CATEGORIES } from '../helpers/consts';
 import { apiRequest, apiRequestAllItems } from './genericFunctions';
 
 const resourceLocatorProperty: INodeProperties = {
@@ -199,48 +199,22 @@ export async function listActors(
 	};
 }
 
-/** True when every word of the search term appears in the Actor's title, name, username or description. */
-function matchesSearch(actor: any, searchTerm: string): boolean {
-	const haystack = [actor.title, actor.name, actor.username, actor.description]
-		.filter((value) => typeof value === 'string')
-		.join(' ')
-		.toLowerCase();
-	return searchTerm
-		.toLowerCase()
-		.split(/\s+/)
-		.filter(Boolean)
-		.every((word) => haystack.includes(word));
-}
-
-/**
- * Server Actors for the picker, read from `listPath` in the shape of `GET /v2/store`
- * (`{ data: { items } }`). A key-value store record (today's static snapshot) ignores `search`,
- * so it is filtered here; the Store API filters on its own.
- */
-export async function searchServerActors(
-	this: ILoadOptionsFunctions,
-	searchTerm = '',
-	listPath = SERVER_ACTORS_LIST_PATH,
-): Promise<INodeListSearchResult> {
-	const response = await apiRequest.call(this, {
-		method: 'GET',
-		uri: listPath,
-		// Full Store items are ~5 KB each (1,000 is ~5 MB), and the new Store backend caps keyword
-		// search at 100 anyway. The snapshot record ignores it and returns all its items.
-		qs: { limit: 100, offset: 0, ...(searchTerm ? { search: searchTerm } : {}) },
-	});
-	const items: any[] = Array.isArray(response?.data?.items) ? response.data.items : [];
-	const isStaticSnapshot = listPath.includes('/key-value-stores/');
-	const actors =
-		isStaticSnapshot && searchTerm
-			? items.filter((actor) => matchesSearch(actor, searchTerm))
-			: items;
-	return { results: actors.map(mapToN8nSelectOption) };
-}
-
+/** Server Actors from Apify Store for the Send Server Actor request picker. */
 export async function listServerActors(
 	this: ILoadOptionsFunctions,
 	searchTerm?: string,
 ): Promise<INodeListSearchResult> {
-	return await searchServerActors.call(this, searchTerm);
+	const response = await apiRequest.call(this, {
+		method: 'GET',
+		uri: '/v2/store',
+		qs: {
+			category: SERVER_ACTOR_STORE_CATEGORIES,
+			// Full Store items are ~5 KB each, and the Store backend caps keyword search at 100 anyway.
+			limit: 100,
+			offset: 0,
+			...(searchTerm ? { search: searchTerm } : {}),
+		},
+	});
+	const items: any[] = Array.isArray(response?.data?.items) ? response.data.items : [];
+	return { results: items.map(mapToN8nSelectOption) };
 }

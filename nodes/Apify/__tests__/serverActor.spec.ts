@@ -26,8 +26,7 @@ import {
 	parseOpenApiEndpoints,
 	resolveRefs,
 } from '../resources/serverActorOpenApi';
-import { SERVER_ACTOR_REQUEST_TIMEOUT_MS, SERVER_ACTORS_LIST_PATH } from '../helpers/consts';
-import { searchServerActors } from '../resources/actorResourceLocator';
+import { SERVER_ACTOR_REQUEST_TIMEOUT_MS } from '../helpers/consts';
 
 // Web Fetch (apify/web-fetch), a public Server Actor maintained by Apify. Every request below is
 // answered by nock and network access is disabled, so the tests never reach the Actor.
@@ -559,13 +558,13 @@ describe('Server Actors (Send Server Actor request)', () => {
 				node: { name: 'Apify', type: 'n8n-nodes-apify.apify', typeVersion: 2, parameters: {} },
 			});
 
-		// Same shape as the SERVER_ACTORS_SLIM record and `GET /v2/store`.
+		// Shaped like `GET /v2/store`.
 		const storeList = {
 			data: {
 				total: 2,
 				count: 2,
 				offset: 0,
-				limit: 1000,
+				limit: 100,
 				desc: false,
 				items: [
 					{ id: 'a6Sqhlnt4touIHTub', title: 'Web Fetch', username: 'apify', name: 'web-fetch' },
@@ -578,18 +577,15 @@ describe('Server Actors (Send Server Actor request)', () => {
 				],
 			},
 		};
+		const listServerActors = () => apifyNode.methods!.listSearch!.listServerActors;
 
-		it('should list the Actors at SERVER_ACTORS_LIST_PATH', async () => {
-			// Holds for the snapshot record and for a Store path with its filter in the query, so
-			// switching the constant needs no test change.
-			const { pathname, searchParams } = new URL(SERVER_ACTORS_LIST_PATH, 'https://api.apify.com');
-			const listServerActors = apifyNode.methods!.listSearch!.listServerActors;
+		it('should list Server Actors from Apify Store by their categories', async () => {
 			const scope = nock('https://api.apify.com')
-				.get(pathname)
-				.query({ ...Object.fromEntries(searchParams), limit: 100, offset: 0 })
+				.get('/v2/store')
+				.query({ category: 'SINGLE_TENANT_SERVER,MULTI_TENANT_SERVER', limit: 100, offset: 0 })
 				.reply(200, storeList);
 
-			const { results } = await listServerActors.call(context());
+			const { results } = await listServerActors().call(context());
 
 			expect(results).toEqual([
 				{
@@ -603,34 +599,18 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(scope.isDone()).toBe(true);
 		});
 
-		it('should filter a snapshot record locally, since a record ignores search', async () => {
-			const snapshotPath = '/v2/key-value-stores/storeId/records/SERVER_ACTORS_SLIM';
-			const scope = nock('https://api.apify.com')
-				.get(snapshotPath)
-				.query({ limit: 100, offset: 0, search: 'tiktok CLOCKWORKS' })
-				.reply(200, storeList);
-
-			const { results } = await searchServerActors.call(
-				context(),
-				'tiktok CLOCKWORKS',
-				snapshotPath,
-			);
-
-			expect(results.map((result) => result.value)).toEqual(['GdWCkxBtKWOsKjdch']);
-			expect(scope.isDone()).toBe(true);
-		});
-
-		it('should trust the Store API to filter once the path points at it', async () => {
+		it('should pass the search term to the Store API and list what it returns', async () => {
 			const scope = nock('https://api.apify.com')
 				.get('/v2/store')
-				.query({ isServerActor: 'true', limit: 100, offset: 0, search: 'tiktok' })
+				.query({
+					category: 'SINGLE_TENANT_SERVER,MULTI_TENANT_SERVER',
+					limit: 100,
+					offset: 0,
+					search: 'tiktok',
+				})
 				.reply(200, storeList);
 
-			const { results } = await searchServerActors.call(
-				context(),
-				'tiktok',
-				'/v2/store?isServerActor=true',
-			);
+			const { results } = await listServerActors().call(context(), 'tiktok');
 
 			// No local filtering: whatever the API returns is listed.
 			expect(results).toHaveLength(2);
