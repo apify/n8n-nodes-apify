@@ -1,6 +1,7 @@
 import { INodeProperties } from 'n8n-workflow';
 
 import { HTTP_METHODS } from '../../../helpers/consts';
+import { serverActorLocatorProperty } from '../../actorResourceLocator';
 import {
 	CUSTOM_ENDPOINT,
 	MCP_ONLY,
@@ -16,24 +17,7 @@ const show = {
 const placeholders = ['', NO_ACTOR_SELECTED, NO_SERVER_INTERFACE, MCP_ONLY];
 
 export const properties: INodeProperties[] = [
-	{
-		displayName: 'Actor Source',
-		name: 'actorSource',
-		type: 'hidden',
-		default: 'recentlyUsed',
-		displayOptions: { show },
-	},
-	{
-		// Rewritten into the Actor resource locator by `overrideActorProperties`.
-		displayName: 'Actor',
-		name: 'actorId',
-		required: true,
-		description:
-			'The Server Actor to send the request to, in the format "username~actor-name" or as a plain Actor ID',
-		default: 'janedoe~my-actor',
-		type: 'string',
-		displayOptions: { show },
-	},
+	serverActorLocatorProperty({ show }),
 	{
 		displayName: 'Endpoint Name or ID',
 		name: 'endpoint',
@@ -70,12 +54,9 @@ export const properties: INodeProperties[] = [
 		name: 'endpointQuery',
 		type: 'json',
 		default: '{}',
-		description:
-			'Query parameters as a JSON object, e.g. {"limit": 10}. Values for path parameters such as {itemId} go here too.',
-		displayOptions: { show, hide: { endpoint: placeholders } },
+		description: 'Query parameters as a JSON object, e.g. {"limit": 10}',
+		displayOptions: { show: { ...show, endpoint: [CUSTOM_ENDPOINT] } },
 	},
-	// Two Body properties, because the editor can't express "Custom Path with a method that takes
-	// a body, or a documented endpoint other than GET" in one rule. Only one is shown.
 	{
 		displayName: 'Body',
 		name: 'endpointBody',
@@ -91,14 +72,30 @@ export const properties: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'Body',
-		name: 'endpointBody',
-		type: 'json',
-		default: '{}',
-		description: 'JSON request body',
-		displayOptions: {
-			show,
-			hide: { endpoint: [...placeholders, CUSTOM_ENDPOINT, { _cnd: { startsWith: 'GET ' } }] },
+		displayName: 'Parameters',
+		name: 'endpointParameters',
+		type: 'resourceMapper',
+		noDataExpression: true,
+		default: {
+			mappingMode: 'defineBelow',
+			value: null,
 		},
+		typeOptions: {
+			loadOptionsDependsOn: ['actorId.value', 'endpoint'],
+			resourceMapper: {
+				resourceMapperMethod: 'getServerActorEndpointFields',
+				mode: 'add',
+				valuesLabel: 'Parameters',
+				fieldWords: {
+					singular: 'parameter',
+					plural: 'parameters',
+				},
+				addAllFields: true,
+				multiKeyMatch: false,
+				supportAutoMap: false,
+			},
+		},
+		// Shown only once a documented endpoint is chosen.
+		displayOptions: { show, hide: { endpoint: [...placeholders, CUSTOM_ENDPOINT] } },
 	},
 ];
