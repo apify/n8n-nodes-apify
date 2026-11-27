@@ -143,9 +143,10 @@ export async function listActors(
 
 	if (actorSource === 'recentlyUsed') {
 		if (searchTerm) {
-			const regex = new RegExp(searchTerm, 'i');
+			const term = searchTerm.toLowerCase();
+			const matches = (value?: string) => (value || '').toLowerCase().includes(term);
 			const filteredActors = recentActors.filter(
-				(actor: any) => regex.test(actor.title || '') || regex.test(actor.name || ''),
+				(actor: any) => matches(actor.title) || matches(actor.name),
 			);
 			return {
 				results: filteredActors.map(mapToN8nSelectOption),

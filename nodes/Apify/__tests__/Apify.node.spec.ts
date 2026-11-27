@@ -1738,6 +1738,49 @@ describe('Apify Node', () => {
 		});
 	});
 
+	describe('list search', () => {
+		const items = [
+			{
+				id: 'nFJndFXA5zjCTuudP',
+				title: 'Web Scraper (beta)',
+				name: 'web-scraper',
+				username: 'apify',
+			},
+			{ id: 'aYG0l9s7dbB7j3gbS', title: 'Google Maps', name: 'google-maps', username: 'apify' },
+		];
+
+		const loaders = [
+			{ name: 'listActors', uri: '/v2/acts' },
+			{ name: 'listUserActors', uri: '/v2/acts' },
+			{ name: 'listActorTasks', uri: '/v2/actor-tasks' },
+		];
+
+		const search = async (name: string, uri: string, searchTerm: string) => {
+			nock('https://api.apify.com').get(uri).query(true).reply(200, { data: { items } });
+			const context = createLoadOptionsFunctions({
+				credentialsHelper,
+				node: {
+					name: 'Apify',
+					type: 'n8n-nodes-apify.apify',
+					typeVersion: 2,
+					parameters: { authentication: 'apifyApi', actorSource: 'recentlyUsed' },
+				},
+			});
+			const listSearch = apifyNode.methods!.listSearch![name];
+			const { results } = await listSearch.call(context, searchTerm);
+			return results.map((result) => result.value);
+		};
+
+		it.each(loaders)(
+			'$name matches the search text as a case-insensitive substring',
+			async ({ name, uri }) => {
+				expect(await search(name, uri, 'scraper (B')).toEqual(['nFJndFXA5zjCTuudP']);
+				// Regex metacharacters are plain text, so ".*" matches nothing here.
+				expect(await search(name, uri, '.*')).toEqual([]);
+			},
+		);
+	});
+
 	describe('api calls', () => {
 		it('should retry the specified number of times with exponential delays', async () => {
 			const storeId = 'yTfMu13hDFe9bRjx6';

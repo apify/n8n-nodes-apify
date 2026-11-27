@@ -95,8 +95,9 @@ export async function listActorTasks(
 
 	let filteredItems = [...items];
 	if (searchTerm) {
-		const regex = new RegExp(searchTerm, 'i');
-		filteredItems = items.filter((b: any) => regex.test(b.title || '') || regex.test(b.name || ''));
+		const term = searchTerm.toLowerCase();
+		const matches = (value?: string) => (value || '').toLowerCase().includes(term);
+		filteredItems = items.filter((b: any) => matches(b.title) || matches(b.name));
 	}
 
 	return {
