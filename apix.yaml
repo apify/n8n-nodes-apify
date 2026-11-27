@@ -1,0 +1,43 @@
+# How apix sets up and runs this repo in an Apify dev sandbox. The `n8n` template in
+# apify/apify-dev-sandbox clones this repo and starts the `n8n` service, so people can
+# try a branch of the node from a link. Schema:
+# https://github.com/apify/apify-dev-sandbox/blob/develop/docs/config-spec.md
+name: n8n-nodes-apify
+
+setup:
+  # The sandbox shell can carry another repo's pnpm environment, and `n8n-node build`
+  # refuses to build an npm project when the user agent says pnpm.
+  - unset npm_config_user_agent PNPM_SCRIPT_SRC_DIR pnpm_config_verify_deps_before_run npm_config_node_gyp
+  - nvm install # reads .nvmrc
+  - npm ci --no-audit --no-fund
+  - npm run build
+  # n8n itself, outside the repo so the tree stays clean (and not in a folder named
+  # n8n: npm refuses to install a package into one of the same name). Installed once;
+  # delete ~/n8n-app to get a newer n8n. On Node 24, not the repo's .nvmrc: n8n's native
+  # dependencies (sqlite3, @confluentinc/kafka-javascript) download prebuilt binaries
+  # there, while on Node 26 kafka compiles librdkafka from source for many minutes.
+  # n8n only loads the node's built JavaScript, so the two Node versions don't clash.
+  - (nvm install 24 >/dev/null && mkdir -p ~/n8n-app && cd ~/n8n-app && { [ -f package.json ] || npm init -y >/dev/null; } && { [ -x node_modules/.bin/n8n ] || npm install --no-audit --no-fund n8n@latest; })
+
+services:
+  n8n:
+    description: n8n on :5678 with this repo's node loaded from dist/. Needs `apix setup n8n-nodes-apify` first; stop and start it after a rebuild.
+    # n8n.io is not on the sandbox's egress allowlist, so its telemetry, templates and
+    # update checks are off. No stdin: n8n reads the terminal for its "press o" prompt,
+    # and a background process that does is stopped by the kernel (SIGTTIN).
+    # N8N_EDITOR_BASE_URL, WEBHOOK_URL and N8N_PUSH_BACKEND come from the template's
+    # environment. Node 24, the one n8n was installed with (see setup).
+    command: >-
+      . "${NVM_DIR:-$HOME/.nvm}/nvm.sh" && nvm use --silent 24 &&
+      exec env
+      N8N_CUSTOM_EXTENSIONS="$PWD/dist"
+      N8N_PROXY_HOPS=1
+      N8N_DIAGNOSTICS_ENABLED=false
+      N8N_VERSION_NOTIFICATIONS_ENABLED=false
+      N8N_TEMPLATES_ENABLED=false
+      N8N_PERSONALIZATION_ENABLED=false
+      N8N_COMMUNITY_PACKAGES_ENABLED=false
+      "$HOME/n8n-app/node_modules/.bin/n8n" start </dev/null
+    ports: [5678]
+    ready_when: Editor is now accessible via
+    ready_timeout_seconds: 180
