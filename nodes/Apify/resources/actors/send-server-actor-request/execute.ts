@@ -10,12 +10,14 @@ import {
 import { SERVER_ACTOR_REQUEST_TIMEOUT_MS } from '../../../helpers/consts';
 import {
 	apiRequest,
+	AUTH_ERROR_TYPE,
 	decodeResponseBody,
 	getErrorFromBody,
 	isTimeoutError,
 	parseJsonParameter,
 	toDescriptionText,
 	toNodeApiError,
+	withAuthErrorMessage,
 } from '../../genericFunctions';
 import { getServerActorOrigin, SERVER_ACTOR_MESSAGES as MESSAGES } from '../../serverActor';
 
@@ -164,7 +166,18 @@ export async function sendServerActorRequest(
 	const decoded = decodeResponseBody(response.body, contentType);
 
 	if (status >= 400) {
-		throw toActorError.call(this, status, 'body' in decoded ? decoded.body : undefined, i);
+		const body = 'body' in decoded ? decoded.body : undefined;
+		// Apify rejected the token before the request reached the Actor. Match the type too: an
+		// Actor may answer 401 for reasons of its own.
+		if (status === 401 && getErrorFromBody(body).type === AUTH_ERROR_TYPE) {
+			const authenticationMethod = this.getNodeParameter('authentication', i) as string;
+			throw withAuthErrorMessage(
+				this.getNode(),
+				{ httpCode: '401', context: { data: body } },
+				authenticationMethod,
+			);
+		}
+		throw toActorError.call(this, status, body, i);
 	}
 	if ('binary' in decoded) {
 		throw new NodeOperationError(this.getNode(), MESSAGES.binary, {

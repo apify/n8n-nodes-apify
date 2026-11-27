@@ -3,6 +3,8 @@ import type { IHttpRequestMethods } from 'n8n-workflow';
 export const WEB_CONTENT_SCRAPER_ACTOR_ID = 'aYG0l9s7dbB7j3gbS';
 export const APIFY_API_URL = 'https://api.apify.com';
 export const APIFY_CONSOLE_URL = 'https://console.apify.com';
+// Console > Settings > API & Integrations, where users create a new API token.
+export const APIFY_INTEGRATIONS_URL = `${APIFY_CONSOLE_URL}/settings/integrations`;
 // Apify's 403 error type when the Actor's default build tag has no build.
 export const MISSING_DEFAULT_BUILD_ERROR_TYPE = 'unknown-build-tag';
 // Standby endpoint of the apify/web-fetch Actor (per the integrations-team contract).
