@@ -1,6 +1,6 @@
 import { INodeProperties, INodeType } from 'n8n-workflow';
 
-import { overrideActorProperties, listActors } from './actorResourceLocator';
+import { overrideActorProperties, listActors, listServerActors } from './actorResourceLocator';
 import { overrideActorTaskProperties, listActorTasks } from './actorTaskResourceLocator';
 import { overrideUserActorProperties, listUserActors } from './userActorResourceLocator';
 import { overrideRunProperties, listRuns } from './runResourceLocator';
@@ -14,6 +14,7 @@ import {
 } from './keyValueStoreRecordKeyResourceLocator';
 import { compose } from './genericFunctions';
 import { getActorInputFields } from './actorInput';
+import { getServerActorEndpointFields, listServerActorEndpoints } from './serverActor';
 
 export function runHooks(properties: INodeProperties[]): {
 	properties: INodeProperties[];
@@ -33,14 +34,19 @@ export function runHooks(properties: INodeProperties[]): {
 		methods: {
 			listSearch: {
 				listActors,
+				listServerActors,
 				listActorTasks,
 				listRuns,
 				listKeyValueStores,
 				listKeyValueStoreRecordKeys,
 				listUserActors,
 			},
+			loadOptions: {
+				listServerActorEndpoints,
+			},
 			resourceMapping: {
 				getActorInputFields,
+				getServerActorEndpointFields,
 			},
 		},
 	};

@@ -1,29 +1,35 @@
 import { INodeProperties } from 'n8n-workflow';
 
 import { HTTP_METHODS } from '../../../helpers/consts';
+import { serverActorLocatorProperty } from '../../actorResourceLocator';
+import {
+	CUSTOM_ENDPOINT,
+	MCP_ONLY,
+	NO_ACTOR_SELECTED,
+	NO_SERVER_INTERFACE,
+} from '../../serverActor';
 
 const show = {
 	resource: ['Actors'],
 	operation: ['Send Server Actor request'],
 };
+// Endpoint values that only carry a message: no request fields for them.
+const placeholders = ['', NO_ACTOR_SELECTED, NO_SERVER_INTERFACE, MCP_ONLY];
 
 export const properties: INodeProperties[] = [
+	serverActorLocatorProperty({ show }),
 	{
-		displayName: 'Actor Source',
-		name: 'actorSource',
-		type: 'hidden',
-		default: 'recentlyUsed',
-		displayOptions: { show },
-	},
-	{
-		// Rewritten into the Actor resource locator by `overrideActorProperties`.
-		displayName: 'Actor',
-		name: 'actorId',
+		displayName: 'Endpoint Name or ID',
+		name: 'endpoint',
+		type: 'options',
 		required: true,
+		default: '',
 		description:
-			'The Server Actor to send the request to, in the format "username~actor-name" or as a plain Actor ID',
-		default: 'janedoe~my-actor',
-		type: 'string',
+			'The endpoint to send the request to, from the Actor\'s OpenAPI definition. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		typeOptions: {
+			loadOptionsMethod: 'listServerActorEndpoints',
+			loadOptionsDependsOn: ['actorId.value'],
+		},
 		displayOptions: { show },
 	},
 	{
@@ -32,7 +38,7 @@ export const properties: INodeProperties[] = [
 		type: 'options',
 		default: 'GET',
 		options: HTTP_METHODS.map((method) => ({ name: method, value: method })),
-		displayOptions: { show },
+		displayOptions: { show: { ...show, endpoint: [CUSTOM_ENDPOINT] } },
 	},
 	{
 		displayName: 'Path',
@@ -41,7 +47,7 @@ export const properties: INodeProperties[] = [
 		default: '/',
 		placeholder: '/search',
 		description: "Path on the Actor's server, starting with /",
-		displayOptions: { show },
+		displayOptions: { show: { ...show, endpoint: [CUSTOM_ENDPOINT] } },
 	},
 	{
 		displayName: 'Query Parameters',
@@ -49,7 +55,7 @@ export const properties: INodeProperties[] = [
 		type: 'json',
 		default: '{}',
 		description: 'Query parameters as a JSON object, e.g. {"limit": 10}',
-		displayOptions: { show },
+		displayOptions: { show: { ...show, endpoint: [CUSTOM_ENDPOINT] } },
 	},
 	{
 		displayName: 'Body',
@@ -57,6 +63,39 @@ export const properties: INodeProperties[] = [
 		type: 'json',
 		default: '{}',
 		description: 'JSON request body',
-		displayOptions: { show: { ...show, endpointMethod: ['POST', 'PUT', 'PATCH', 'DELETE'] } },
+		displayOptions: {
+			show: {
+				...show,
+				endpoint: [CUSTOM_ENDPOINT],
+				endpointMethod: ['POST', 'PUT', 'PATCH', 'DELETE'],
+			},
+		},
+	},
+	{
+		displayName: 'Parameters',
+		name: 'endpointParameters',
+		type: 'resourceMapper',
+		noDataExpression: true,
+		default: {
+			mappingMode: 'defineBelow',
+			value: null,
+		},
+		typeOptions: {
+			loadOptionsDependsOn: ['actorId.value', 'endpoint'],
+			resourceMapper: {
+				resourceMapperMethod: 'getServerActorEndpointFields',
+				mode: 'add',
+				valuesLabel: 'Parameters',
+				fieldWords: {
+					singular: 'parameter',
+					plural: 'parameters',
+				},
+				addAllFields: true,
+				multiKeyMatch: false,
+				supportAutoMap: false,
+			},
+		},
+		// Shown only once a documented endpoint is chosen.
+		displayOptions: { show, hide: { endpoint: [...placeholders, CUSTOM_ENDPOINT] } },
 	},
 ];
