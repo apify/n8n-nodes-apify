@@ -6,7 +6,7 @@ import { runHooks } from './hooks';
 const name = 'Get run';
 
 const rawOption: INodePropertyOptions = {
-	name: name,
+	name: 'Get',
 	value: name,
 	action: name,
 	description:

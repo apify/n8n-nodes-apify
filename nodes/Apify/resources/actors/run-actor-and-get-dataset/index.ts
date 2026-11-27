@@ -6,7 +6,7 @@ import { runHooks } from './hooks';
 export const name = 'Run actor and get dataset';
 
 const rawOption: INodePropertyOptions = {
-	name: 'Run an Actor and Get Dataset',
+	name: 'Run and Get Dataset',
 	value: 'Run actor and get dataset',
 	action: 'Run an Actor and get dataset',
 	description: 'Runs an Actor, waits for it to finish, and finally returns the dataset items',

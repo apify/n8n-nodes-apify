@@ -1,5 +1,5 @@
 import { IExecuteFunctions, INodeExecutionData, NodeOperationError } from 'n8n-workflow';
-import { apiRequest, toNodeApiError } from '../../genericFunctions';
+import { apiPath, apiRequest, toNodeApiError } from '../../genericFunctions';
 
 export async function getActorRuns(
 	this: IExecuteFunctions,
@@ -22,7 +22,7 @@ export async function getActorRuns(
 	try {
 		const apiResult = await apiRequest.call(this, {
 			method: 'GET',
-			uri: `/v2/acts/${actorId}/runs`,
+			uri: apiPath`/v2/acts/${actorId}/runs`,
 			qs: { limit, offset, desc, status: statusFilter },
 		});
 

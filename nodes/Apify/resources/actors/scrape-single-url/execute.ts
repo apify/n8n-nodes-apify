@@ -1,5 +1,6 @@
 import { IExecuteFunctions, INodeExecutionData, NodeApiError } from 'n8n-workflow';
 import {
+	apiPath,
 	apiRequest,
 	pollRunStatus,
 	validateUrl,
@@ -62,7 +63,7 @@ export async function scrapeSingleUrl(
 
 		const [item] = await apiRequest.call(this, {
 			method: 'GET',
-			uri: `/v2/datasets/${defaultDatasetId}/items`,
+			uri: apiPath`/v2/datasets/${defaultDatasetId}/items`,
 			qs: { format: 'json' },
 			timeout: consts.DATASET_REQUEST_TIMEOUT_MS,
 		});

@@ -4,7 +4,7 @@ import {
 	NodeApiError,
 	NodeOperationError,
 } from 'n8n-workflow';
-import { apiRequest, toNodeApiError } from '../../../resources/genericFunctions';
+import { apiPath, apiRequest, toNodeApiError } from '../../../resources/genericFunctions';
 
 export async function getRun(this: IExecuteFunctions, i: number): Promise<INodeExecutionData> {
 	const runId = this.getNodeParameter('runId', i, undefined, {
@@ -18,7 +18,7 @@ export async function getRun(this: IExecuteFunctions, i: number): Promise<INodeE
 	try {
 		const apiResult = await apiRequest.call(this, {
 			method: 'GET',
-			uri: `/v2/actor-runs/${runId}`,
+			uri: apiPath`/v2/actor-runs/${runId}`,
 		});
 
 		if (!apiResult) {

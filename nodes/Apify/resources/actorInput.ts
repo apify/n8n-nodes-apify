@@ -9,6 +9,7 @@ import {
 } from 'n8n-workflow';
 import { getBuildByTag, getDefaultBuild } from './executeActor';
 import {
+	apiPath,
 	apiRequest,
 	escapeHtml,
 	getErrorReason,
@@ -82,7 +83,7 @@ async function getBuild(this: ILoadOptionsFunctions, actorId: string) {
 	const buildTag = this.getNodeParameter('build', '') as string;
 	if (!buildTag) return await getDefaultBuild.call(this, actorId);
 
-	const actor = await apiRequest.call(this, { method: 'GET', uri: `/v2/acts/${actorId}` });
+	const actor = await apiRequest.call(this, { method: 'GET', uri: apiPath`/v2/acts/${actorId}` });
 	if (!actor?.data) {
 		throw new NodeApiError(this.getNode(), { message: `Actor ${actorId} not found` });
 	}

@@ -122,13 +122,13 @@ This node supports a wide range of Apify operations, organized by resource type:
 
 ### Actors
 
-- **Run Actor**: Execute an Actor with optional input parameters
+- **Run**: Execute an Actor with optional input parameters
   - Default behavior: Uses predefined input values
   - Custom input: Provide JSON object to override any or all default parameters
   - Configurable timeout and memory limits
   - Build version selection
-- **Run Actor and get dataset items**: Execute an Actor, wait for it to finish, and return the dataset items
-- **Send Server Actor request**: Send one HTTP request to a Server Actor and get `status`, `contentType` and `body` back, without starting a run
+- **Run and Get Dataset**: Execute an Actor, wait for it to finish, and return the dataset items
+- **Send Server Actor Request**: Send one HTTP request to a Server Actor and get `status`, `contentType` and `body` back, without starting a run
   - The Actor list shows Server Actors from Apify Store. Pick your own private Server Actors by URL or ID
   - Pick an endpoint from the Actor's OpenAPI definition and fill in its typed parameters, or use **Custom Path** (method, path, JSON query and body)
   - Each request may be charged, so it is sent once and never retried. Leave "Retry On Fail" off
@@ -141,19 +141,21 @@ This node supports a wide range of Apify operations, organized by resource type:
 
 ### Actor tasks
 
-- **Run Task**: Execute a predefined Actor task
+- **Run**: Execute a predefined Actor task
   - Supports custom input JSON
   - Configurable timeout
   - Task-specific settings
-- **Run task and get dataset items**: Execute a task, wait for it to finish, and return the dataset items
+- **Run and Get Dataset**: Execute a task, wait for it to finish, and return the dataset items
 
 ### Actor runs
 
-- **Get User Runs List**: List all runs for a user
+- **Get Many**: List all runs for a user
   - Pagination support
   - Sorting options
   - Status filtering
-- **Get run**: Retrieve detailed information about a specific run
+- **Get**: Retrieve detailed information about a specific run
+- **Get Many for Actor**: List the runs of a specific Actor
+- **Abort**: Abort a running Actor run
 
 ### Datasets
 
@@ -161,7 +163,7 @@ This node supports a wide range of Apify operations, organized by resource type:
 
 ### Key-Value Stores
 
-- **Get Key-Value Store Record**: Retrieve a specific record by key
+- **Get Record**: Retrieve a specific record by key
 
 ### Triggers
 
@@ -183,6 +185,7 @@ For example, you can scrape data from a website using an Actor and then use an A
 The node supports two authentication methods:
 
 1. **API key authentication**
+   - Create an API token for n8n in [Apify Console](https://console.apify.com/settings/integrations?createApiToken=true&for=n8n&utm_source=n8n&utm_medium=integrations) and copy it right after creating it — it is shown only once
    - Configure your Apify API key in the n8n credentials section under `apifyApi`
 
 2. **OAuth2 authentication** (available only in n8n cloud)

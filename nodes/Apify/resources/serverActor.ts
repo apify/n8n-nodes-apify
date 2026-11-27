@@ -6,7 +6,7 @@ import {
 } from 'n8n-workflow';
 import { APIFY_ACTOR_HOST_SUFFIX, APIFY_CONSOLE_URL } from '../helpers/consts';
 import { getDefaultBuild } from './executeActor';
-import { apiRequest, escapeHtml, getErrorReason } from './genericFunctions';
+import { apiPath, apiRequest, escapeHtml, getErrorReason } from './genericFunctions';
 import {
 	getEndpointFields,
 	parseEndpointValue,
@@ -25,7 +25,7 @@ const CHARGED = 'The request may still have been charged.';
 
 export const SERVER_ACTOR_MESSAGES = {
 	noServerInterface:
-		'This Actor has no server interface. Use the Run an Actor operation to start a run instead.',
+		'This Actor has no server interface. Use the Run operation to start a run instead.',
 	mcpOnly:
 		"This Actor is an MCP server. Use n8n's MCP Client Tool node (or MCP Client node) with the Actor's MCP URL instead. Their default timeout is 60 s, so raise it for slow tools.",
 	noEndpoint: 'Choose an endpoint.',
@@ -60,7 +60,7 @@ export async function getServerActorOrigin(
 ): Promise<string | undefined> {
 	const { data: actor } = (await apiRequest.call(this, {
 		method: 'GET',
-		uri: `/v2/acts/${actorId}`,
+		uri: apiPath`/v2/acts/${actorId}`,
 	})) as { data?: ServerActor };
 	if (!actor?.actorStandby?.isEnabled || typeof actor.standbyUrl !== 'string') return undefined;
 	try {

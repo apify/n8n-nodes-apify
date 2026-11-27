@@ -10,6 +10,7 @@ import {
 	NodeConnectionType,
 } from 'n8n-workflow';
 import {
+	apiPath,
 	apiRequest,
 	compose,
 	generateIdempotencyKey,
@@ -26,7 +27,7 @@ export class ApifyTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Apify Trigger',
 		name: 'apifyTrigger',
-		icon: 'file:apify-light.svg',
+		icon: { light: 'file:apify-light.svg', dark: 'file:apify-dark.svg' },
 		group: ['trigger'],
 		version: 1,
 		subtitle: '={{($parameter["resource"] === "actor" ? $parameter["actorId"] : $parameter["actorTaskId"]) + ": " + $parameter["eventType"].join(", ")}}',
@@ -215,7 +216,7 @@ export class ApifyTrigger implements INodeType {
 
 				await apiRequest.call(this, {
 					method: 'DELETE',
-					uri: `/v2/webhooks/${webhookData.webhookId}`,
+					uri: apiPath`/v2/webhooks/${webhookData.webhookId}`,
 				});
 				delete webhookData.webhookId;
 				return true;

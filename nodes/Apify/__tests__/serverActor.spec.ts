@@ -149,7 +149,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(actorsOperationSelects()).toHaveLength(2);
 		});
 
-		it('should leave Run an Actor unchanged, with no Interface field', () => {
+		it('should leave Run unchanged, with no Interface field', () => {
 			expect(propertiesNamed('interface')).toEqual([]);
 		});
 
@@ -716,7 +716,7 @@ describe('Server Actors (Send Server Actor request)', () => {
 			const options = await listEndpoints().call(context());
 
 			expect(options.map((option) => option.value)).toEqual([NO_SERVER_INTERFACE]);
-			expect(options[0].description).toMatch(/Use the Run an Actor operation/);
+			expect(options[0].description).toMatch(/Use the Run operation/);
 			expect(scope.isDone()).toBe(true);
 		});
 
@@ -900,12 +900,27 @@ describe('Server Actors (Send Server Actor request)', () => {
 			expect(server.isDone()).toBe(true);
 		});
 
+		it('should encode the Actor ID as one path segment', async () => {
+			// Both the Actor lookup and the default build behind the endpoint check.
+			const api = nock('https://api.apify.com')
+				.get('/v2/acts/a%2Fb%3Fc%23d')
+				.reply(200, serverActor())
+				.get('/v2/acts/a%2Fb%3Fc%23d/builds/default')
+				.reply(200, buildWith({ webServerSchema: openApi }));
+			const server = nock(SERVER_URL).post('/').reply(200, { ok: true });
+
+			await run({ actorId: { __rl: true, value: 'a/b?c#d', mode: 'id' } });
+
+			expect(api.isDone()).toBe(true);
+			expect(server.isDone()).toBe(true);
+		});
+
 		it('should refuse an Actor whose server interface was turned off', async () => {
 			nock('https://api.apify.com')
 				.get(`/v2/acts/${ACTOR_ID}`)
 				.reply(200, serverActor({ actorStandby: { isEnabled: false } }));
 
-			await expect(run()).rejects.toThrow(/Use the Run an Actor operation/);
+			await expect(run()).rejects.toThrow(/Use the Run operation/);
 		});
 
 		it.each([500, 429, 503])(
